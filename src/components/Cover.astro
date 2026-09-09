@@ -1,5 +1,6 @@
 ---
 import "@styles/global.css"
+import PageHero from "./ui/PageHero.astro";
 
 interface Props {
     title?: string;
@@ -9,8 +10,4 @@ interface Props {
 const { title, subTitle } = Astro.props;
 ---
 
-<!-- Cover -->
-<div class="text-center pt-5 pb-10 max-w-[var(--page-width)] mx-auto md:mt-0 mt-28">
-    { title && <p class="text-[var(--text-color)] text-3xl py-5 font-bold">{ title }</p> }
-    { subTitle && <p class="text-[var(--text-color-70)] font-bold">{ subTitle }</p> }
-</div>
+{title && <PageHero title={title} description={subTitle} size="compact" />}

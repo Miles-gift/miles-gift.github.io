@@ -16,7 +16,7 @@ const className = Astro.props.class;
 ---
 
 <button 
-  id="themeToggle" title={t("button.switchDarkMode")} class={className}
+  id="themeToggle" title={t("button.switchDarkMode")} aria-label={t("button.switchDarkMode")} class={className}
   data-t-light={translations.light}
   data-t-dark={translations.dark}
   data-t-system={translations.system}
@@ -166,27 +166,27 @@ if (typeof window !== 'undefined') {
     /* 毛玻璃弹窗基础样式 */
   :global(#theme-toast) {
     position: fixed;
-    bottom: 10%;               /* 距离视野底部 32px */
+    bottom: 10%;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
     
     /* 核心毛玻璃设置 */
-    background-color: rgba(255, 255, 255, 0.7); /* 半透明白色 */
-    -webkit-backdrop-filter: blur(10px);      /* 兼容 Safari */
+    background-color: var(--color-surface);
+    -webkit-backdrop-filter: blur(var(--blur-surface));
     
-    color: #1a1a1a;
+    color: var(--color-ink);
     padding: 10px 20px;
-    border-radius: 12px;
-    border: 1px solid var(--button-border-color); /* 细微边框增加质感 */
-    font-size: 0.9rem;
-    font-weight: 500;
-    z-index: 10000;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border);
+    font-size: var(--text-small);
+    font-weight: 600;
+    z-index: var(--z-toast);
     
     /* 动画 */
     opacity: 0;
     visibility: hidden;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: all var(--duration-normal) var(--ease-emphasized);
+    box-shadow: var(--shadow-md);
     white-space: nowrap;
     pointer-events: none;
   }
@@ -196,7 +196,7 @@ if (typeof window !== 'undefined') {
      只保留后写的那条；单独放进 @supports 里，构建后标准属性才不会被删掉。 */
   @supports (backdrop-filter: blur(1px)) {
     :global(#theme-toast) {
-      backdrop-filter: blur(10px); /* 模糊程度 */
+      backdrop-filter: blur(var(--blur-surface));
     }
   }
 
@@ -209,10 +209,10 @@ if (typeof window !== 'undefined') {
 
   /* 暗色模式下的毛玻璃（深色半透明） */
   :global(html[data-theme="dark"] #theme-toast) {
-    background-color: rgba(30, 30, 30, 0.7);
-    border: 1px solid var(--button-border-color);
-    color: #eeeeee;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-md);
   }
     
 </style>

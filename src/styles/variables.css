@@ -1,70 +1,150 @@
 :root {
-  /* 布局变量 */
-  --header-width: min(1024px,90vw);
-  --page-width: min(776px, 90vw);
+  color-scheme: light;
+
+  /* Typography */
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-reading: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-mono: "JetBrains Mono Variable", "SFMono-Regular", Consolas, monospace;
+  --text-display-xl: clamp(3.5rem, 9vw, 7.5rem);
+  --text-display-lg: clamp(2.5rem, 6vw, 5rem);
+  --text-display-md: clamp(2rem, 4vw, 3.5rem);
+  --text-title: clamp(1.5rem, 2.2vw, 2rem);
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --leading-tight: 1.05;
+  --leading-heading: 1.16;
+  --leading-body: 1.72;
+  --tracking-tight: -0.035em;
+
+  /* Layout and spacing */
+  --stage-width: min(1180px, calc(100vw - 3rem));
+  --content-width: min(760px, calc(100vw - 3rem));
+  --header-width: var(--stage-width);
+  --page-width: var(--content-width);
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --section-space: clamp(5rem, 10vw, 9rem);
+  --header-height: 4.5rem;
   --toc-offset-left: calc(50vw + var(--page-width) / 2 + 3rem);
   --toc-width: calc((100vw - var(--page-width)) / 2 - 3rem);
   --category-width: min(calc((100vw - var(--page-width)) / 3), 200px);
+
+  /* Shape and elevation */
+  --radius-sm: 0.625rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 16px 50px rgb(0 0 0 / 0.09);
+  --shadow-lg: 0 30px 90px rgb(0 0 0 / 0.14);
+  --blur-surface: 22px;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-normal: 240ms;
+  --duration-slow: 520ms;
+
+  /* Layering */
+  --z-base: 0;
+  --z-sticky: 40;
+  --z-header: 50;
+  --z-overlay: 80;
+  --z-dialog: 90;
+  --z-toast: 100;
+
+  /* Light theme */
+  --color-canvas: #f5f5f7;
+  --color-canvas-raised: #ffffff;
+  --color-surface: rgb(255 255 255 / 0.78);
+  --color-surface-solid: #ffffff;
+  --color-surface-subtle: #ececf0;
+  --color-ink: #1d1d1f;
+  --color-ink-secondary: #5f5f67;
+  --color-ink-tertiary: #86868b;
+  --color-border: rgb(29 29 31 / 0.12);
+  --color-border-strong: rgb(29 29 31 / 0.2);
+  --color-accent: #0066cc;
+  --color-accent-hover: #004f9e;
+  --color-accent-soft: #e7f2ff;
+  --color-focus: #0071e3;
+  --color-success: #16844a;
+  --color-warning: #9a6700;
+  --color-danger: #c91c2b;
+  --selection-bg-color: #0066cc;
+  --selection-text-color: #ffffff;
+  --scrollbar-thumb: #b7b7bd;
+  --scrollbar-thumb-hover: #8e8e95;
+  --scrollbar-track: transparent;
+
+  /* Compatibility aliases used by imported Momo components. */
+  --bg-color: var(--color-canvas);
+  --text-color: var(--color-ink);
+  --text-color-70: var(--color-ink-secondary);
+  --text-color-30: var(--color-ink-tertiary);
+  --link-color: var(--color-accent);
+  --button-hover-color: var(--color-surface-subtle);
+  --button-border-color: var(--color-border);
+  --border-color: var(--color-border);
+  --shadow-color: rgb(0 0 0 / 0.12);
+  --warning-text-color: #6f4b00;
+  --warning-bg-color: #fff7df;
+  --warning-border-color: #d59a00;
+  --danger-text-color: #77101a;
+  --danger-bg-color: #fff0f1;
+  --danger-border-color: var(--color-danger);
 }
 
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-canvas: #000000;
+  --color-canvas-raised: #101012;
+  --color-surface: rgb(28 28 30 / 0.76);
+  --color-surface-solid: #1c1c1e;
+  --color-surface-subtle: #2c2c2e;
+  --color-ink: #f5f5f7;
+  --color-ink-secondary: #aeaeb2;
+  --color-ink-tertiary: #7c7c80;
+  --color-border: rgb(255 255 255 / 0.14);
+  --color-border-strong: rgb(255 255 255 / 0.22);
+  --color-accent: #2997ff;
+  --color-accent-hover: #66b5ff;
+  --color-accent-soft: #0a2a45;
+  --color-focus: #64b5ff;
+  --color-success: #30d158;
+  --color-warning: #ffd60a;
+  --color-danger: #ff453a;
+  --selection-bg-color: #0a67bd;
+  --scrollbar-thumb: #4c4c50;
+  --scrollbar-thumb-hover: #6d6d72;
+  --scrollbar-track: transparent;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.28);
+  --shadow-md: 0 16px 50px rgb(0 0 0 / 0.42);
+  --shadow-lg: 0 30px 90px rgb(0 0 0 / 0.56);
+  --shadow-color: rgb(0 0 0 / 0.45);
+  --warning-text-color: #ffe169;
+  --warning-bg-color: #332900;
+  --warning-border-color: #a67c00;
+  --danger-text-color: #ffb3b8;
+  --danger-bg-color: #3b171b;
+  --danger-border-color: #ff453a;
+}
 
-/* 颜色变量 */
-/* --bg-color               页面背景色
- * --text-color             文字基本色，通过透明度来控制颜色深浅，分为两类
- *     --text-color:        适用于标题、正文等需要突出显示的内容
- *     --text-color-70      适用于次要信息、辅助文本等不需要过于突出显示的内容
- * --link-color             彩色基本色，适用于链接、按钮等颜色突出的地方
- * --button-hover-color     按钮鼠标悬停背景色
- * --button-border-color    按钮边框色
-*/
-:root {
-    --bg-color: #fbfbfb;
-    --text-color: #000000;
-    --text-color-70: #4c4c4c;
-    --shadow-color: rgba(0, 0, 0, 0.15);
-    --link-color: #003b6e;
-    --button-hover-color: #eeeeee;
-    --button-border-color: #d6d6d6;
-
-    --warning-text-color: #4d3800;
-    --warning-bg-color: #fff7ed;
-    --warning-border-color: #e6a700;
-
-    --danger-text-color: #4b1113;
-    --danger-bg-color: #ffebec;
-    --danger-border-color: #e13238;
-    
-    /* 滚动条颜色 */
-    --scrollbar-thumb: #c1c1c1;
-    --scrollbar-thumb-hover: #a8a8a8;
-    --scrollbar-track: #e1e1e1;
-
-    --selection-bg-color: #0063ba;
-    --selection-text-color: #ffffff;
+@media (max-width: 640px) {
+  :root {
+    --stage-width: min(100% - 1.5rem, 1180px);
+    --content-width: min(100% - 1.5rem, 760px);
+    --header-height: 4rem;
+    --section-space: 4.5rem;
   }
-
-  [data-theme="dark"] {
-    --bg-color: #0a0a0a;
-    --text-color: #ffffff;
-    --text-color-70: #b5b5b5;
-    --shadow-color: rgba(255, 255, 255, 0.15);
-    --link-color: #57ace7;
-    --button-hover-color: #262626;
-    --button-border-color: #3d3d3d;
-
-    --warning-text-color: #f2d680;
-    --warning-bg-color: #332a00;
-    --warning-border-color: #ad8002;
-
-    --danger-text-color: #f2a0a3;
-    --danger-bg-color: #3b1d1e;
-    --danger-border-color: #e13238;
-    
-    /* 滚动条颜色 */
-    --scrollbar-thumb: #4b4c4e;
-    --scrollbar-thumb-hover: #37383a;
-    --scrollbar-track: #1a202c;
-
-    --selection-bg-color: #2f5f80;
-    --selection-text-color: #ffffff;
-  }
+}

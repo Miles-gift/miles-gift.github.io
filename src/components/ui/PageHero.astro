@@ -1,0 +1,98 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  align?: "left" | "center";
+  size?: "compact" | "large";
+  class?: string;
+}
+
+const {
+  eyebrow,
+  title,
+  description,
+  align = "center",
+  size = "large",
+  class: className = "",
+} = Astro.props;
+---
+
+<header class:list={["page-hero", `page-hero--${align}`, `page-hero--${size}`, className]}>
+  {eyebrow && <p class="page-hero__eyebrow">{eyebrow}</p>}
+  <h1>{title}</h1>
+  {description && <p class="page-hero__description">{description}</p>}
+  {Astro.slots.has("actions") && <div class="page-hero__actions"><slot name="actions" /></div>}
+</header>
+
+<style>
+  .page-hero {
+    width: var(--stage-width);
+    margin-inline: auto;
+    padding-top: clamp(6rem, 13vw, 10rem);
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  .page-hero--compact {
+    width: var(--content-width);
+    padding-top: clamp(5rem, 9vw, 7rem);
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .page-hero--center {
+    text-align: center;
+  }
+
+  .page-hero--left {
+    text-align: left;
+  }
+
+  .page-hero__eyebrow {
+    margin: 0 0 var(--space-4);
+    color: var(--color-accent);
+    font-size: var(--text-small);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    max-width: 16ch;
+    margin: 0 auto;
+    font-family: var(--font-display);
+    font-size: var(--text-display-lg);
+    font-weight: 740;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+  }
+
+  .page-hero--left h1 {
+    margin-left: 0;
+  }
+
+  .page-hero__description {
+    max-width: 42rem;
+    margin: var(--space-5) auto 0;
+    color: var(--color-ink-secondary);
+    font-size: clamp(1.05rem, 2vw, 1.4rem);
+    line-height: 1.55;
+    text-wrap: balance;
+  }
+
+  .page-hero--left .page-hero__description {
+    margin-left: 0;
+  }
+
+  .page-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+
+  .page-hero--left .page-hero__actions {
+    justify-content: flex-start;
+  }
+</style>

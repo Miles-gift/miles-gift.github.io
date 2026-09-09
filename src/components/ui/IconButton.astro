@@ -1,0 +1,41 @@
+---
+interface Props {
+  label: string;
+  id?: string;
+  title?: string;
+  type?: "button" | "submit" | "reset";
+  href?: string;
+  class?: string;
+  controls?: string;
+  expanded?: boolean;
+}
+
+const {
+  label,
+  id,
+  title,
+  type = "button",
+  href,
+  class: className = "",
+  controls,
+  expanded,
+} = Astro.props;
+---
+
+{href ? (
+  <a href={href} id={id} class:list={["ui-icon-button", className]} aria-label={label} title={title ?? label}>
+    <slot />
+  </a>
+) : (
+  <button
+    id={id}
+    type={type}
+    class:list={["ui-icon-button", className]}
+    aria-label={label}
+    title={title ?? label}
+    aria-controls={controls}
+    aria-expanded={expanded}
+  >
+    <slot />
+  </button>
+)}

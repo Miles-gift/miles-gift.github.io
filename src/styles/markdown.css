@@ -12,6 +12,7 @@
 
 .markdown-content {
   line-height: 1.75;
+  font-family: var(--font-reading);
 }
 
 .markdown-content h1 {
@@ -20,6 +21,8 @@
   font-weight: 700;
   margin: 2rem 0 1rem;
   border-bottom: 1px solid var(--text-color);
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
 }
 
 .markdown-content h2 {
@@ -27,19 +30,23 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin: 1.8rem 0 1rem;
-  border-bottom: 1px solid var(--text-color);
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 .markdown-content h3 {
   font-size: 1.5rem;
   font-weight: 600;
   margin: 1.5rem 0 0.8rem;
+  font-family: var(--font-display);
 }
 
 .markdown-content h4 {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 1.2rem 0 0.6rem;
+  font-family: var(--font-display);
 }
 
 .markdown-content h5 {
@@ -151,14 +158,15 @@
   font-family: "LXGW Bright Medium";
   margin: 1.5rem 0;
   padding: 0.1rem 1.2rem;
-  border-left: 4px solid var(--quote-left-color);
-  background-color: rgba(0, 0, 0, 0.03);
-  color: #666;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background-color: var(--color-surface-subtle);
+  color: var(--color-ink-secondary);
 }
 
 [data-theme="dark"] .markdown-content blockquote {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #aaa;
+  background-color: var(--color-surface-subtle);
+  color: var(--color-ink-secondary);
 }
 
 .markdown-content p code,
@@ -168,8 +176,8 @@
 .markdown-content table code {
   padding: 0.2rem 0.4rem;
   background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  font-family: 'JetBrains Mono Variable', ui-monospace;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
   font-size: 0.9em;
 }
 
@@ -188,8 +196,8 @@
   padding: 1rem;
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 6px;
-  font-family: 'JetBrains Mono Variable', ui-monospace;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
   line-height: 1.5;
 }
 

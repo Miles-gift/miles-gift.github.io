@@ -35,7 +35,7 @@ const { remarkPluginFrontmatter } = await render(entry);
 const isBgMode = siteConfig.theme.postCard.imageMode === "background";
 ---
 
-<div data-aos="fade-up"  class:list={["block min-w-0 w-full max-w-[var(--page-width)] mx-auto my-6  rounded-xl shadow border border-[var(--button-border-color)] overflow-hidden", isBgMode && "postcard-bg-mode", isBgMode && image && "has-image"]}>
+<article data-aos="fade-up" class:list={["post-card block min-w-0 w-full max-w-[var(--page-width)] mx-auto my-6 overflow-hidden", isBgMode && "postcard-bg-mode", isBgMode && image && "has-image"]}>
     {image && (
         <>
         {isBgMode ? (
@@ -88,11 +88,28 @@ const isBgMode = siteConfig.theme.postCard.imageMode === "background";
             </p>
         </div>
     </div>
-</div>
+</article>
 
 <style is:global>
+.post-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-solid);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--duration-normal) var(--ease-standard),
+    border-color var(--duration-normal) var(--ease-standard),
+    box-shadow var(--duration-normal) var(--ease-standard);
+}
+
+.post-card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
 .hover-scale {
-  transition: transform 0.3s ease;
+  transition: transform var(--duration-slow) var(--ease-emphasized);
 }
 
 .hover-scale:hover {

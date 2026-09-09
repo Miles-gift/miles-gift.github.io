@@ -1,0 +1,83 @@
+---
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  tone?: "canvas" | "raised" | "dark";
+  width?: "stage" | "reading";
+  class?: string;
+}
+
+const {
+  id,
+  eyebrow,
+  title,
+  description,
+  tone = "canvas",
+  width = "stage",
+  class: className = "",
+} = Astro.props;
+---
+
+<section id={id} class:list={["ui-section", `ui-section--${tone}`, className]}>
+  <div class:list={["ui-section__inner", width === "reading" ? "reading-shell" : "stage-shell"]}>
+    {(eyebrow || title || description) && (
+      <header class="ui-section__header">
+        {eyebrow && <p class="ui-section__eyebrow">{eyebrow}</p>}
+        {title && <h2>{title}</h2>}
+        {description && <p class="ui-section__description">{description}</p>}
+      </header>
+    )}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .ui-section {
+    padding-block: var(--section-space);
+  }
+
+  .ui-section--raised {
+    background: var(--color-canvas-raised);
+  }
+
+  .ui-section--dark {
+    background: #000;
+    color: #f5f5f7;
+  }
+
+  .ui-section__header {
+    max-width: 48rem;
+    margin-bottom: clamp(2rem, 5vw, 4rem);
+  }
+
+  .ui-section__eyebrow {
+    margin: 0 0 var(--space-3);
+    color: var(--color-accent);
+    font-size: var(--text-small);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-display-md);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-heading);
+  }
+
+  .ui-section__description {
+    max-width: 42rem;
+    margin: var(--space-4) 0 0;
+    color: var(--color-ink-secondary);
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+  }
+
+  .ui-section--dark .ui-section__description {
+    color: #a1a1a6;
+  }
+</style>
