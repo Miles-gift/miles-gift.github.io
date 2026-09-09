@@ -78,7 +78,7 @@
 - 已使用 pnpm 11.12.0 按 `pnpm-lock.yaml` 安装 468 个锁定包。
 - 项目已增加 `.nvmrc`，推荐本地使用 Node.js 24 LTS。
 - `package.json` 已声明 Node.js `>=24`、pnpm `>=11 <12`。
-- GitHub Actions 固定使用 Node.js 24 和 pnpm 11。
+- GitHub Actions 固定使用 Node.js 24，并从 `packageManager` 字段读取 pnpm 11.12.0。
 - 当前执行机器使用 Node.js 26.0.0，兼容构建已通过；最终发布以 CI 的 Node.js 24 构建为准。
 
 ### 构建与预览
