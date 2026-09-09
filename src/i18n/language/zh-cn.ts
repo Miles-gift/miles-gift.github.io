@@ -15,9 +15,9 @@ const translation: Translation = {
             friends: "友链",
         },
         subTitle: {
-            home: "这里记录学习、思考、作品与一路走来的变化。",
+            home: "从电子设计、AI 到语言学习，记录正在发生的成长。",
             archive: "共 {count} 篇文章",
-            about: "一份持续生长的公开档案",
+            about: "从工程实践到持续学习的公开档案",
             friends: "真实连接，慢慢建立",
         }
     },

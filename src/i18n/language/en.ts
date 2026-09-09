@@ -15,9 +15,9 @@ const translation: Translation = {
             friends: "Friends",
         },
         subTitle: {
-            home: "Notes on learning, ideas, work, and a life in progress.",
+            home: "Notes on electronics, AI, language learning, and a life in progress.",
             archive: "Total of {count} articles",
-            about: "A public archive that keeps growing",
+            about: "A public archive of engineering practice and continuous learning",
             friends: "Real connections, built slowly",
         }
     },

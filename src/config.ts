@@ -8,7 +8,7 @@ import type { FriendLink } from "./types/friend"
 
 export const siteConfig: SiteConfig = {
     title: "Miles",
-    subTitle: "学习、思考与生活",
+    subTitle: "工程、学习与成长",
 
     favicon: "/brand/miles-mark.svg", // Path of the favicon, relative to the /public directory
 
@@ -38,7 +38,7 @@ export const siteConfig: SiteConfig = {
 export const profileConfig: ProfileConfig = {
     avatar: "/brand/miles-mark.svg", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
     name: "Miles",
-    description: "学习、思考与生活的长期记录。",
+    description: "Miles 的工程实践、学习笔记与成长记录。",
     indexPage: "https://github.com/Miles-gift",
     startYear: 2026,
 }
