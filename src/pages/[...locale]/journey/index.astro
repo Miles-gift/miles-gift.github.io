@@ -1,0 +1,49 @@
+---
+import CollectionIndexLayout from "@components/content/CollectionIndexLayout.astro";
+import { siteConfig } from "@/config";
+import { entryPath, getPublicEntries } from "@utils/content-utils";
+import { i18n } from "astro:config/client";
+
+export function getStaticPaths() {
+  return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } }));
+}
+
+const currentLang = Astro.currentLocale || i18n!.defaultLocale;
+const journey = (await getPublicEntries("journey")).sort((a, b) => b.data.order - a.data.order);
+---
+
+<CollectionIndexLayout
+  title="旅程"
+  eyebrow="Journey"
+  description="教育、成果与成长节点。公开事实保持准确和克制，不从证明材料推测未被本人确认的故事。"
+  pageTitle={`旅程 - ${siteConfig.title}`}
+  lang={currentLang}
+>
+  <ol class="journey-index">
+    {journey.map((item) => (
+      <li>
+        <a href={entryPath(item)}>
+          <time>{item.data.dateLabel}</time>
+          <span aria-hidden="true"></span>
+          <div><h2>{item.data.title}</h2><p>{item.data.summary}</p></div>
+        </a>
+      </li>
+    ))}
+  </ol>
+</CollectionIndexLayout>
+
+<style>
+  .journey-index { margin: 0; padding: 0; list-style: none; }
+  li { position: relative; }
+  li:not(:last-child)::after { position: absolute; top: 3rem; bottom: -3rem; left: calc(11rem + 0.31rem); width: 1px; background: var(--color-border); content: ""; }
+  a { display: grid; grid-template-columns: 10rem 1.1rem minmax(0, 1fr); gap: var(--space-5); padding-block: var(--space-7); color: var(--color-ink); text-decoration: none; }
+  time { color: var(--color-accent); font-weight: 700; }
+  a > span { position: relative; z-index: 1; width: 0.8rem; height: 0.8rem; margin-top: 0.6rem; border: 3px solid var(--color-canvas); border-radius: 50%; background: var(--color-accent); box-shadow: 0 0 0 1px var(--color-accent); }
+  h2 { margin: 0; font-size: var(--text-title); letter-spacing: -0.035em; }
+  p { margin: var(--space-2) 0 0; color: var(--color-ink-secondary); }
+  @media (max-width: 640px) {
+    li:not(:last-child)::after { left: 0.31rem; }
+    a { grid-template-columns: 1.1rem minmax(0, 1fr); gap: var(--space-4); }
+    time { grid-column: 1 / -1; }
+  }
+</style>

@@ -1,0 +1,45 @@
+---
+import { Icon } from "astro-icon/components";
+import CollectionIndexLayout from "@components/content/CollectionIndexLayout.astro";
+import Chip from "@components/ui/Chip.astro";
+import { siteConfig } from "@/config";
+import { entryPath, getPublicEntries } from "@utils/content-utils";
+import { i18n } from "astro:config/client";
+
+export function getStaticPaths() {
+  return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } }));
+}
+
+const currentLang = Astro.currentLocale || i18n!.defaultLocale;
+const resources = (await getPublicEntries("resources")).sort((a, b) => b.data.lastReviewedAt.valueOf() - a.data.lastReviewedAt.valueOf());
+---
+
+<CollectionIndexLayout
+  title="资料库"
+  eyebrow="Resources"
+  description="经过来源核验的课程、书籍、文档与工具索引；每条都附保存原因、学习状态和自己的使用方式。"
+  pageTitle={`资料库 - ${siteConfig.title}`}
+  lang={currentLang}
+>
+  <div class="resource-index">
+    {resources.map((resource) => (
+      <a href={entryPath(resource)} class="resource-index__card">
+        <div><Chip tone="accent">{resource.data.topic}</Chip><Chip>{resource.data.status}</Chip></div>
+        <h2>{resource.data.title}</h2>
+        <p>{resource.data.description}</p>
+        <footer><span>进度 {resource.data.progress}%</span><Icon name="fa6-solid:arrow-right" class="w-4 h-4" /></footer>
+      </a>
+    ))}
+  </div>
+</CollectionIndexLayout>
+
+<style>
+  .resource-index { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+  .resource-index__card { display: flex; min-height: 20rem; flex-direction: column; padding: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-solid); color: var(--color-ink); text-decoration: none; transition: transform var(--duration-normal), box-shadow var(--duration-normal); }
+  .resource-index__card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+  .resource-index__card > div { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  h2 { margin: var(--space-7) 0 var(--space-4); font-size: var(--text-title); letter-spacing: -0.035em; line-height: 1.18; }
+  p { margin: 0; color: var(--color-ink-secondary); }
+  footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: var(--space-6); color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  @media (max-width: 700px) { .resource-index { grid-template-columns: 1fr; } }
+</style>

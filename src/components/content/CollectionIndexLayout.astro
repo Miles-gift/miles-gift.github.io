@@ -1,0 +1,27 @@
+---
+import MainPageLayout from "@layouts/MainPageLayout.astro";
+import PageHero from "@components/ui/PageHero.astro";
+import FabMenu from "@components/control/FabMenu.astro";
+
+interface Props {
+  title: string;
+  pageTitle: string;
+  description: string;
+  eyebrow: string;
+  lang: string;
+}
+
+const { title, pageTitle, description, eyebrow, lang } = Astro.props;
+---
+
+<MainPageLayout title={pageTitle} description={description} lang={lang}>
+  <PageHero title={title} description={description} eyebrow={eyebrow} align="left" />
+  <div class="collection-shell stage-shell">
+    <slot />
+  </div>
+  <FabMenu showBackBottom={true} />
+</MainPageLayout>
+
+<style>
+  .collection-shell { padding-bottom: var(--space-8); }
+</style>

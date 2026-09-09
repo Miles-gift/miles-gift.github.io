@@ -11,7 +11,10 @@ const introPage = profileConfig.indexPage || import.meta.env.BASE_URL;
       <p>© {profileConfig.startYear}–{new Date().getFullYear()} <a href={introPage}>{profileConfig.name}</a></p>
     </div>
     <nav aria-label="页脚导航">
+      <a href="/thoughts/">短想法</a>
+      <a href="/archives/">归档</a>
       <a href="/rss.xml">RSS</a>
+      <a href="/privacy/">隐私</a>
       <a href="https://github.com/Miles-gift/miles-gift.github.io" target="_blank" rel="noopener noreferrer">源码</a>
       <a href="https://github.com/Motues/Momo" target="_blank" rel="noopener noreferrer">Momo 基础</a>
     </nav>

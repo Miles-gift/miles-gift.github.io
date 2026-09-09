@@ -1,0 +1,43 @@
+---
+import CollectionIndexLayout from "@components/content/CollectionIndexLayout.astro";
+import PostCard from "@components/PostCard.astro";
+import { siteConfig } from "@/config";
+import { getArticleEntrySort } from "@utils/content-utils";
+import { articleCoverUrl } from "@utils/url-utils";
+import { i18n } from "astro:config/client";
+
+export function getStaticPaths() {
+  return i18n?.locales.map((locale) => ({
+    params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) },
+  }));
+}
+
+const currentLang = Astro.currentLocale || i18n!.defaultLocale;
+const articles = await getArticleEntrySort(currentLang);
+---
+
+<CollectionIndexLayout
+  title="文章"
+  eyebrow="Articles"
+  description="教程、复盘与系统思考。记录问题如何发生、尝试如何展开，以及哪些结论值得再次使用。"
+  pageTitle={`文章 - ${siteConfig.title}`}
+  lang={currentLang}
+>
+  <div class="article-list">
+    {articles.map((entry) => (
+      <PostCard
+        entry={entry}
+        title={entry.data.title}
+        description={entry.data.description}
+        image={articleCoverUrl(entry.data.cover, entry.id)}
+        pubDate={entry.data.pubDate}
+        url={entry.id}
+        fallback={entry.isFallback}
+      />
+    ))}
+  </div>
+</CollectionIndexLayout>
+
+<style>
+  .article-list { width: var(--content-width); margin-inline: auto; }
+</style>

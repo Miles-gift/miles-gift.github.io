@@ -15,16 +15,20 @@ const articles = await getArticleEntrySort(currentLang);
 const categories = [...new Set(articles.map((article) => article.data.topic))].sort();
 
 const indexPage = getRelativeLocaleUrl(currentLang, "/");
-const archivesPage = getRelativeLocaleUrl(currentLang, "/archives/");
+const articlesPage = getRelativeLocaleUrl(currentLang, "/articles/");
+const resourcesPage = getRelativeLocaleUrl(currentLang, "/resources/");
+const journeyPage = getRelativeLocaleUrl(currentLang, "/journey/");
 const aboutPage = getRelativeLocaleUrl(currentLang, "/about/");
 const currentPath = Astro.url.pathname;
 const isActive = (path: string) => path === indexPage ? currentPath === path : currentPath.startsWith(path);
 const introPage = profileConfig.indexPage || import.meta.env.BASE_URL;
 
 const navItems = [
-  { href: indexPage, label: t("header.home") },
-  { href: archivesPage, label: t("header.archive") },
-  { href: aboutPage, label: t("header.about") },
+  { href: indexPage, label: "首页" },
+  { href: articlesPage, label: "文章" },
+  { href: resourcesPage, label: "资料库" },
+  { href: journeyPage, label: "旅程" },
+  { href: aboutPage, label: "关于" },
 ];
 ---
 
@@ -151,7 +155,7 @@ const navItems = [
   }
 
   .desktop-nav a {
-    padding: 0.42rem 0.9rem;
+    padding: 0.42rem 0.78rem;
     border-radius: var(--radius-pill);
     color: var(--color-ink-secondary);
     font-size: var(--text-small);

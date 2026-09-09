@@ -1,9 +1,6 @@
 ---
 import MainPageLayout from '@layouts/MainPageLayout.astro';
-import Cover from '@components/Cover.astro';
-import PostPage from '@components/PostPage.astro';
-import Navi from '@components/control/Navi.astro';
-import FabMenu from '@components/control/FabMenu.astro';
+import HomePage from '@components/home/HomePage.astro';
 
 import { getArticleEntrySort } from '@utils/content-utils'
 import { siteConfig } from '@/config';
@@ -11,14 +8,8 @@ import { i18n } from "astro:config/client";
 import type { CollectionEntry } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
 
-import i18nit from '@i18n/translation'
-
 // 所有分页数据都在 "page" 参数中传递
-const { page } = Astro.props;
-const { locale = i18n!.defaultLocale } = Astro.params;
-
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
-const t = i18nit(currentLang);
 
 export const getStaticPaths = (async ({ paginate }) => {
 
@@ -63,8 +54,5 @@ const pageTitle = `${siteConfig.title} - ${siteConfig.subTitle}`;
 ---
 
 <MainPageLayout title={pageTitle} lang={currentLang}>
-    <Cover title={t("cover.title.home")} subTitle={t("cover.subTitle.home")} />
-    <PostPage page={page} />
-    <Navi page={page} />
-    <FabMenu showBackBottom={true} />
+    <HomePage />
 </MainPageLayout>
