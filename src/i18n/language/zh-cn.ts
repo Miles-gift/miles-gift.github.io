@@ -9,16 +9,16 @@ const translation: Translation = {
     },
     cover: {
         title: {
-            home: "欢迎来到Momo的博客",
+            home: "持续学习，也持续留下些什么。",
             archive: "文章归档",
-            about: "关于",
+            about: "关于 Miles",
             friends: "友链",
         },
         subTitle: {
-            home: "生活多彩！",
+            home: "这里记录学习、思考、作品与一路走来的变化。",
             archive: "共 {count} 篇文章",
-            about: "一个极简的Blog模板",
-            friends: "有趣的灵魂",
+            about: "一份持续生长的公开档案",
+            friends: "真实连接，慢慢建立",
         }
     },
     toc: "目录",

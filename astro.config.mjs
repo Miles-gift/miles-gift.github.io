@@ -27,7 +27,7 @@ import { siteConfig } from './src/config';
 export default defineConfig({
   site: 'https://miles-gift.github.io', // Root URL of site
   i18n: {
-    locales: ['zh-cn', 'en'],
+    locales: ['zh-cn'],
     defaultLocale: 'zh-cn',
     routing: {
       prefixDefaultLocale: false,

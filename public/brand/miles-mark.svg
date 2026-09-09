@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title description">
+  <title id="title">Miles</title>
+  <desc id="description">Miles 个人站的抽象字母 M 标识</desc>
+  <defs>
+    <linearGradient id="surface" x1="20" y1="12" x2="108" y2="116" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#25282e"/>
+      <stop offset="1" stop-color="#050608"/>
+    </linearGradient>
+    <linearGradient id="stroke" x1="27" y1="35" x2="101" y2="93" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f5f7ff"/>
+      <stop offset="0.52" stop-color="#8dbbff"/>
+      <stop offset="1" stop-color="#2878ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="url(#surface)"/>
+  <path d="M27 91V38.5c0-5.7 7.1-8.2 10.7-3.8L64 67l26.3-32.3c3.6-4.4 10.7-1.9 10.7 3.8V91" fill="none" stroke="url(#stroke)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -7,10 +7,10 @@ import type {
 import type { FriendLink } from "./types/friend"
 
 export const siteConfig: SiteConfig = {
-    title: "Momo",
-    subTitle: "Blog",
+    title: "Miles",
+    subTitle: "学习、思考与生活",
 
-    favicon: "/favicon/favicon.ico", // Path of the favicon, relative to the /public directory
+    favicon: "/brand/miles-mark.svg", // Path of the favicon, relative to the /public directory
 
     pageSize: 6, // Number of posts per page
     toc: {
@@ -36,11 +36,11 @@ export const siteConfig: SiteConfig = {
 }
 
 export const profileConfig: ProfileConfig = {
-    avatar: "assets/Motues.jpg", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
-    name: "Motues",
-    description: "Life is colorful!",
-    indexPage: "https://www.motues.top",
-    startYear: 2024,
+    avatar: "/brand/miles-mark.svg", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+    name: "Miles",
+    description: "学习、思考与生活的长期记录。",
+    indexPage: "https://github.com/Miles-gift",
+    startYear: 2026,
 }
 
 export const licenseConfig: LicenseConfig = {
@@ -49,18 +49,5 @@ export const licenseConfig: LicenseConfig = {
 	url: "https://creativecommons.org/licenses/by-nc-sa/4.0/",
 };
 
-export const friendLinkConfig: FriendLink[] = [
-    {
-        name: 'Motues',
-        avatar: 'https://www.motues.top/avatar.jpg',
-        url: 'https://www.motues.top',
-        description: 'Like River!'
-    },
-    {
-        name: 'Astro',
-        avatar: 'https://avatars.githubusercontent.com/u/44914786',
-        url: 'https://astro.build',
-        description: 'Build fast websites, faster.'
-    }
-    // Add more friend links here
-]
+// 友链将在有真实、经过确认的条目后重新开放。
+export const friendLinkConfig: FriendLink[] = []
