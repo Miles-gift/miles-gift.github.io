@@ -14,12 +14,12 @@ export function baseUrl(path: string) {
 }
 
 /**
- * 将相对于content/blog目录的路径转换为相对于src目录的路径
- * @param contentPath 相对于content/blog目录的路径
- * @param blogName 博客文章的名称/ID，用于构建完整路径
+ * 将相对于 content/articles 目录的路径转换为相对于 src 目录的路径
+ * @param contentPath 相对于文章目录的路径
+ * @param articleName 文章的名称/ID，用于构建完整路径
  * @returns 相对于src目录的路径
  */
-export function blogCoverUrl(contentPath: string, blogName: string): string {
+export function articleCoverUrl(contentPath: string, articleName: string): string {
 
     if (!contentPath) return '';
     
@@ -36,7 +36,7 @@ export function blogCoverUrl(contentPath: string, blogName: string): string {
     const normalizedPath = contentPath.startsWith('/') ? contentPath.slice(1) : contentPath;
     
     // 构造相对于src目录的路径，包含博客名称文件夹
-    return joinUrl("content/blog/", blogName, normalizedPath)
+    return joinUrl("content/articles/", articleName, normalizedPath)
 }
 
 export function getRelativeLocaleUrl(lang: string, path: string) : string { 

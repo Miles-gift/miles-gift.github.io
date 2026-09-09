@@ -9,10 +9,11 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && pagefind --site dist",
+    "build": "pnpm validate:content && astro build && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
     "newpost": "node script/newpost.js",
+    "validate:content": "node script/validate-content.mjs",
     "cms": "cd cms && pnpm dev"
   },
   "dependencies": {

@@ -1,0 +1,24 @@
+---
+import ContentEntryLayout from "@components/content/ContentEntryLayout.astro";
+import Button from "@components/ui/Button.astro";
+import { getPublicEntries } from "@utils/content-utils";
+import { render } from "astro:content";
+import { i18n } from "astro:config/client";
+
+export async function getStaticPaths() {
+  const entries = await getPublicEntries("resources");
+  return (i18n?.locales || [i18n?.defaultLocale]).flatMap((locale) => {
+    const localeCode = typeof locale === "string" ? locale : locale.path;
+    return entries.map((entry) => ({ params: { locale: localeCode === i18n?.defaultLocale ? undefined : localeCode, slug: entry.data.slug }, props: { entry } }));
+  });
+}
+
+const currentLang = Astro.currentLocale || i18n!.defaultLocale;
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<ContentEntryLayout pageTitle={`${entry.data.title} - Miles`} title={entry.data.title} description={entry.data.description} eyebrow="Resource" lang={currentLang} pubDate={entry.data.pubDate} topic={entry.data.topic} tags={entry.data.tags}>
+  <Fragment slot="aside"><Button href={entry.data.sourceUrl} target="_blank" variant="secondary" size="small">访问官方来源</Button></Fragment>
+  <Content />
+</ContentEntryLayout>

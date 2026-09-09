@@ -7,12 +7,12 @@ import IconButton from "./ui/IconButton.astro";
 import { baseUrl, getRelativeLocaleUrl } from "@utils/url-utils";
 import { i18n } from "astro:config/client";
 import i18nit from "@i18n/translation";
-import { getBlogEntrySort } from "@utils/content-utils";
+import { getArticleEntrySort } from "@utils/content-utils";
 
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
 const t = i18nit(currentLang);
-const blogPosts = await getBlogEntrySort(currentLang);
-const categories = [...new Set(blogPosts.map((post) => post.data.category || "undefined"))].sort();
+const articles = await getArticleEntrySort(currentLang);
+const categories = [...new Set(articles.map((article) => article.data.topic))].sort();
 
 const indexPage = getRelativeLocaleUrl(currentLang, "/");
 const archivesPage = getRelativeLocaleUrl(currentLang, "/archives/");
@@ -86,7 +86,7 @@ const navItems = [
         <div id="mobile-category-list" class="mobile-categories__list" hidden>
           {categories.map((category) => (
             <a href={getRelativeLocaleUrl(currentLang, `/archives/?category=${encodeURIComponent(category)}`)}>
-              {category === "undefined" ? t("pagecard.uncategorized") : category}
+              {category}
             </a>
           ))}
         </div>

@@ -1,0 +1,72 @@
+---
+import "@styles/global.css";
+import { siteConfig, licenseConfig } from "@/config";
+import MainPageLayout from "@layouts/MainPageLayout.astro";
+import Markdown from "@components/misc/Markdown.astro";
+import ImageModule from "@components/misc/ImageModule.astro";
+import FabMenu from "@components/control/FabMenu.astro";
+import TOC from "@components/TOC.svelte";
+import LicenseCard from "@components/misc/LicenseCard.astro";
+import BlogNavi from "@components/control/BlogNavi.astro";
+import Chip from "@components/ui/Chip.astro";
+import { render } from "astro:content";
+import { i18n } from "astro:config/client";
+import { articleCoverUrl } from "@/utils/url-utils";
+import { formatFullDate } from "@/utils/time";
+import { getArticleEntrySort } from "@utils/content-utils";
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const locale of i18n?.locales || [i18n?.defaultLocale]) {
+    const localeCode = typeof locale === "string" ? locale : locale.path;
+    const entries = await getArticleEntrySort(localeCode);
+    for (let index = 0; index < entries.length; index += 1) {
+      paths.push({
+        params: { locale: localeCode === i18n?.defaultLocale ? undefined : localeCode, slug: entries[index].id },
+        props: { entry: entries[index], prev: index < entries.length - 1 ? entries[index + 1] : null, next: index > 0 ? entries[index - 1] : null },
+      });
+    }
+  }
+  return paths;
+}
+
+const currentLang = Astro.currentLocale || i18n!.defaultLocale;
+const { entry, prev, next } = Astro.props;
+const { Content, headings, remarkPluginFrontmatter } = await render(entry);
+const pageTitle = `${entry.data.title} - ${siteConfig.title}`;
+const image = articleCoverUrl(entry.data.cover, entry.id);
+---
+
+<MainPageLayout title={pageTitle} lang={currentLang} description={entry.data.description}>
+  <article class="article-page reading-shell">
+    <header class="article-header">
+      <p class="article-header__eyebrow">Article</p>
+      <h1>{entry.data.title}</h1>
+      <p class="article-header__description">{entry.data.description}</p>
+      <div class="article-header__meta">
+        <time datetime={entry.data.pubDate.toISOString()}>{formatFullDate(entry.data.pubDate, currentLang)}</time>
+        <span>{remarkPluginFrontmatter.words || 0} 字</span>
+        <span>{remarkPluginFrontmatter.minutes || 0} 分钟</span>
+        <Chip tone="accent">{entry.data.topic}</Chip>
+        {entry.data.tags.map((tag) => <Chip>{tag}</Chip>)}
+      </div>
+    </header>
+    {image && <ImageModule src={image} alt={entry.data.coverAlt} class="article-cover" />}
+    <Markdown class="article-body markdown-content onload-animation"><Content /></Markdown>
+    {licenseConfig.enable && <LicenseCard title={entry.data.title} pubDate={entry.data.pubDate} />}
+    {siteConfig.blogNavi.enable && <BlogNavi prev={prev} next={next} />}
+  </article>
+  {siteConfig.toc.enable && <TOC headings={headings} language={currentLang} client:load />}
+  <FabMenu headings={headings} showComment={false} showBackBottom={true} />
+</MainPageLayout>
+
+<style>
+  .article-page { padding-top: clamp(5rem, 10vw, 8rem); }
+  .article-header { padding-bottom: clamp(2.5rem, 6vw, 4.5rem); border-bottom: 1px solid var(--color-border); }
+  .article-header__eyebrow { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-small); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  h1 { margin: 0; font-family: var(--font-display); font-size: var(--text-display-md); line-height: var(--leading-heading); letter-spacing: var(--tracking-tight); }
+  .article-header__description { margin: var(--space-5) 0 0; color: var(--color-ink-secondary); font-size: clamp(1rem, 1.5vw, 1.2rem); }
+  .article-header__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-5); color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  :global(.article-cover) { height: min(52vw, 28rem); margin-top: var(--space-7); border-radius: var(--radius-xl); }
+  .article-body { margin-top: clamp(2.5rem, 6vw, 4.5rem); }
+</style>

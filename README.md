@@ -2,9 +2,9 @@
 
 一个以长期写作和知识整理为核心的个人数字花园。网站基于 [Momo](https://github.com/Motues/Momo) 的 Astro 框架重建，计划用于持续发布学习资料、长文、短想法、个人信息、项目记录与人生经历。
 
-> 当前阶段：**阶段 2｜设计系统已完成**
+> 当前阶段：**阶段 3｜内容模型与首批迁移已完成**
 >
-> 当前版本：`stage-2`
+> 当前版本：`stage-3`
 >
 > 更新日期：2026-09-10
 >
@@ -38,8 +38,8 @@
 | 0. 基线固化 | 导入模板、验证构建、记录截图、确认发布链路 | 已完成 |
 | 1. 品牌与内容盘点 | 明确站点名称、个人表达、栏目和首发素材 | 已完成 |
 | 2. 设计系统 | 建立颜色、字体、间距、组件和动效规范 | 已完成 |
-| 3. 内容模型 | 建立文章、资料、想法、经历等结构化内容 | 下一阶段 |
-| 4. 首页与导航 | 重建舞台式首页和响应式导航 | 待开始 |
+| 3. 内容模型 | 建立文章、资料、想法、经历等结构化内容 | 已完成 |
+| 4. 首页与导航 | 重建舞台式首页和响应式导航 | 下一阶段 |
 | 5. 内容页面 | 完成文章、资料库、时间线、关于、搜索等页面 | 待开始 |
 | 6. CMS 与发布 | 扩展本地 CMS，贯通真实内容发布流程 | 待开始 |
 | 7. 质量与上线 | 完成性能、SEO、无障碍、隐私和部署验收 | 待开始 |
@@ -93,6 +93,20 @@
 6. 让旧 Cover 与文章卡片逐步继承新设计系统。
 7. 建立不进入主导航和搜索的 `/design-system/` 验证页，完成深浅主题与响应式检查。
 
+## 阶段 3 的目标
+
+阶段 3 将阶段 1 盘点出的真实素材转换成可长期维护的结构化内容，冻结首版 URL、字段与分类约束。目标不是把本地文件原样搬上网，而是在版权、隐私和事实精度可控的前提下，让文章、资料、短想法、经历与固定页面都拥有清晰模型、稳定路径和构建前校验。
+
+## 阶段 3 的执行计划
+
+1. 建立 `articles`、`resources`、`thoughts`、`journey`、`pages` 五个公开内容集合，并保留迁移期 `spec` 集合。
+2. 使用严格 Zod schema 校验日期、URL、枚举、长度、范围和未知字段。
+3. 建立受控 taxonomy、路径一致性、重复 slug 与高风险附件预检。
+4. 将旧 `/blog/<slug>/` 迁移到 `/articles/<slug>/`，同时保留可到达新页面的兼容入口。
+5. 从真实建站过程与已盘点素材中原创重写首批文章、资料、想法和经历，不复制第三方笔记或证明原件。
+6. 让详情页、首页过渡列表、归档、Pagefind 搜索与 RSS 读取新集合。
+7. 完成生产构建、CMS 构建、浏览器、搜索、旧 URL 和隐私扫描，并记录 CMS 在阶段 6 前的过渡边界。
+
 ## 目前已经实现
 
 ### 仓库与模板
@@ -113,8 +127,8 @@
 
 ### 构建与预览
 
-- 阶段 0 模板基线曾生成 29 个页面；阶段 1 最新生产构建生成 6 个页面与 RSS。
-- Pagefind 最新索引覆盖 3 个公开中文页面、336 个词条；模板示例和英文路由已退出生产索引。
+- 阶段 0 模板基线曾生成 29 个页面；阶段 3 最新生产构建生成 26 个静态页面与 RSS。
+- Pagefind 最新索引覆盖 19 个公开中文页面、729 个词条；模板示例和英文路由已退出生产索引。
 - 构建过程完成 6 张图片优化。
 - CMS 的 Vite 生产构建成功。
 - 本地生产预览已在阶段 0 与阶段 1 分别验证。
@@ -130,6 +144,8 @@
 - 已完成 [品牌与内容简报](doc/BRAND_AND_CONTENT_BRIEF.md)，作为阶段 2–8 的设计与编辑输入。
 - 已完成 [个人素材盘点与发布边界](doc/PERSONAL_CONTENT_INVENTORY.md)，记录本地学习笔记、课程材料、教育与成果的转换策略。
 - 已完成 [设计系统规范](doc/DESIGN_SYSTEM.md)，记录令牌、组件、使用边界和验收方法。
+- 已完成 [内容模型规范](doc/CONTENT_MODEL.md)，记录 collections、字段、taxonomy、自动预检与迁移边界。
+- 已完成 [URL 迁移表](doc/REDIRECTS.md)，记录旧 `/blog/` 地址到 `/articles/` 的兼容策略。
 - 已定义内容边界、信息架构、内容模型和发布工作流。
 - 已建立 Apple 发布会式设计方向与初始设计令牌。
 - 已设定性能、SEO、无障碍、隐私、安全和测试基线。
@@ -151,11 +167,23 @@
 ### 内容方向与治理
 
 - 已确定电子设计与嵌入式、AI 与机器学习、工程工具、语言学习、长期知识整理 5 个真实内容方向。
-- 已冻结“首页 / 文章 / 资料库 / 旅程 / 关于”的首发主导航命名，将在阶段 3–5 实现完整路由。
+- 已冻结“首页 / 文章 / 资料库 / 旅程 / 关于”的首发主导航命名；内容详情路由已建立，完整列表和导航将在阶段 4–5 完成。
 - 已建立 Public / Draft / Private 分级、个人内容发布前检查和版权边界。
 - 已盘点 PyTorch、uv、Git、Mac 快捷键和雅思 Markdown 笔记，并将其列入重写、实测和来源复核队列。
 - 已盘点 AI Agent 课程视频及评奖材料：第三方视频、题库、证书扫描件和身份信息不会进入公开仓库。
-- 已建立首发选题队列；其中只有《从这里开始》和 About 内容已落地，其他选题等待真实素材。
+- 已建立首发选题队列，并落地 3 篇原创文章、5 条官方来源资料导读、3 条短想法、5 条经历与 1 个隐私固定页面。
+- 已建立 7 个受控主题，以及资源类型/状态、经历类型、可见性和内容许可枚举。
+- 已明确资料条目只保存原创导读、个人收获与官方来源链接，不复制本地笔记、课程、题库或受版权保护附件。
+
+### 内容模型与首批迁移
+
+- 已建立严格的 `articles`、`resources`、`thoughts`、`journey`、`pages` collections；迁移期 About 与友链说明继续由 `spec` 管理。
+- 已为文章、资料、短想法、经历和隐私页建立稳定详情 URL。
+- 已将《从这里开始》从旧 `blog` collection 迁移到 `articles`，并为所有文章生成 `/blog/<slug>/` 兼容迁移页。
+- 已建立 `pnpm validate:content`，检查 frontmatter、slug/id 与路径一致性、重复 URL、受控主题和禁止公开的 PDF/Office/压缩包附件。
+- `pnpm build` 会先自动运行内容预检，再执行 Astro 与 Pagefind 构建。
+- RSS 已覆盖全部 16 条公开的文章、资料、短想法和经历；固定页面不进入 RSS。
+- 已重写 `pnpm newpost <slug> zh-cn`，新文章默认以 `draft: true`、`visibility: draft` 创建到严格模型中。
 
 ### 公开站点去模板化
 
@@ -183,7 +211,8 @@
 
 ### 阅读与内容
 
-- Markdown 内容集合。
+- 分离的 Markdown 文章、资料、短想法、经历与固定页面集合。
+- 3 篇文章、5 条资料、3 条短想法、5 条经历和 1 个隐私页面的首批真实内容。
 - 文章分类、置顶、草稿、封面、目录、字数和阅读时间。
 - KaTeX 数学公式和 Typst 渲染。
 - Alert、引用、GitHub 卡片、音乐卡片等自定义内容组件。
@@ -205,12 +234,9 @@
 
 ### 内容管理
 
-- 本地 CMS 管理后台。
-- 文章概览、搜索、筛选、排序和统计。
-- Markdown 编辑与实时预览。
-- 封面图片上传。
-- 中英文内容版本管理。
-- 草稿、置顶、保存和删除保护。
+- Markdown 与 `pnpm newpost` 已可按新 schema 安全创建内容。
+- 本地 CMS 前端仍可独立构建，但其旧文章表单尚未适配新的 collections；阶段 6 完成前不应使用 CMS 保存内容。
+- 草稿、公开等级、特色内容、来源、进度与隐私边界已在内容模型中定义。
 
 ### 自动部署
 
@@ -228,7 +254,7 @@
 ├── /thoughts/       短想法与片段
 ├── /journey/        个人经历和成长时间线
 ├── /projects/       项目案例（P1，可先并入旅程）
-├── /archive/        年份与月份归档
+├── /archives/       年份与月份归档
 ├── /about/          个人介绍和本站说明
 ├── /search/         全站搜索
 ├── /privacy/        隐私和版权说明
@@ -303,10 +329,10 @@ pnpm cms
 
 默认访问：`http://localhost:5188/`
 
-创建文章：
+创建默认不公开的文章草稿：
 
 ```bash
-pnpm newpost docs/example.md zh-cn
+pnpm newpost example-article zh-cn
 ```
 
 生产构建：
@@ -329,19 +355,25 @@ pnpm --filter cms build
 
 ## 内容位置
 
-- 当前公开文章：`src/content/blog/`，阶段 1 仅有《从这里开始》。
+- 长文章：`src/content/articles/<slug>/zh-cn.md`。
+- 资料库：`src/content/resources/<slug>.md`。
+- 短想法：`src/content/thoughts/<id>.md`。
+- 经历：`src/content/journey/<slug>.md`。
+- 固定页面正文：`src/content/pages/<slug>.md`。
 - 关于与友链说明：`src/content/spec/`。
 - Momo 模板示例归档：`doc/template-content/blog/`，不参与生产构建。
 - 品牌与内容基线：`doc/BRAND_AND_CONTENT_BRIEF.md`。
 - 个人素材分级与转换队列：`doc/PERSONAL_CONTENT_INVENTORY.md`。
 - 设计令牌、组件与验收规范：`doc/DESIGN_SYSTEM.md`。
+- 内容模型与自动校验规范：`doc/CONTENT_MODEL.md`。
+- 旧 URL 映射：`doc/REDIRECTS.md`。
 - 品牌标识：`public/brand/miles-mark.svg`。
 - 图片资源：`src/assets/`、`public/` 或对应文章目录。
 - 网站配置：`src/config.ts`。
-- 内容 schema：`src/content.config.ts`。
+- 内容 schema：`src/content.config.ts`；受控词表：`src/content/taxonomy.json`。
 - 国际化：`src/i18n/`。
 
-阶段 3 会将真实内容逐步建模为 `articles`、`resources`、`thoughts`、`journey` 和 `pages` 等内容集合。在迁移完成前，不应同时维护两套真实内容。
+所有新内容只写入新 collections，不再维护旧 `src/content/blog/`。阶段 6 完成前使用 Markdown 与 `pnpm newpost`，暂不通过旧 CMS 表单保存。
 
 ## 项目目录
 
@@ -354,13 +386,21 @@ pnpm --filter cms build
 │   ├── template-content/       不参与构建的 Momo 示例
 │   ├── BRAND_AND_CONTENT_BRIEF.md
 │   ├── PERSONAL_CONTENT_INVENTORY.md
-│   └── DESIGN_SYSTEM.md
+│   ├── DESIGN_SYSTEM.md
+│   ├── CONTENT_MODEL.md
+│   └── REDIRECTS.md
 ├── public/                     不经处理的静态资源与品牌标识
-├── script/                     内容创建脚本
+├── script/                     内容创建与预检脚本
 ├── src/
 │   ├── assets/                 由 Astro 处理的资源
 │   ├── components/             页面与交互组件
 │   ├── content/                Markdown 内容
+│   │   ├── articles/           长文章
+│   │   ├── resources/          资料导读
+│   │   ├── thoughts/           短想法
+│   │   ├── journey/            经历节点
+│   │   ├── pages/              固定页面正文
+│   │   └── taxonomy.json       受控词表
 │   ├── i18n/                   多语言文本
 │   ├── layouts/                页面布局
 │   ├── pages/                  路由页面
@@ -479,20 +519,36 @@ git log --oneline --left-right main...upstream/main
 | 浏览器 console | 0 error / 0 warn |
 | CMS 回归 | 独立 Vite 生产构建通过，阶段 2 未改变内容写入接口 |
 
+2026-09-10 阶段 3：
+
+| 检查 | 结果 |
+|---|---|
+| `pnpm validate:content` | 通过，17 个 Markdown 文件、7 个受控主题，无重复路径或禁止附件 |
+| `pnpm build` | 通过，生成 26 个静态页面与 RSS |
+| Pagefind | 通过，索引 19 个公开中文页面 / 729 words / 1 language |
+| `pnpm --filter cms build` | 通过；仅验证旧 CMS 工程可构建，不代表表单已适配新 schema |
+| 首批内容 | 3 篇文章、5 条资料、3 条短想法、5 条经历、1 个隐私页 |
+| RSS | 16 条公开内容，覆盖文章、资料、想法与经历 |
+| 详情路由 | `/articles/`、`/resources/`、`/thoughts/`、`/journey/` 与 `/privacy/` 均生成 |
+| 旧 URL | `/blog/<slug>/` 生成 `noindex` 迁移页，并跳转至唯一 canonical |
+| 全文搜索 | 搜索“PyTorch”可找到对应资料条目与相关 About 内容 |
+| 浏览器 console | 0 error / 0 warn |
+| 隐私与版权 | 内容目录无证明原件、学号、证书编号、Office/PDF/压缩包或第三方课程文件 |
+
 ## 当前限制与下一步
 
 当前站点已经完成身份与内容基线，但仍处于从模板向完整个人站过渡的早期阶段：
 
 - 设计系统已建立，但首页仍是“Hero + 单篇文章列表”的过渡结构，完整舞台叙事将在阶段 4 实现。
-- 公开内容目前只有一篇建站记录与 About，尚未达到首发的内容数量基线。
+- 内容数量已达到首发基线，但首页仍未把各类型内容组织成完整舞台叙事。
 - 教育与三项成果已有可信基线；专业、培养层次、项目个人职责和可公开技术细节仍待本人补充。
-- 本地学习笔记尚未完成版权、来源、版本实测与原创重写，阶段 1 只做盘点，不原样发布。
-- 尚未建立资料库、短想法和经历内容集合。
-- 本地 CMS 目前主要管理博客文章，尚未支持全部目标内容类型。
+- 本地学习笔记只转换了原创导读与官方链接，深入教程仍需逐条实测后原创撰写。
+- 已有各类型详情路由，但文章、资料、短想法与经历的完整列表、筛选和聚合将在阶段 5 实现。
+- 本地 CMS 仍使用旧 `blog` 写入模型；阶段 6 完成前仅使用 Markdown 与新建文章脚本，避免保存出不符合 schema 的内容。
 - 评论仍保持关闭；在部署自有服务并完成隐私审查前不会启用。
 - 英文和友链暂不在导航显示，只在有真实内容需求后恢复。
 
-下一阶段是“内容模型与迁移”。将建立 articles、resources、thoughts、journey 和 pages 等严格内容集合，增加受控 taxonomy 与重复 slug 检查，并把阶段 1 的真实素材安全地转换成首批内容。
+下一阶段是“首页与主导航重建”。将用现有设计系统和真实 collections 完成 Opening、Now、精选文章、资料、短想法、旅程、最新内容与 Closing，并把首发五个主入口接入桌面和移动导航。
 
 ## 文档维护规则
 

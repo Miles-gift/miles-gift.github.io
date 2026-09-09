@@ -1,0 +1,24 @@
+---
+import ContentEntryLayout from "@components/content/ContentEntryLayout.astro";
+import { getPublicEntries } from "@utils/content-utils";
+import { render } from "astro:content";
+import { i18n } from "astro:config/client";
+
+export async function getStaticPaths() {
+  const entries = await getPublicEntries("journey");
+  return (i18n?.locales || [i18n?.defaultLocale]).flatMap((locale) => {
+    const localeCode = typeof locale === "string" ? locale : locale.path;
+    return entries.map((entry) => ({ params: { locale: localeCode === i18n?.defaultLocale ? undefined : localeCode, slug: entry.data.slug }, props: { entry } }));
+  });
+}
+
+const currentLang = Astro.currentLocale || i18n!.defaultLocale;
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const tags = [...entry.data.skills, entry.data.kind];
+---
+
+<ContentEntryLayout pageTitle={`${entry.data.title} - Miles`} title={entry.data.title} description={entry.data.summary} eyebrow="Journey" lang={currentLang} dateLabel={entry.data.dateLabel} tags={tags}>
+  {entry.data.projectTitle && <p><strong>项目：</strong>{entry.data.projectTitle}</p>}
+  <Content />
+</ContentEntryLayout>

@@ -1,70 +1,66 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import { writeFile, mkdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-// 获取命令行参数
-const args = process.argv.slice(2);
-if (args.length < 1) {
-    console.error('Usage: node newpost.js <path> [lang] (default lang is zh-cn)');
-    process.exit(1);
+const [slug, lang = "zh-cn"] = process.argv.slice(2);
+
+if (!slug) {
+  console.error("Usage: pnpm newpost <slug> [lang]");
+  process.exit(1);
 }
 
-const folderPath = args[0];
-const lang = args[1] || 'zh-cn'; // 如果没有提供语言参数，默认使用 zh-cn
-
-// 确保语言参数有效
-const validLangs = ['en', 'zh-cn'];
-if (!validLangs.includes(lang)) {
-    console.error(`Invalid language: ${lang}. Valid options are: ${validLangs.join(', ')}`);
-    process.exit(1);
+if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+  console.error("Invalid slug. Use lowercase letters, numbers, and hyphens only.");
+  process.exit(1);
 }
 
-// 定义基础路径
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const basePath = join(__dirname, '..', 'src', 'content', 'blog');
-
-// 创建完整路径
-const fullPath = join(basePath, folderPath);
-
-// 创建文件夹（如果不存在）
-try {
-    await mkdir(fullPath, { recursive: true });
-    console.log(`Created directory: ${fullPath}`);
-} catch (error) {
-    console.error(`Error creating directory: ${error.message}`);
-    process.exit(1);
+if (lang !== "zh-cn") {
+  console.error("Only zh-cn is enabled for the current launch baseline.");
+  process.exit(1);
 }
 
-// 默认的 Markdown 内容
-const defaultContent = `---
-title: new post
-date: ${new Date().toISOString().split('T')[0]}
-description: Some description here
-image: ""
-draft: false
-slug: ${folderPath}
+const scriptDirectory = dirname(fileURLToPath(import.meta.url));
+const articleDirectory = join(scriptDirectory, "..", "src", "content", "articles", slug);
+const filePath = join(articleDirectory, `${lang}.md`);
+const date = new Date().toISOString().slice(0, 10);
+
+if (existsSync(filePath)) {
+  console.error(`Article already exists: ${filePath}`);
+  process.exit(1);
+}
+
+await mkdir(articleDirectory, { recursive: true });
+await writeFile(filePath, `---
+title: 待填写标题
+slug: ${slug}
+description: 请填写一段能够独立说明文章价值的摘要，建议控制在八十到一百六十字。
+pubDate: ${date}
+draft: true
+visibility: draft
+kind: article
+topic: 建站记录
+tags: [待整理]
+cover: ""
+coverAlt: ""
+featured: false
+pinTop: 0
+lang: zh-cn
+canonical: ""
+license: CC-BY-NC-SA-4.0
 ---
 
-## Title
+## 问题
 
-Content goes here...
-`;
+这篇文章要解决什么问题？
 
-// 创建语言特定的 Markdown 文件
-const filePath = join(fullPath, `${lang}.md`);
+## 过程
 
-try {
-    if (existsSync(filePath)) {
-        console.warn(`File already exists: ${filePath}`);
-    } else {
-        await writeFile(filePath, defaultContent, 'utf8');
-        console.log(`Created file: ${filePath}`);
-    }
-} catch (error) {
-    console.error(`Error creating file: ${error.message}`);
-    process.exit(1);
-}
+记录事实、尝试、失败与修正。
 
-console.log(`Successfully created new post at: ${filePath}`);
+## 结论
+
+写下可以复用的结论与下一步。
+`, "utf8");
+
+console.log(`Created draft article: ${filePath}`);

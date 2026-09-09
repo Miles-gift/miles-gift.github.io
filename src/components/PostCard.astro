@@ -3,7 +3,7 @@ import "@styles/global.css"
 import ImageModule from "./misc/ImageModule.astro";
 
 import type { CollectionEntry } from 'astro:content';
-import { getCollection, render } from 'astro:content'
+import { render } from 'astro:content'
 
 import { getRelativeLocaleUrl } from '@utils/url-utils';
 import { formatFullDate } from '@/utils/time'
@@ -14,21 +14,21 @@ import i18nit from '@i18n/translation'
 import { Icon } from "astro-icon/components";
 
 interface Props {
-    entry: CollectionEntry<'blog'>;
+    entry: CollectionEntry<'articles'>;
     title: string;
     description: string;
     image: string;
     pubDate: Date;
     url: string;
-    fallback: boolean;
+    fallback?: boolean;
 }
 
-const { entry, title, description, image, pubDate, url, fallback } = Astro.props;
+const { entry, title, description, image, pubDate, url, fallback = false } = Astro.props;
 
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
 const t = i18nit(currentLang);
 
-const pageUrl = getRelativeLocaleUrl(currentLang, "/blog/" + url);
+const pageUrl = getRelativeLocaleUrl(currentLang, "/articles/" + url);
 const { remarkPluginFrontmatter } = await render(entry);
 
 // 首页文章卡片封面图模式："background" 将图片作为卡片背景，从右向左渐隐
@@ -84,7 +84,7 @@ const isBgMode = siteConfig.theme.postCard.imageMode === "background";
             </p>
             <p class="flex items-center whitespace-nowrap mr-2">
                 <Icon name="fa6-solid:hashtag" class="mr-1"></Icon> 
-                <a href={getRelativeLocaleUrl(currentLang, `/archives/?category=${entry.data.category}`)} class="category-tag">{entry.data.category || t("pagecard.uncategorized")}</a>
+                <a href={getRelativeLocaleUrl(currentLang, `/archives/?category=${encodeURIComponent(entry.data.topic)}`)} class="category-tag">{entry.data.topic}</a>
             </p>
         </div>
     </div>

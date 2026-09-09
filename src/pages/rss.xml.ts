@@ -1,21 +1,58 @@
 import rss from "@astrojs/rss";
-import { getBlogEntrySort } from "../utils/content-utils"
-import { siteConfig, profileConfig } from '../config';
+import { getArticleEntrySort, getPublicEntries } from "../utils/content-utils";
+import { siteConfig, profileConfig } from "../config";
 import type { APIContext } from "astro";
 
 export async function GET(context: APIContext) {
-    const blog = await getBlogEntrySort();
-    return rss({
-        title: `${siteConfig.title} - ${siteConfig.subTitle}`,
-        description: profileConfig.description,
-        site: context.site ?? "https://momo.motues.top",
-        items: blog.slice(0, 20).map((post) => ({
-            title: post.data.title,
-            pubDate: post.data.pubDate,
-            description: post.data.description,
-            // 从 `id` 属性计算出 RSS 链接
-            // 这个例子假设所有的文章都被渲染为 `/blog/[id]` 路由
-            link: `/blog/${post.id}/`,
-        })),
-    })
+  const [articles, resources, thoughts, journey] = await Promise.all([
+    getArticleEntrySort("zh-cn"),
+    getPublicEntries("resources"),
+    getPublicEntries("thoughts"),
+    getPublicEntries("journey"),
+  ]);
+
+  const items = [
+    ...articles.map((entry) => ({
+      title: entry.data.title,
+      pubDate: entry.data.pubDate,
+      description: entry.data.description,
+      link: `/articles/${entry.data.slug}/`,
+      category: "文章",
+    })),
+    ...resources.map((entry) => ({
+      title: entry.data.title,
+      pubDate: entry.data.pubDate,
+      description: entry.data.description,
+      link: `/resources/${entry.data.slug}/`,
+      category: "资料",
+    })),
+    ...thoughts.map((entry) => ({
+      title: entry.data.title,
+      pubDate: entry.data.pubDate,
+      description: entry.data.description,
+      link: `/thoughts/${entry.data.id}/`,
+      category: "想法",
+    })),
+    ...journey.map((entry) => ({
+      title: entry.data.title,
+      pubDate: entry.data.pubDate,
+      description: entry.data.summary,
+      link: `/journey/${entry.data.slug}/`,
+      category: "旅程",
+    })),
+  ].sort((a, b) => b.pubDate.valueOf() - a.pubDate.valueOf());
+
+  return rss({
+    title: `${siteConfig.title} - ${siteConfig.subTitle}`,
+    description: profileConfig.description,
+    site: context.site ?? "https://miles-gift.github.io",
+    items: items.slice(0, 30).map((item) => ({
+      title: item.title,
+      pubDate: item.pubDate,
+      description: item.description,
+      link: item.link,
+      categories: [item.category],
+    })),
+    customData: "<language>zh-cn</language>",
+  });
 }

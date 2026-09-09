@@ -15,12 +15,12 @@
   const t = i18nit(currentLang);
 
   // 提取所有分类并去重
-  $: categories = [...new Set(sortedPosts.map(post => post.data.category || 'undefined'))].sort();
+  $: categories = [...new Set(sortedPosts.map(post => post.data.topic))].sort();
 
   // 响应式过滤逻辑 - 特殊处理 undefined 情况
   $: filteredPosts = selectedCategories.length > 0
     ? sortedPosts.filter(post => {
-        const postCat = post.data.category || 'undefined';
+        const postCat = post.data.topic;
         return selectedCategories.includes(postCat);
       })
     : sortedPosts;
@@ -142,7 +142,7 @@
                     {#each postsByYear[year] as post (post.id)}
                         <div animate:flip={{ duration: 600 }} in:fade={{ duration: 150 }} out:fade={{ duration: 150 }} >
                             <a 
-                                href={getRelativeLocaleUrl(currentLang, `/blog/${post.id}`)} 
+                                href={getRelativeLocaleUrl(currentLang, `/articles/${post.id}`)}
                                 class="flex items-center gap-4 active:bg-[var(--button-hover-color)] hover:bg-[var(--button-hover-color)] p-2 rounded transition-all duration-200 group"
                             >
                                 <span class="text-[var(--text-color-70)] min-w-[80px] md:min-w-[120px]">
@@ -160,7 +160,7 @@
 
                                 <span class="hidden md:flex items-center font-mono text-sm text-[var(--text-color-70)]">
                                     <Icon icon="fa6-solid:hashtag" class="mr-1" />
-                                    {post.data.category || t("pagecard.uncategorized")}
+                                    {post.data.topic}
                                 </span>
                             </a>
                         </div>
@@ -190,7 +190,7 @@
                             ? 'bg-[var(--link-color)] text-white border-[var(--link-color)]' 
                             : 'hover:border-[var(--link-color)] border-[var(--button-border-color)] text-[var(--text-color)]'}"
                     >
-                        {cat === 'undefined' ? t("pagecard.uncategorized") : cat}
+                        {cat}
                     </button>
                 {/each}
             </div>
