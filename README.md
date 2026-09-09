@@ -4,7 +4,7 @@
 
 > 当前阶段：**阶段 0｜模板基线固化已完成**
 >
-> 当前版本：`baseline/momo-26.8.15`
+> 当前版本：`baseline/stage-0`
 >
 > 更新日期：2026-09-09
 >
@@ -91,6 +91,8 @@
 - 已检查 1440×1000 桌面视口和 390×844 移动视口。
 - 浏览器控制台没有 error 或 warn。
 - 已归档桌面浅色、桌面深色和移动浅色模板截图。
+- GitHub Actions 工作流 #2 已成功完成构建与部署。
+- 线上首页、About、RSS、Pagefind 搜索资源和 404 行为已完成冒烟检查。
 
 ### 规划与文档
 
@@ -343,9 +345,18 @@ git log --oneline --left-right main...upstream/main
 | 浏览器 console | 0 error / 0 warn |
 | 视觉基线 | 已归档 3 张截图 |
 | GitHub Actions Node.js | 24 |
-| GitHub Pages 部署 | 由本次基线 push 后验证并记录 |
+| GitHub Actions workflow #2 | 通过，提交 `333223d` |
+| GitHub Pages 部署 | 通过，Astro 模板已接管线上首页 |
+| 线上首页 `/` | HTTP 200，标题 `Momo - Blog` |
+| 线上 About `/about/` | HTTP 200 |
+| 线上 RSS `/rss.xml` | HTTP 200 |
+| 线上 Pagefind `/pagefind/pagefind.js` | HTTP 200 |
+| 线上缺失页面 | HTTP 404，行为正确 |
+| 模板 Umami 统计脚本 | 已移除，线上 HTML 未发现 |
 
 已知提示：使用本机 Node.js 26 构建时出现 Node `module.register()` 的弃用提示，但构建成功。CI 固定 Node.js 24，若 CI 无此提示则视为本机新版本兼容性提醒；若依然出现，再追踪上游依赖。
+
+首次 Actions 运行曾因 `package.json` 与工作流重复指定不同粒度的 pnpm 版本而失败；现已删除工作流中的重复版本输入，统一从 `packageManager: pnpm@11.12.0` 读取，第二次运行成功。该问题和修复均保留在 Git 历史中。
 
 ## 当前限制与下一步
 
