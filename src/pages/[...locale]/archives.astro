@@ -1,34 +1,118 @@
 ---
-import MainPageLayout from '@layouts/MainPageLayout.astro'
-import ArchivePanel from '@components/ArchivePanel.svelte'
-import FabMenu from '@components/control/FabMenu.astro'
-import { siteConfig } from '@/config'
-import { getArticleEntrySort } from '@utils/content-utils'
-import i18nit from '@i18n/translation'
+import CollectionIndexLayout from "@components/content/CollectionIndexLayout.astro";
+import Chip from "@components/ui/Chip.astro";
+import { siteConfig } from "@/config";
+import { entryPath, getArticleEntrySort, getPublicEntries } from "@utils/content-utils";
+import { formatMonthDay } from "@utils/time";
 import { i18n } from "astro:config/client";
 
-
-
-const currentLang = Astro.currentLocale || i18n!.defaultLocale;
-const defaultLocale = i18n!.defaultLocale;
-const t = i18nit(currentLang);
-
 export async function getStaticPaths() {
-	return i18n?.locales.map(locale => ({ params: { locale: locale == i18n?.defaultLocale ? undefined : (locale as string) } }));
+  return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } }));
 }
 
-// 获取所有博客文章并按发布日期降序排序
-const allBlogPosts = await getArticleEntrySort(currentLang);
-
-const pageTitle = t("header.archive") + " - " + siteConfig.title;
+const currentLang = Astro.currentLocale || i18n!.defaultLocale;
+const [articles, resources, thoughts, journey] = await Promise.all([
+  getArticleEntrySort(currentLang), getPublicEntries("resources"), getPublicEntries("thoughts"), getPublicEntries("journey"),
+]);
+const allEntries = [
+  ...articles.map((entry) => ({ title: entry.data.title, description: entry.data.description, date: entry.data.pubDate, href: entryPath(entry), kind: "文章", topic: entry.data.topic })),
+  ...resources.map((entry) => ({ title: entry.data.title, description: entry.data.description, date: entry.data.pubDate, href: entryPath(entry), kind: "资料", topic: entry.data.topic })),
+  ...thoughts.map((entry) => ({ title: entry.data.title, description: entry.data.description, date: entry.data.pubDate, href: entryPath(entry), kind: "想法", topic: entry.data.topic })),
+  ...journey.map((entry) => ({ title: entry.data.title, description: entry.data.summary, date: entry.data.pubDate, href: entryPath(entry), kind: "旅程", topic: entry.data.kind })),
+].sort((a, b) => b.date.valueOf() - a.date.valueOf());
+const groups = Object.groupBy(allEntries, (entry) => String(entry.date.getFullYear()));
+const years = Object.keys(groups).sort((a, b) => Number(b) - Number(a));
+const kinds = [...new Set(allEntries.map((entry) => entry.kind))].sort();
+const topics = [...new Set(allEntries.map((entry) => entry.topic))].sort();
 ---
 
-<MainPageLayout title={pageTitle} lang={currentLang}>
-    <ArchivePanel
-        client:only="svelte"
-        sortedPosts={allBlogPosts}
-        currentLang={currentLang}
-        defaultLocale={i18n!.defaultLocale}
-    />
-    <FabMenu showBackBottom={true} />
-</MainPageLayout>
+<CollectionIndexLayout
+  title="归档"
+  description={`按发布日期回看本站的 ${allEntries.length} 条公开记录；经历发生日期仍以 Journey 页面为准。`}
+  pageTitle={`归档 - ${siteConfig.title}`}
+  lang={currentLang}
+>
+  <form id="archive-filter" class="archive-filter">
+    <div><strong>缩小归档范围</strong><span id="archive-count" aria-live="polite">{allEntries.length} 条记录</span></div>
+    <label><span>内容类型</span><select id="archive-kind" name="kind"><option value="">全部类型</option>{kinds.map((kind) => <option value={kind}>{kind}</option>)}</select></label>
+    <label><span>主题</span><select id="archive-topic" name="topic"><option value="">全部主题</option>{topics.map((topic) => <option value={topic}>{topic}</option>)}</select></label>
+    <button id="archive-reset" type="reset">重置</button>
+  </form>
+  <div class="archive">
+    {years.map((year) => (
+      <section data-archive-year aria-labelledby={`year-${year}`}>
+        <h2 id={`year-${year}`}>{year}</h2>
+        <ol>
+          {groups[year]?.map((entry) => (
+            <li data-archive-entry data-kind={entry.kind} data-topic={entry.topic}><a href={entry.href}><time datetime={entry.date.toISOString()}>{formatMonthDay(entry.date, currentLang)}</time><div><strong>{entry.title}</strong><p>{entry.description}</p></div><span><Chip tone="accent">{entry.kind}</Chip><Chip>{entry.topic}</Chip></span></a></li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </div>
+  <p id="archive-empty" class="archive-empty" hidden>当前组合下没有公开记录。可以重置筛选后继续浏览。</p>
+</CollectionIndexLayout>
+
+<script>
+  function setupArchiveFilter() {
+    const form = document.getElementById("archive-filter") as HTMLFormElement | null;
+    if (!form || form.dataset.bound === "true") return;
+    form.dataset.bound = "true";
+    const kind = document.getElementById("archive-kind") as HTMLSelectElement;
+    const topic = document.getElementById("archive-topic") as HTMLSelectElement;
+    const count = document.getElementById("archive-count");
+    const empty = document.getElementById("archive-empty");
+    const entries = [...document.querySelectorAll<HTMLElement>("[data-archive-entry]")];
+    const yearGroups = [...document.querySelectorAll<HTMLElement>("[data-archive-year]")];
+
+    const fromUrl = () => {
+      const params = new URLSearchParams(location.search);
+      kind.value = params.get("kind") || "";
+      topic.value = params.get("topic") || "";
+    };
+    const apply = () => {
+      let visible = 0;
+      entries.forEach((entry) => {
+        const show = (!kind.value || entry.dataset.kind === kind.value) && (!topic.value || entry.dataset.topic === topic.value);
+        entry.hidden = !show;
+        if (show) visible += 1;
+      });
+      yearGroups.forEach((group) => { group.hidden = !group.querySelector("[data-archive-entry]:not([hidden])"); });
+      if (count) count.textContent = `${visible} 条记录`;
+      if (empty) empty.hidden = visible > 0;
+      const params = new URLSearchParams();
+      if (kind.value) params.set("kind", kind.value);
+      if (topic.value) params.set("topic", topic.value);
+      history.replaceState({}, "", `${location.pathname}${params.size ? `?${params}` : ""}`);
+    };
+
+    fromUrl();
+    apply();
+    form.addEventListener("change", apply);
+    form.addEventListener("reset", () => requestAnimationFrame(apply));
+    window.addEventListener("popstate", () => { fromUrl(); apply(); });
+  }
+  document.addEventListener("astro:page-load", setupArchiveFilter);
+</script>
+
+<style>
+  .archive-filter { display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(10rem, 0.6fr) auto; gap: var(--space-3); align-items: end; margin-bottom: var(--space-8); padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-solid); }
+  .archive-filter > div { display: flex; grid-column: 1 / -1; justify-content: space-between; gap: var(--space-4); }
+  .archive-filter > div span { color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  .archive-filter label { display: grid; gap: var(--space-2); color: var(--color-ink-secondary); font-size: var(--text-small); font-weight: 650; }
+  .archive-filter select { min-height: 2.75rem; padding-inline: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-canvas); color: var(--color-ink); }
+  .archive-filter button { min-height: 2.75rem; padding-inline: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: transparent; color: var(--color-ink); cursor: pointer; }
+  .archive { display: grid; gap: var(--space-8); }
+  section[hidden], li[hidden] { display: none; }
+  section { display: grid; grid-template-columns: minmax(7rem, 0.25fr) minmax(0, 1fr); gap: var(--space-7); }
+  h2 { margin: 0; font-size: clamp(2.5rem, 5vw, 4.5rem); letter-spacing: -0.055em; }
+  ol { margin: 0; padding: 0; border-top: 1px solid var(--color-border); list-style: none; }
+  li a { display: grid; grid-template-columns: 5rem minmax(0, 1fr) auto; gap: var(--space-5); align-items: start; padding-block: var(--space-5); border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
+  time { color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  strong { font-size: 1.08rem; }
+  p { margin: var(--space-1) 0 0; color: var(--color-ink-secondary); font-size: var(--text-small); }
+  li a > span { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
+  .archive-empty { padding: var(--space-8); border: 1px dashed var(--color-border); border-radius: var(--radius-lg); color: var(--color-ink-secondary); text-align: center; }
+  @media (max-width: 800px) { section { grid-template-columns: 1fr; gap: var(--space-4); } li a { grid-template-columns: 4rem minmax(0, 1fr); } li a > span { grid-column: 2; justify-content: flex-start; } }
+  @media (max-width: 560px) { .archive-filter { grid-template-columns: 1fr; } }
+</style>

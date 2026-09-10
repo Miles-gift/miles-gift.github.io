@@ -1,0 +1,60 @@
+---
+import Chip from "@components/ui/Chip.astro";
+
+interface Props {
+  href: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  meta?: string;
+  tags?: string[];
+  featured?: boolean;
+}
+
+const { href, eyebrow, title, description, meta, tags = [], featured = false } = Astro.props;
+---
+
+<a href={href} class:list={["content-list-card", featured && "content-list-card--featured"]}>
+  <div class="content-list-card__top">
+    <span>{eyebrow}</span>
+  </div>
+  <div class="content-list-card__body">
+    <h2>{title}</h2>
+    <p>{description}</p>
+  </div>
+  <footer>
+    {meta && <span>{meta}</span>}
+    <div>{tags.slice(0, 3).map((tag) => <Chip>{tag}</Chip>)}</div>
+  </footer>
+</a>
+
+<style>
+  .content-list-card {
+    display: flex;
+    min-height: 22rem;
+    flex-direction: column;
+    padding: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-solid);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-ink);
+    text-decoration: none;
+    transition: transform var(--duration-normal) var(--ease-standard), border-color var(--duration-normal), box-shadow var(--duration-normal);
+  }
+
+  .content-list-card:hover { transform: translateY(-4px); border-color: var(--color-border-strong); box-shadow: var(--shadow-md); }
+  .content-list-card--featured { grid-column: span 2; background: linear-gradient(135deg, var(--color-surface-solid), var(--color-accent-soft)); }
+  .content-list-card__top { color: var(--color-accent); font-size: var(--text-small); font-weight: 700; }
+  .content-list-card__body { margin-block: auto; padding-block: var(--space-7); }
+  h2 { margin: 0; font-size: clamp(1.55rem, 2.8vw, 2.35rem); letter-spacing: -0.045em; line-height: 1.1; }
+  p { margin: var(--space-4) 0 0; color: var(--color-ink-secondary); }
+  footer { display: flex; min-height: 1.8rem; align-items: center; justify-content: space-between; gap: var(--space-4); color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  footer > div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
+
+  @media (max-width: 700px) {
+    .content-list-card, .content-list-card--featured { grid-column: auto; min-height: 19rem; }
+    footer { align-items: flex-start; flex-direction: column; }
+    footer > div { justify-content: flex-start; }
+  }
+</style>

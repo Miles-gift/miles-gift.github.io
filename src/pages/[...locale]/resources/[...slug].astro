@@ -16,9 +16,34 @@ export async function getStaticPaths() {
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+const typeLabels = { book: "书籍", course: "课程", paper: "论文", article: "文章", documentation: "文档", tool: "工具", video: "视频", podcast: "播客", repository: "代码仓库", dataset: "数据集", website: "网站" } as Record<string, string>;
+const statusLabels = { inbox: "待整理", learning: "学习中", completed: "已完成", reference: "常用参考", archived: "已归档" } as Record<string, string>;
 ---
 
-<ContentEntryLayout pageTitle={`${entry.data.title} - Miles`} title={entry.data.title} description={entry.data.description} eyebrow="Resource" lang={currentLang} pubDate={entry.data.pubDate} topic={entry.data.topic} tags={entry.data.tags}>
-  <Fragment slot="aside"><Button href={entry.data.sourceUrl} target="_blank" variant="secondary" size="small">访问官方来源</Button></Fragment>
+<ContentEntryLayout pageTitle={`${entry.data.title} - Miles`} title={entry.data.title} description={entry.data.description} eyebrow="资料" lang={currentLang} pubDate={entry.data.pubDate} topic={entry.data.topic} tags={entry.data.tags} backHref="/resources/" backLabel="资料库">
+  <Fragment slot="aside">
+    <div class="resource-facts">
+      <div><span>类型</span><strong>{typeLabels[entry.data.resourceType] || entry.data.resourceType}</strong></div>
+      <div><span>状态</span><strong>{statusLabels[entry.data.status] || entry.data.status}</strong></div>
+      <div><span>进度</span><strong>{entry.data.progress}%</strong></div>
+      <div><span>最近复核</span><strong>{entry.data.lastReviewedAt.toISOString().slice(0, 10)}</strong></div>
+    </div>
+    <Button href={entry.data.sourceUrl} target="_blank" variant="secondary" size="small">访问官方来源</Button>
+  </Fragment>
+  <section class="takeaways" aria-labelledby="takeaways-title">
+    <h2 id="takeaways-title">当前收获</h2>
+    <ul>{entry.data.takeaways.map((item) => <li>{item}</li>)}</ul>
+  </section>
   <Content />
 </ContentEntryLayout>
+
+<style>
+  .resource-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-4); }
+  .resource-facts div { display: grid; gap: var(--space-1); padding: var(--space-3); border-radius: var(--radius-sm); background: var(--color-surface-subtle); }
+  .resource-facts span { color: var(--color-ink-tertiary); font-size: 0.75rem; }
+  .resource-facts strong { font-size: var(--text-small); }
+  .takeaways { margin-bottom: var(--space-7); padding: var(--space-5); border: 1px solid color-mix(in srgb, var(--color-accent) 22%, var(--color-border)); border-radius: var(--radius-md); background: var(--color-accent-soft); }
+  .takeaways h2 { margin-top: 0; }
+  .takeaways ul { margin-bottom: 0; }
+  @media (max-width: 640px) { .resource-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>

@@ -1,6 +1,6 @@
 ---
-import { Icon } from "astro-icon/components";
 import CollectionIndexLayout from "@components/content/CollectionIndexLayout.astro";
+import Chip from "@components/ui/Chip.astro";
 import { siteConfig } from "@/config";
 import { entryPath, getPublicEntries } from "@utils/content-utils";
 import { formatFullDate } from "@utils/time";
@@ -16,7 +16,6 @@ const thoughts = (await getPublicEntries("thoughts")).sort((a, b) => b.data.pubD
 
 <CollectionIndexLayout
   title="短想法"
-  eyebrow="Thoughts"
   description="不强行扩写成文章的观察、判断和修正；每一条只承担一个清楚的观点。"
   pageTitle={`短想法 - ${siteConfig.title}`}
   lang={currentLang}
@@ -25,8 +24,7 @@ const thoughts = (await getPublicEntries("thoughts")).sort((a, b) => b.data.pubD
     {thoughts.map((thought) => (
       <a href={entryPath(thought)}>
         <time datetime={thought.data.pubDate.toISOString()}>{formatFullDate(thought.data.pubDate, currentLang)}</time>
-        <div><h2>{thought.data.title}</h2><p>{thought.data.description}</p></div>
-        <Icon name="fa6-solid:arrow-right" class="w-4 h-4" />
+        <div><div class="thought-index__meta"><Chip tone="accent">{thought.data.topic}</Chip>{thought.data.tags.map((tag) => <Chip>{tag}</Chip>)}</div><h2>{thought.data.title}</h2><p>{thought.data.description}</p></div>
       </a>
     ))}
   </div>
@@ -34,9 +32,10 @@ const thoughts = (await getPublicEntries("thoughts")).sort((a, b) => b.data.pubD
 
 <style>
   .thought-index { border-top: 1px solid var(--color-border); }
-  .thought-index a { display: grid; grid-template-columns: 10rem minmax(0, 1fr) auto; align-items: start; gap: var(--space-6); padding-block: var(--space-6); border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
+  .thought-index a { display: grid; grid-template-columns: 10rem minmax(0, 1fr); align-items: start; gap: var(--space-6); padding-block: var(--space-6); border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
   time { color: var(--color-ink-tertiary); font-size: var(--text-small); }
   h2 { margin: 0; font-size: var(--text-title); letter-spacing: -0.035em; }
+  .thought-index__meta { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
   p { max-width: 48rem; margin: var(--space-2) 0 0; color: var(--color-ink-secondary); }
-  @media (max-width: 640px) { .thought-index a { grid-template-columns: 1fr auto; gap: var(--space-3); } time { grid-column: 1 / -1; } }
+  @media (max-width: 640px) { .thought-index a { grid-template-columns: 1fr; gap: var(--space-3); } time { grid-column: 1 / -1; } }
 </style>

@@ -26,7 +26,7 @@ export const siteConfig: SiteConfig = {
         backendUrl: "" // Backend URL for comments
     },
     theme: {
-        AOS: true, // Whether to enable AOS (Animate On Scroll) for animations
+        AOS: false, // Motion is limited to the orchestrated opening sequence
         LQIP: true, // Whether to enable LQIP (Low-Quality Image Placeholder) for image placeholders
         PhotoSwipe: true, // Whether to enable PhotoSwipe for image viewer
         postCard: {

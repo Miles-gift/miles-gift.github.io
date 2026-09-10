@@ -107,6 +107,15 @@
 .markdown-content table a:hover {
   color: var(--link-color);
 }
+
+.markdown-content a[href^="http"]::after {
+  margin-left: 0.18em;
+  color: var(--color-ink-tertiary);
+  content: "↗";
+  font-family: var(--font-ui);
+  font-size: 0.72em;
+  vertical-align: 0.2em;
+}
     
 .markdown-content p a:hover::before,
 .markdown-content li a:hover::before,

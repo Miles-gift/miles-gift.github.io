@@ -1,0 +1,37 @@
+---
+import CollectionIndexLayout from "@components/content/CollectionIndexLayout.astro";
+import ContentListCard from "@components/content/ContentListCard.astro";
+import { siteConfig } from "@/config";
+
+interface Item {
+  href: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  meta: string;
+  tags: string[];
+}
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  description: string;
+  lang: string;
+  items: Item[];
+}
+
+const { eyebrow, title, description, lang, items } = Astro.props;
+---
+
+<CollectionIndexLayout title={title} eyebrow={eyebrow} description={description} pageTitle={`${title} - ${siteConfig.title}`} lang={lang}>
+  <p class="discovery-count">共 {items.length} 条公开内容</p>
+  <div class="discovery-grid">
+    {items.map((item) => <ContentListCard {...item} />)}
+  </div>
+</CollectionIndexLayout>
+
+<style>
+  .discovery-count { margin: 0 0 var(--space-5); color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  .discovery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+  @media (max-width: 700px) { .discovery-grid { grid-template-columns: 1fr; } }
+</style>

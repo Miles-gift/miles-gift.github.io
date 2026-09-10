@@ -31,30 +31,39 @@ const resourceTypeLabels: Record<string, string> = {
   video: "视频",
   website: "网站",
 };
+const resourceStatusLabels: Record<string, string> = {
+  inbox: "待整理",
+  learning: "学习中",
+  completed: "已完成",
+  reference: "常用参考",
+  archived: "已归档",
+};
 ---
 
 <div class="home-page">
   <section class="opening stage-shell" aria-labelledby="opening-title">
     <div class="opening__copy">
-      <p class="opening__eyebrow">Miles · Personal Digital Garden</p>
+      <p class="opening__eyebrow">Miles 的个人数字花园</p>
       <h1 id="opening-title">持续学习，<br /><span>也持续留下些什么。</span></h1>
       <p class="opening__lead">从电子设计、AI 到语言学习，记录正在发生的成长，也把散落的资料整理成以后仍然找得到的知识。</p>
       <div class="opening__actions">
-        <Button href="/articles/" size="large">开始阅读 <Icon name="fa6-solid:arrow-right" class="w-4 h-4" /></Button>
+        <Button href="/articles/" size="large">开始阅读</Button>
         <Button href="#now" variant="secondary" size="large">此刻在做什么</Button>
       </div>
     </div>
 
     <div class="opening__visual" aria-hidden="true">
-      <div class="orbit orbit--outer"></div>
-      <div class="orbit orbit--middle"></div>
-      <div class="orbit orbit--inner"></div>
-      <div class="signal signal--one"></div>
-      <div class="signal signal--two"></div>
+      <svg class="opening__signal-map" viewBox="0 0 520 520" fill="none">
+        <g class="signal-grid">
+          <path d="M40 80H480M40 160H480M40 240H480M40 320H480M40 400H480M80 40V480M160 40V480M240 40V480M320 40V480M400 40V480" />
+        </g>
+        <path class="signal-trace" d="M38 315h55l22-58 32 112 38-178 38 124h54l26-56 33 107 38-203 32 152h53" />
+        <circle class="signal-point" cx="459" cy="315" r="6" />
+      </svg>
       <div class="opening__mark">
         <img src="/brand/miles-mark.svg" width="112" height="112" alt="" loading="eager" fetchpriority="high" />
       </div>
-      <p>LEARN · BUILD · REFLECT</p>
+      <p>捕捉　验证　整理　发布　复盘</p>
     </div>
 
     <dl class="opening__metrics" aria-label="站点概况">
@@ -64,22 +73,19 @@ const resourceTypeLabels: Record<string, string> = {
     </dl>
   </section>
 
-  <Section id="now" eyebrow="Now" title="现在，正在把学习变成可复用的记录。" description="不追求同时铺开所有主题。先完成真实项目中的学习闭环，再把验证过的方法、失败和结论写下来。" tone="raised" class="home-now">
+  <Section id="now" title="现在，正在把学习变成可复用的记录。" description="不追求同时铺开所有主题。先完成真实项目中的学习闭环，再把验证过的方法、失败和结论写下来。" tone="raised" class="home-now">
     <div class="now-grid">
-      <article data-aos="fade-up">
-        <span class="now-card__index">01</span>
+      <article>
         <Icon name="fa6-solid:microchip" class="now-card__icon" />
         <h3>电子设计与工程实践</h3>
         <p>保留比赛与项目的事实节点；技术细节和个人贡献只在完成授权与复盘后公开。</p>
       </article>
-      <article data-aos="fade-up" data-aos-delay="60">
-        <span class="now-card__index">02</span>
+      <article>
         <Icon name="fa6-solid:code" class="now-card__icon" />
         <h3>AI 与工程工具</h3>
         <p>从 PyTorch、Python 环境和 Git 工作流开始，用最小实验替代只收藏不验证。</p>
       </article>
-      <article data-aos="fade-up" data-aos-delay="120">
-        <span class="now-card__index">03</span>
+      <article>
         <Icon name="fa6-solid:language" class="now-card__icon" />
         <h3>语言与长期知识整理</h3>
         <p>把课堂材料留在私域，公开站只保留自己的方法、进度、错误类型与阶段复盘。</p>
@@ -88,12 +94,11 @@ const resourceTypeLabels: Record<string, string> = {
   </Section>
 
   {featuredArticle && (
-    <Section id="featured" eyebrow="Featured story" title="一个网站，应该记得它为什么开始。" description="首批文章从建站过程本身出发：为什么记录、怎样组织，以及哪些内容应当永远留在私域。">
-      <a class="featured-story" href={entryPath(featuredArticle)} data-aos="fade-up">
+    <Section id="featured" title="一个网站，应该记得它为什么开始。" description="首批文章从建站过程本身出发：为什么记录、怎样组织，以及哪些内容应当永远留在私域。">
+      <a class="featured-story" href={entryPath(featuredArticle)}>
         <div class="featured-story__visual" aria-hidden="true">
           <span class="featured-story__halo"></span>
-          <span class="featured-story__line">01</span>
-          <strong>MILES<br />ARCHIVE</strong>
+          <strong>记录从这里<br />慢慢生长</strong>
         </div>
         <div class="featured-story__copy">
           <div class="featured-story__meta">
@@ -102,19 +107,19 @@ const resourceTypeLabels: Record<string, string> = {
           </div>
           <h3>{featuredArticle.data.title}</h3>
           <p>{featuredArticle.data.description}</p>
-          <span class="featured-story__link">阅读全文 <Icon name="fa6-solid:arrow-right" class="w-4 h-4" /></span>
+          <span class="featured-story__link">阅读全文</span>
         </div>
       </a>
     </Section>
   )}
 
-  <Section id="resources" eyebrow="Learning library" title="把链接变成学习路径。" description="资料库不是文件堆积：每条内容说明为什么保留、怎样使用、当前进度和最近复核时间。" tone="dark">
+  <Section id="resources" title="把链接变成学习路径。" description="资料库不是文件堆积：每条内容说明为什么保留、怎样使用、当前进度和最近复核时间。" tone="dark">
     <div class="resource-grid">
-      {featuredResources.map((resource, index) => (
-        <a href={entryPath(resource)} class="resource-card" data-aos="fade-up" data-aos-delay={String(index * 60)}>
+      {featuredResources.map((resource) => (
+        <a href={entryPath(resource)} class="resource-card">
           <div class="resource-card__top">
+            <span>{resourceStatusLabels[resource.data.status] || resource.data.status}</span>
             <span>{resourceTypeLabels[resource.data.resourceType] || resource.data.resourceType}</span>
-            <span>{String(index + 1).padStart(2, "0")}</span>
           </div>
           <h3>{resource.data.title}</h3>
           <p>{resource.data.description}</p>
@@ -131,26 +136,25 @@ const resourceTypeLabels: Record<string, string> = {
     <div class="section-link"><Button href="/resources/" variant="secondary">查看全部资料</Button></div>
   </Section>
 
-  <Section id="thoughts" eyebrow="Thoughts" title="短一点，也可以足够清楚。" description="一个观察、一条判断，或者一次值得保存的修正。">
+  <Section id="thoughts" title="短一点，也可以足够清楚。" description="一个观察、一条判断，或者一次值得保存的修正。">
     <div class="thought-list">
-      {featuredThoughts.map((thought, index) => (
-        <a href={entryPath(thought)} class="thought-row" data-aos="fade-up" data-aos-delay={String(index * 45)}>
+      {featuredThoughts.map((thought) => (
+        <a href={entryPath(thought)} class="thought-row">
           <time datetime={thought.data.pubDate.toISOString()}>{formatFullDate(thought.data.pubDate, lang)}</time>
           <div>
             <h3>{thought.data.title}</h3>
             <p>{thought.data.description}</p>
           </div>
-          <Icon name="fa6-solid:arrow-right" class="thought-row__icon" />
         </a>
       ))}
     </div>
-    <div class="section-link"><Button href="/thoughts/" variant="quiet">浏览全部短想法 <Icon name="fa6-solid:arrow-right" class="w-4 h-4" /></Button></div>
+    <div class="section-link"><Button href="/thoughts/" variant="quiet">浏览全部短想法</Button></div>
   </Section>
 
-  <Section id="journey" eyebrow="Journey" title="成长不是一条直线，但值得留下坐标。" description="这里只记录本人同意公开的年份、学校和经过核验的成果摘要。">
+  <Section id="journey" title="成长不是一条直线，但值得留下坐标。" description="这里只记录本人同意公开的年份、学校和经过核验的成果摘要。">
     <ol class="journey-line">
-      {journeyPreview.map((item, index) => item && (
-        <li data-aos="fade-up" data-aos-delay={String(index * 60)}>
+      {journeyPreview.map((item) => item && (
+        <li>
           <a href={entryPath(item)}>
             <time>{item.data.dateLabel}</time>
             <span class="journey-line__dot" aria-hidden="true"></span>
@@ -165,11 +169,10 @@ const resourceTypeLabels: Record<string, string> = {
     <div class="section-link"><Button href="/journey/" variant="secondary">查看完整旅程</Button></div>
   </Section>
 
-  <Section id="latest" eyebrow="Latest" title="最新文章" description="系统整理，也保留时间留下的脉络。" tone="raised">
+  <Section id="latest" title="最新文章" description="系统整理，也保留时间留下的脉络。" tone="raised">
     <div class="latest-grid">
-      {latestArticles.map((article, index) => (
-        <a href={entryPath(article)} class="latest-card" data-aos="fade-up" data-aos-delay={String(index * 55)}>
-          <span class="latest-card__number">{String(index + 1).padStart(2, "0")}</span>
+      {latestArticles.map((article) => (
+        <a href={entryPath(article)} class="latest-card">
           <div>
             <span class="latest-card__topic">{article.data.topic}</span>
             <h3>{article.data.title}</h3>
@@ -179,11 +182,11 @@ const resourceTypeLabels: Record<string, string> = {
         </a>
       ))}
     </div>
-    <div class="section-link"><Button href="/articles/">全部文章 <Icon name="fa6-solid:arrow-right" class="w-4 h-4" /></Button></div>
+    <div class="section-link"><Button href="/articles/">全部文章</Button></div>
   </Section>
 
   <section class="closing stage-shell" aria-labelledby="closing-title">
-    <p>Miles · Since 2026</p>
+    <p>Miles，自 2026 年开始记录</p>
     <h2 id="closing-title">慢慢积累，<br />保持清醒。</h2>
     <div>
       <Button href="/about/" size="large">关于我</Button>
@@ -211,8 +214,7 @@ const resourceTypeLabels: Record<string, string> = {
     color: var(--color-accent);
     font-size: var(--text-small);
     font-weight: 720;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
 
   .opening h1 {
@@ -229,10 +231,7 @@ const resourceTypeLabels: Record<string, string> = {
     display: block;
     font-size: 0.76em;
     white-space: nowrap;
-    color: transparent;
-    background: linear-gradient(115deg, var(--color-accent), #6f8cff 48%, #b46cff 95%);
-    background-clip: text;
-    -webkit-background-clip: text;
+    color: var(--color-ink);
   }
 
   .opening__lead {
@@ -254,7 +253,8 @@ const resourceTypeLabels: Record<string, string> = {
     align-self: center;
     justify-self: end;
     border: 1px solid var(--color-border);
-    border-radius: 50%;
+    overflow: hidden;
+    border-radius: clamp(2rem, 4.5vw, 4.5rem);
     background:
       radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--color-accent) 21%, transparent), transparent 35%),
       color-mix(in srgb, var(--color-surface-solid) 72%, transparent);
@@ -264,7 +264,7 @@ const resourceTypeLabels: Record<string, string> = {
 
   .opening__visual::before {
     position: absolute;
-    inset: 12%;
+    inset: 20%;
     border-radius: 50%;
     background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 20%, transparent), transparent 65%);
     content: "";
@@ -276,9 +276,9 @@ const resourceTypeLabels: Record<string, string> = {
     bottom: 11%;
     margin: 0;
     color: var(--color-ink-tertiary);
-    font-size: 0.67rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
+    font-size: 0.7rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
   }
 
   .opening__mark {
@@ -292,17 +292,13 @@ const resourceTypeLabels: Record<string, string> = {
     border-radius: 2.5rem;
     background: color-mix(in srgb, var(--color-surface-solid) 76%, transparent);
     box-shadow: 0 30px 80px color-mix(in srgb, var(--color-accent) 20%, transparent);
-    transform: rotate(-5deg);
   }
 
   .opening__mark img { width: 7rem; height: 7rem; border-radius: 1.6rem; }
-  .orbit { position: absolute; border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent); border-radius: 50%; }
-  .orbit--outer { inset: 7%; }
-  .orbit--middle { inset: 21%; }
-  .orbit--inner { inset: 34%; }
-  .signal { position: absolute; z-index: 3; width: 0.7rem; aspect-ratio: 1; border-radius: 50%; background: var(--color-accent); box-shadow: 0 0 0 0.45rem color-mix(in srgb, var(--color-accent) 14%, transparent); }
-  .signal--one { top: 20%; right: 21%; }
-  .signal--two { bottom: 25%; left: 15%; width: 0.46rem; background: #a855f7; }
+  .opening__signal-map { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .signal-grid { stroke: color-mix(in srgb, var(--color-ink) 9%, transparent); stroke-width: 1; }
+  .signal-trace { stroke: var(--color-accent); stroke-linecap: round; stroke-linejoin: round; stroke-width: 3; }
+  .signal-point { fill: #7d5cff; filter: drop-shadow(0 0 0.7rem rgb(125 92 255 / 0.8)); }
 
   .opening__metrics {
     display: flex;
@@ -330,8 +326,7 @@ const resourceTypeLabels: Record<string, string> = {
     box-shadow: var(--shadow-sm);
   }
   .now-grid article::after { position: absolute; right: -18%; bottom: -28%; width: 12rem; aspect-ratio: 1; border-radius: 50%; background: color-mix(in srgb, var(--color-accent) 8%, transparent); content: ""; }
-  .now-card__index { color: var(--color-ink-tertiary); font: 600 0.72rem/1 var(--font-mono); }
-  :global(.now-card__icon) { display: block; width: 2rem; height: 2rem; margin: var(--space-8) 0 var(--space-5); color: var(--color-accent); }
+  :global(.now-card__icon) { display: block; width: 2rem; height: 2rem; margin: var(--space-2) 0 var(--space-6); color: var(--color-accent); }
   .now-grid h3, .resource-card h3, .latest-card h3, .thought-row h3, .journey-line h3 { margin: 0; font-size: var(--text-title); line-height: 1.18; letter-spacing: -0.035em; }
   .now-grid p { position: relative; z-index: 1; margin: var(--space-4) 0 0; color: var(--color-ink-secondary); }
 
@@ -364,7 +359,6 @@ const resourceTypeLabels: Record<string, string> = {
   .featured-story__visual::before { width: 34rem; aspect-ratio: 1; top: -20%; right: -26%; }
   .featured-story__visual::after { width: 20rem; aspect-ratio: 1; right: -5%; bottom: -20%; }
   .featured-story__visual strong { position: relative; z-index: 1; font-size: clamp(3.5rem, 7vw, 6.5rem); letter-spacing: -0.07em; line-height: 0.78; }
-  .featured-story__line { position: absolute; top: var(--space-6); left: var(--space-7); font: 600 0.8rem/1 var(--font-mono); letter-spacing: 0.15em; }
   .featured-story__halo { position: absolute; top: 22%; left: 46%; width: 9rem; aspect-ratio: 1; border-radius: 50%; background: rgb(64 156 255 / 0.62); filter: blur(3rem); }
   .featured-story__copy { display: flex; flex-direction: column; justify-content: center; padding: clamp(2rem, 5vw, 4.25rem); }
   .featured-story__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); color: var(--color-ink-tertiary); font-size: var(--text-small); }
@@ -385,7 +379,7 @@ const resourceTypeLabels: Record<string, string> = {
     transition: transform var(--duration-normal) var(--ease-standard), border-color var(--duration-normal);
   }
   .resource-card:hover { transform: translateY(-4px); border-color: rgb(255 255 255 / 0.32); }
-  .resource-card__top, .resource-card__bottom { display: flex; justify-content: space-between; color: #86868b; font: 600 0.75rem/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
+  .resource-card__top, .resource-card__bottom { display: flex; justify-content: space-between; color: #86868b; font-size: 0.75rem; font-weight: 650; }
   .resource-card h3 { margin-top: var(--space-9); color: #f5f5f7; }
   .resource-card p { margin: var(--space-4) 0 var(--space-7); color: #a1a1a6; }
   .resource-card__progress { height: 0.22rem; margin-top: auto; overflow: hidden; border-radius: var(--radius-pill); background: rgb(255 255 255 / 0.13); }
@@ -393,11 +387,9 @@ const resourceTypeLabels: Record<string, string> = {
   .resource-card__bottom { margin-top: var(--space-3); }
 
   .thought-list { border-top: 1px solid var(--color-border); }
-  .thought-row { display: grid; grid-template-columns: 9rem minmax(0, 1fr) auto; gap: var(--space-6); align-items: start; padding-block: var(--space-6); border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
+  .thought-row { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: var(--space-6); align-items: start; padding-block: var(--space-6); border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
   .thought-row time { color: var(--color-ink-tertiary); font-size: var(--text-small); }
   .thought-row p { max-width: 44rem; margin: var(--space-2) 0 0; color: var(--color-ink-secondary); }
-  :global(.thought-row__icon) { width: 1rem; height: 1rem; margin-top: 0.35rem; color: var(--color-ink-tertiary); transition: transform var(--duration-fast), color var(--duration-fast); }
-  .thought-row:hover :global(.thought-row__icon) { color: var(--color-accent); transform: translateX(0.25rem); }
 
   .journey-line { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
   .journey-line li { position: relative; }
@@ -407,10 +399,8 @@ const resourceTypeLabels: Record<string, string> = {
   .journey-line__dot { position: relative; z-index: 1; width: 0.75rem; height: 0.75rem; margin-top: 0.55rem; border: 3px solid var(--color-canvas); border-radius: 50%; background: var(--color-accent); box-shadow: 0 0 0 1px var(--color-accent); }
   .journey-line p { margin: var(--space-2) 0 0; color: var(--color-ink-secondary); }
 
-  .latest-card { display: grid; min-height: 24rem; grid-template-rows: auto 1fr; padding: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-solid); color: var(--color-ink); text-decoration: none; transition: transform var(--duration-normal), box-shadow var(--duration-normal); }
+  .latest-card { display: flex; min-height: 24rem; flex-direction: column; justify-content: flex-end; padding: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-solid); color: var(--color-ink); text-decoration: none; transition: transform var(--duration-normal), box-shadow var(--duration-normal); }
   .latest-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
-  .latest-card__number { color: var(--color-ink-tertiary); font: 600 0.75rem/1 var(--font-mono); }
-  .latest-card > div { align-self: end; }
   .latest-card__topic { color: var(--color-accent); font-size: var(--text-small); font-weight: 700; }
   .latest-card h3 { margin-top: var(--space-3); }
   .latest-card p { margin: var(--space-4) 0 var(--space-5); color: var(--color-ink-secondary); }
@@ -418,7 +408,7 @@ const resourceTypeLabels: Record<string, string> = {
 
   .section-link { display: flex; justify-content: center; margin-top: var(--space-7); }
   .closing { padding-block: clamp(7rem, 16vw, 13rem); text-align: center; }
-  .closing > p { margin: 0 0 var(--space-5); color: var(--color-accent); font-size: var(--text-small); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  .closing > p { margin: 0 0 var(--space-5); color: var(--color-accent); font-size: var(--text-small); font-weight: 700; letter-spacing: 0.02em; }
   .closing h2 { margin: 0; font-size: clamp(3.4rem, 9vw, 7.5rem); letter-spacing: -0.065em; line-height: 0.94; }
   .closing > div { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-7); }
 
@@ -449,10 +439,9 @@ const resourceTypeLabels: Record<string, string> = {
     .featured-story { min-height: auto; border-radius: var(--radius-lg); }
     .featured-story__visual { min-height: 20rem; padding: var(--space-5); }
     .featured-story__visual strong { font-size: 3.65rem; }
-    .featured-story__line { top: var(--space-5); left: var(--space-5); }
     .featured-story__copy { padding: var(--space-6) var(--space-5); }
     .featured-story__copy h3 { font-size: 2.35rem; }
-    .thought-row { grid-template-columns: 1fr auto; gap: var(--space-3); }
+    .thought-row { grid-template-columns: 1fr; gap: var(--space-3); }
     .thought-row time { grid-column: 1 / -1; }
     .journey-line li:not(:last-child)::after { left: 0.3rem; }
     .journey-line a { grid-template-columns: 1.1rem minmax(0, 1fr); gap: var(--space-4); }
@@ -461,12 +450,11 @@ const resourceTypeLabels: Record<string, string> = {
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .opening__visual { animation: opening-float 7s var(--ease-emphasized) infinite alternate; }
-    .signal--one { animation: signal-one 9s linear infinite; }
-    .signal--two { animation: signal-two 11s linear infinite reverse; }
+    .opening__copy { animation: opening-reveal 700ms var(--ease-emphasized) both; }
+    .opening__visual { animation: opening-reveal 820ms 120ms var(--ease-emphasized) both; }
+    .signal-trace { stroke-dasharray: 1200; stroke-dashoffset: 1200; animation: trace-draw 1.5s 420ms var(--ease-emphasized) forwards; }
   }
 
-  @keyframes opening-float { to { transform: translateY(-0.65rem); } }
-  @keyframes signal-one { to { transform: rotate(360deg) translateX(0.1rem); } }
-  @keyframes signal-two { to { transform: rotate(-360deg) translateX(-0.1rem); } }
+  @keyframes opening-reveal { from { opacity: 0; transform: translateY(1.25rem); } }
+  @keyframes trace-draw { to { stroke-dashoffset: 0; } }
 </style>

@@ -12,11 +12,11 @@ export async function getStaticPaths() {
 }
 
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
-const page = (await getPublicEntries("pages")).find((entry) => entry.data.slug === "privacy");
-if (!page) throw new Error("Missing privacy page");
+const page = (await getPublicEntries("pages")).find((entry) => entry.data.slug === "copyright");
+if (!page) throw new Error("Missing copyright page");
 const { Content } = await render(page);
 ---
 
-<ContentEntryLayout pageTitle={`${page.data.title} - Miles`} title={page.data.title} description={page.data.description} eyebrow="隐私说明" lang={currentLang} dateLabel={`更新于 ${page.data.updatedDate.toLocaleDateString("zh-CN")}`}>
+<ContentEntryLayout pageTitle={`${page.data.title} - Miles`} title={page.data.title} description={page.data.description} eyebrow="版权说明" lang={currentLang} dateLabel={`更新于 ${page.data.updatedDate.toLocaleDateString("zh-CN")}`}>
   <Content />
 </ContentEntryLayout>

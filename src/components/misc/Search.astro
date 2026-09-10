@@ -34,7 +34,7 @@ const fakeResult: SearchResult[] = [
   }
 ]
 ---
-<div id="search-modal" class="fixed inset-0 z-[100] opacity-0 pointer-events-none">
+<div id="search-modal" class="fixed inset-0 z-[100] opacity-0 pointer-events-none" role="dialog" aria-modal="true" aria-label="全站搜索" aria-hidden="true">
   <div class="absolute inset-0 modal-backdrop opacity-0" aria-hidden="true"></div>
 
   <div class="fixed inset-0 flex items-start justify-center p-4 pt-[25vh]">
@@ -48,9 +48,8 @@ const fakeResult: SearchResult[] = [
           id="search-input"
           placeholder={t("search.placeholder")+"..."}
           class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none  text-[var(--text-color)]"
-          autofocus
         />
-        <button id="close-search" class="ml-2 p-2 text-[var(--text-color-70)] rounded-lg hover:bg-[var(--button-hover-color)] active:bg-[var(--button-hover-color)]" aria-label="Close Search">
+        <button id="close-search" class="ml-2 p-2 text-[var(--text-color-70)] rounded-lg hover:bg-[var(--button-hover-color)] active:bg-[var(--button-hover-color)]" aria-label="关闭搜索">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
@@ -61,6 +60,7 @@ const fakeResult: SearchResult[] = [
           <p>{t("search.placeholder")}</p>
         </div>
       </div>
+      <a href="/search/" class="p-3 text-center text-sm text-[var(--link-color)] border-t border-[var(--button-border-color)] no-underline">打开完整搜索页</a>
     </div>
   </div>
 </div>
@@ -73,11 +73,15 @@ function initSearchModal() {
   const searchInput = document.getElementById('search-input');
   const modalBackdrop = searchModal?.firstElementChild;
   const modalContent = searchModal?.querySelector('.search-modal-content');
+  let previousFocus;
 
   if (!searchButton || !searchModal) return; // 防止重复绑定
 
   const openModal = () => {
+    previousFocus = document.activeElement;
     searchModal.classList.remove('opacity-0', 'pointer-events-none');
+    searchModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
     searchModal.offsetHeight;
     requestAnimationFrame(() => {
       modalBackdrop?.classList.remove('opacity-0');
@@ -97,6 +101,9 @@ function initSearchModal() {
     });
     setTimeout(() => {
       searchModal.classList.add('opacity-0', 'pointer-events-none');
+      searchModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      previousFocus?.focus?.();
     }, 300);
   };
 
@@ -108,6 +115,14 @@ function initSearchModal() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !searchModal.classList.contains('opacity-0')) {
       closeModal();
+    }
+    if (e.key === 'Tab' && !searchModal.classList.contains('opacity-0')) {
+      const focusable = [...searchModal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled])')];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
   });
 }
@@ -176,6 +191,25 @@ function initPagefindSearch() {
 
   let searchTimeout;
 
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') {
+      const firstResult = searchResults.querySelector('a');
+      if (firstResult) { e.preventDefault(); firstResult.focus(); }
+    }
+  });
+
+  searchResults.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const links = [...searchResults.querySelectorAll('a')];
+    const current = links.indexOf(document.activeElement);
+    if (current < 0 || links.length === 0) return;
+    e.preventDefault();
+    const next = e.key === 'ArrowDown'
+      ? (current + 1) % links.length
+      : (current - 1 + links.length) % links.length;
+    links[next].focus();
+  });
+
   searchInput.addEventListener('input', (e) => {
     const query = e.target.value.trim();
     clearTimeout(searchTimeout);
@@ -213,7 +247,7 @@ async function performSearch(query) {
         const data = await result.data();
         results.push({
           url: data.url,
-          meta: { title: data.meta.title },
+          meta: data.meta,
           excerpt: data.excerpt
         });
       }
@@ -250,14 +284,28 @@ function displayResults(results) {
     return;
   }
 
-  searchResults.innerHTML = results.map(result => `
-    <div class="p-4 border-b border-[var(--button-border-color)] hover:bg-[var(--button-hover-color)]">
-      <a href="${result.url}" class="block no-underline">
-        <h3 class="text-lg font-semibold text-[var(--text-color)] mb-2">${result.meta.title}</h3>
-        <p class="text-[var(--text-color-70)] text-sm">${result.excerpt}</p>
-      </a>
-    </div>
-  `).join('');
+  searchResults.replaceChildren();
+  results.forEach((result) => {
+    const row = document.createElement('div');
+    row.className = 'p-4 border-b border-[var(--button-border-color)] hover:bg-[var(--button-hover-color)]';
+    const link = document.createElement('a');
+    link.href = result.url;
+    link.className = 'block no-underline';
+    const title = document.createElement('h3');
+    title.className = 'text-lg font-semibold text-[var(--text-color)] mb-2';
+    title.textContent = result.meta.title || '未命名页面';
+    const meta = document.createElement('p');
+    meta.className = 'text-[var(--link-color)] text-xs mb-1';
+    const kind = result.meta?.kind || (result.url.includes('/articles/') ? '文章' : result.url.includes('/resources/') ? '资料' : result.url.includes('/thoughts/') ? '短想法' : result.url.includes('/journey/') ? '旅程' : '页面');
+    meta.textContent = [kind, result.meta?.topic, result.meta?.date].filter(Boolean).join('　');
+    const excerpt = document.createElement('p');
+    excerpt.className = 'text-[var(--text-color-70)] text-sm';
+    const parsed = new DOMParser().parseFromString(result.excerpt || '', 'text/html');
+    excerpt.textContent = parsed.body.textContent || '';
+    link.append(meta, title, excerpt);
+    row.append(link);
+    searchResults.append(row);
+  });
 }
 
 // ========== 初始化逻辑 ==========

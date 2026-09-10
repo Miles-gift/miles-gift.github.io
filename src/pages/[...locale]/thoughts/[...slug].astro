@@ -1,6 +1,6 @@
 ---
 import ContentEntryLayout from "@components/content/ContentEntryLayout.astro";
-import { getPublicEntries } from "@utils/content-utils";
+import { getArticleEntrySort, getPublicEntries } from "@utils/content-utils";
 import { render } from "astro:content";
 import { i18n } from "astro:config/client";
 
@@ -15,8 +15,24 @@ export async function getStaticPaths() {
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+const [articles, resources] = await Promise.all([getArticleEntrySort(currentLang), getPublicEntries("resources")]);
+const related = entry.data.related.map((slug) => {
+  const article = articles.find((item) => item.data.slug === slug);
+  if (article) return { href: `/articles/${article.data.slug}/`, title: article.data.title, kind: "文章" };
+  const resource = resources.find((item) => item.data.slug === slug);
+  if (resource) return { href: `/resources/${resource.data.slug}/`, title: resource.data.title, kind: "资料" };
+  return null;
+}).filter(Boolean);
 ---
 
-<ContentEntryLayout pageTitle={`${entry.data.title} - Miles`} title={entry.data.title} description={entry.data.description} eyebrow="Thought" lang={currentLang} pubDate={entry.data.pubDate} topic={entry.data.topic} tags={entry.data.tags}>
+<ContentEntryLayout pageTitle={`${entry.data.title} - Miles`} title={entry.data.title} description={entry.data.description} eyebrow="短想法" lang={currentLang} pubDate={entry.data.pubDate} topic={entry.data.topic} tags={entry.data.tags} backHref="/thoughts/" backLabel="短想法">
   <Content />
+  {related.length > 0 && <Fragment slot="after"><h2 class="related-title">继续阅读</h2><div class="related-links">{related.map((item) => item && <a href={item.href}><span>{item.kind}</span><strong>{item.title}</strong></a>)}</div></Fragment>}
 </ContentEntryLayout>
+
+<style>
+  .related-title { margin: 0 0 var(--space-4); font-size: var(--text-title); }
+  .related-links { display: grid; gap: var(--space-3); }
+  .related-links a { display: grid; gap: var(--space-1); padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-ink); text-decoration: none; }
+  .related-links span { color: var(--color-accent); font-size: 0.75rem; font-weight: 700; }
+</style>

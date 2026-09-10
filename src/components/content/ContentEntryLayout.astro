@@ -15,26 +15,33 @@ interface Props {
   dateLabel?: string;
   topic?: string;
   tags?: string[];
+  backHref?: string;
+  backLabel?: string;
 }
 
-const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLabel, topic, tags = [] } = Astro.props;
+const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLabel, topic, tags = [], backHref, backLabel } = Astro.props;
 ---
 
 <MainPageLayout title={pageTitle} lang={lang} description={description}>
   <article class="content-entry reading-shell">
+    <span class="sr-only" data-pagefind-meta={`kind:${eyebrow}`}></span>
+    {topic && <span class="sr-only" data-pagefind-meta={`topic:${topic}`}></span>}
+    {pubDate && <span class="sr-only" data-pagefind-meta={`date:${pubDate.toISOString().slice(0, 10)}`}></span>}
     <header class="content-entry__header">
+      {backHref && <a class="content-entry__back" href={backHref}>← {backLabel || "返回"}</a>}
       <p class="content-entry__eyebrow">{eyebrow}</p>
       <h1>{title}</h1>
       <p class="content-entry__description">{description}</p>
       <div class="content-entry__meta">
         {dateLabel && <span>{dateLabel}</span>}
         {!dateLabel && pubDate && <time datetime={pubDate.toISOString()}>{formatFullDate(pubDate, lang)}</time>}
-        {topic && <Chip tone="accent">{topic}</Chip>}
-        {tags.map((tag) => <Chip>{tag}</Chip>)}
+        {topic && <Chip href={`/topics/${encodeURIComponent(topic)}/`} tone="accent">{topic}</Chip>}
+        {tags.map((tag) => <Chip href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</Chip>)}
       </div>
       {Astro.slots.has("aside") && <div class="content-entry__aside"><slot name="aside" /></div>}
     </header>
-    <Markdown class="content-entry__body markdown-content onload-animation"><slot /></Markdown>
+    <Markdown class="content-entry__body onload-animation"><slot /></Markdown>
+    {Astro.slots.has("after") && <div class="content-entry__after"><slot name="after" /></div>}
   </article>
   <FabMenu showBackBottom={true} />
 </MainPageLayout>
@@ -42,10 +49,13 @@ const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLab
 <style>
   .content-entry { padding-top: clamp(5rem, 10vw, 8rem); }
   .content-entry__header { padding-bottom: clamp(2.5rem, 6vw, 4.5rem); border-bottom: 1px solid var(--color-border); }
-  .content-entry__eyebrow { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-small); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .content-entry__back { display: inline-flex; margin-bottom: var(--space-6); color: var(--color-ink-tertiary); font-size: var(--text-small); text-decoration: none; }
+  .content-entry__back:hover { color: var(--color-accent); }
+  .content-entry__eyebrow { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-small); font-weight: 700; letter-spacing: 0.02em; }
   h1 { max-width: 17ch; margin: 0; font-family: var(--font-display); font-size: var(--text-display-md); line-height: var(--leading-heading); letter-spacing: var(--tracking-tight); }
   .content-entry__description { max-width: 42rem; margin: var(--space-5) 0 0; color: var(--color-ink-secondary); font-size: clamp(1rem, 1.5vw, 1.2rem); }
   .content-entry__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-5); color: var(--color-ink-tertiary); font-size: var(--text-small); }
   .content-entry__aside { margin-top: var(--space-5); }
   .content-entry__body { margin-top: clamp(2.5rem, 6vw, 4.5rem); }
+  .content-entry__after { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border); }
 </style>

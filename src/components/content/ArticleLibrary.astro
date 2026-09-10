@@ -1,0 +1,126 @@
+---
+import ContentListCard from "@components/content/ContentListCard.astro";
+import { entryPath } from "@utils/content-utils";
+import { formatFullDate } from "@utils/time";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  articles: CollectionEntry<"articles">[];
+  lang: string;
+}
+
+const { articles, lang } = Astro.props;
+const topics = [...new Set(articles.map((item) => item.data.topic))].sort();
+const tags = [...new Set(articles.flatMap((item) => item.data.tags))].sort();
+const years = [...new Set(articles.map((item) => String(item.data.pubDate.getFullYear())))].sort((a, b) => Number(b) - Number(a));
+---
+
+<section class="article-library" aria-labelledby="article-filter-title">
+  <form id="article-filter" class="article-filter" role="search">
+    <div class="article-filter__heading">
+      <div><p>沿着主题与时间查找</p><h2 id="article-filter-title">筛选文章</h2></div>
+      <p id="article-count" aria-live="polite">{articles.length} 篇文章</p>
+    </div>
+    <label><span>关键词</span><input id="article-query" name="q" type="search" placeholder="标题、摘要或标签" /></label>
+    <label><span>主题</span><select id="article-topic" name="topic"><option value="">全部主题</option>{topics.map((topic) => <option value={topic}>{topic}</option>)}</select></label>
+    <label><span>标签</span><select id="article-tag" name="tag"><option value="">全部标签</option>{tags.map((tag) => <option value={tag}>{tag}</option>)}</select></label>
+    <label><span>年份</span><select id="article-year" name="year"><option value="">全部年份</option>{years.map((year) => <option value={year}>{year}</option>)}</select></label>
+    <button id="article-reset" type="reset">重置</button>
+  </form>
+
+  <div class="article-list">
+    {articles.map((entry, index) => (
+      <article
+        data-article-card
+        data-search={`${entry.data.title} ${entry.data.description} ${entry.data.topic} ${entry.data.tags.join(" ")}`.toLowerCase()}
+        data-topic={entry.data.topic}
+        data-tags={entry.data.tags.join("|")}
+        data-year={String(entry.data.pubDate.getFullYear())}
+      >
+        <ContentListCard
+          href={entryPath(entry)}
+          eyebrow={entry.data.series || "文章"}
+          title={entry.data.title}
+          description={entry.data.description}
+          meta={formatFullDate(entry.data.pubDate, lang)}
+          tags={[entry.data.topic, ...entry.data.tags]}
+          featured={index === 0}
+        />
+      </article>
+    ))}
+  </div>
+  <p id="article-empty" class="article-empty" hidden>没有符合当前条件的文章。可以重置筛选，或换一个更短的关键词。</p>
+</section>
+
+<script>
+  function setupArticleFilter() {
+    const form = document.getElementById("article-filter") as HTMLFormElement | null;
+    if (!form || form.dataset.bound === "true") return;
+    form.dataset.bound = "true";
+    const query = document.getElementById("article-query") as HTMLInputElement;
+    const topic = document.getElementById("article-topic") as HTMLSelectElement;
+    const tag = document.getElementById("article-tag") as HTMLSelectElement;
+    const year = document.getElementById("article-year") as HTMLSelectElement;
+    const count = document.getElementById("article-count");
+    const empty = document.getElementById("article-empty");
+    const cards = [...document.querySelectorAll<HTMLElement>("[data-article-card]")];
+
+    const fromUrl = () => {
+      const params = new URLSearchParams(location.search);
+      query.value = params.get("q") || "";
+      topic.value = params.get("topic") || "";
+      tag.value = params.get("tag") || "";
+      year.value = params.get("year") || "";
+    };
+
+    const apply = () => {
+      const needle = query.value.trim().toLowerCase();
+      let visible = 0;
+      cards.forEach((card) => {
+        const cardTags = card.dataset.tags?.split("|") || [];
+        const show = (!needle || card.dataset.search?.includes(needle))
+          && (!topic.value || card.dataset.topic === topic.value)
+          && (!tag.value || cardTags.includes(tag.value))
+          && (!year.value || card.dataset.year === year.value);
+        card.hidden = !show;
+        if (show) visible += 1;
+      });
+      if (count) count.textContent = `${visible} 篇文章`;
+      if (empty) empty.hidden = visible > 0;
+      const params = new URLSearchParams();
+      if (query.value.trim()) params.set("q", query.value.trim());
+      if (topic.value) params.set("topic", topic.value);
+      if (tag.value) params.set("tag", tag.value);
+      if (year.value) params.set("year", year.value);
+      history.replaceState({}, "", `${location.pathname}${params.size ? `?${params}` : ""}`);
+    };
+
+    fromUrl();
+    apply();
+    form.addEventListener("input", apply);
+    form.addEventListener("change", apply);
+    form.addEventListener("reset", () => requestAnimationFrame(apply));
+    window.addEventListener("popstate", () => { fromUrl(); apply(); });
+  }
+
+  document.addEventListener("astro:page-load", setupArticleFilter);
+</script>
+
+<style>
+  .article-filter { display: grid; grid-template-columns: minmax(14rem, 1.5fr) repeat(3, minmax(9rem, 1fr)) auto; gap: var(--space-3); align-items: end; margin-bottom: var(--space-7); padding: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-solid); }
+  .article-filter__heading { display: flex; grid-column: 1 / -1; align-items: end; justify-content: space-between; gap: var(--space-5); margin-bottom: var(--space-3); }
+  .article-filter__heading p { margin: 0; color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  .article-filter__heading div > p { color: var(--color-accent); font-weight: 720; }
+  .article-filter__heading h2 { margin: var(--space-1) 0 0; font-size: var(--text-title); letter-spacing: -0.035em; }
+  label { display: grid; gap: var(--space-2); color: var(--color-ink-secondary); font-size: var(--text-small); font-weight: 650; }
+  input, select { width: 100%; min-height: 2.75rem; padding-inline: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-canvas); color: var(--color-ink); }
+  button { min-height: 2.75rem; padding-inline: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: transparent; color: var(--color-ink); cursor: pointer; }
+  .article-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+  .article-list > article:first-child { grid-column: span 2; }
+  .article-list > article[hidden] { display: none; }
+  .article-list > article :global(.content-list-card) { height: 100%; }
+  .article-empty { padding: var(--space-8); border: 1px dashed var(--color-border); border-radius: var(--radius-lg); color: var(--color-ink-secondary); text-align: center; }
+  @media (max-width: 900px) { .article-filter { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 700px) { .article-list { grid-template-columns: 1fr; } .article-list > article:first-child { grid-column: auto; } }
+  @media (max-width: 560px) { .article-filter { grid-template-columns: 1fr; padding: var(--space-5); } .article-filter__heading { align-items: flex-start; flex-direction: column; } }
+</style>

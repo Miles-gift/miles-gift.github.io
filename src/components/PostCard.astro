@@ -35,7 +35,7 @@ const { remarkPluginFrontmatter } = await render(entry);
 const isBgMode = siteConfig.theme.postCard.imageMode === "background";
 ---
 
-<article data-aos="fade-up" class:list={["post-card block min-w-0 w-full max-w-[var(--page-width)] mx-auto my-6 overflow-hidden", isBgMode && "postcard-bg-mode", isBgMode && image && "has-image"]}>
+<article class:list={["post-card block min-w-0 w-full max-w-[var(--page-width)] mx-auto my-6 overflow-hidden", isBgMode && "postcard-bg-mode", isBgMode && image && "has-image"]}>
     {image && (
         <>
         {isBgMode ? (

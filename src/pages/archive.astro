@@ -1,0 +1,14 @@
+---
+const target = "/archives/";
+---
+<!doctype html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content={`0;url=${target}`} />
+    <link rel="canonical" href={new URL(target, Astro.site)} />
+    <title>页面已迁移 - Miles</title>
+  </head>
+  <body><p>页面已迁移到 <a href={target}>{target}</a>。</p><script is:inline define:vars={{ target }}>location.replace(target);</script></body>
+</html>

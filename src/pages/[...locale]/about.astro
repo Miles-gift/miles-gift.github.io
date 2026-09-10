@@ -1,12 +1,13 @@
 ---
 import MainPageLayout from '@layouts/MainPageLayout.astro'
 import Markdown from '@components/misc/Markdown.astro'
-import Cover from '@components/Cover.astro'
+import PageHero from '@components/ui/PageHero.astro'
+import Button from '@components/ui/Button.astro'
 import FabMenu from '@components/control/FabMenu.astro'
 
 import { getSpec } from '@utils/content-utils'
 
-import { siteConfig } from '@/config'
+import { profileConfig, siteConfig } from '@/config'
 import i18nit from '@i18n/translation'
 import { getEntry, render } from 'astro:content'
 import { i18n } from "astro:config/client";
@@ -28,11 +29,28 @@ const { Content } = await render(aboutPost);
 const pageTitle = t("header.about") + " - " + siteConfig.title;
 ---
 <MainPageLayout title={pageTitle} lang={currentLang}>
-    <div class="mx-auto w-full max-w-[var(--page-width)]">
-        <Cover title={t("cover.title.about")} subTitle={t("cover.subTitle.about")}/>
-        <Markdown class="mb-6 markdown-content onload-animation">
+    <PageHero title="关于 Miles" description="一份仍在生长的个人说明：我在哪里学习、关注什么，以及这个网站选择公开和保留什么。" align="left" />
+    <div class="about-layout stage-shell">
+        <aside class="about-card">
+            <img src={profileConfig.avatar} width="112" height="112" alt="Miles 的抽象 M 标识" />
+            <p class="about-card__name">{profileConfig.name}</p>
+            <p>{profileConfig.description}</p>
+            <div><Button href={profileConfig.indexPage} target="_blank" variant="secondary" size="small">GitHub</Button><Button href="/journey/" variant="quiet" size="small">查看旅程</Button></div>
+        </aside>
+        <Markdown class="about-content onload-animation">
             <Content />
         </Markdown>
     </div>
     <FabMenu showBackBottom={true} />
 </MainPageLayout>
+
+<style>
+    .about-layout { display: grid; grid-template-columns: minmax(15rem, 0.34fr) minmax(0, 0.66fr); gap: clamp(3rem, 8vw, 7rem); align-items: start; padding-bottom: var(--space-9); }
+    .about-card { position: sticky; top: calc(var(--header-height) + var(--space-5)); padding: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-solid); box-shadow: var(--shadow-sm); }
+    .about-card img { display: block; border-radius: 1.75rem; }
+    .about-card__name { margin: var(--space-5) 0 var(--space-1); color: var(--color-ink); font-size: var(--text-title); font-weight: 750; letter-spacing: -0.035em; }
+    .about-card > p:not(.about-card__name) { margin: 0; color: var(--color-ink-secondary); }
+    .about-card > div { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-5); }
+    .about-content { margin-top: 0; }
+    @media (max-width: 800px) { .about-layout { grid-template-columns: 1fr; gap: var(--space-7); } .about-card { position: static; } }
+</style>

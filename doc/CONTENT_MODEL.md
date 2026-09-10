@@ -14,11 +14,11 @@
 
 | Collection | 目录 | 公开 URL | 当前数量 | 主要用途 |
 |---|---|---|---:|---|
-| `articles` | `src/content/articles/<slug>/zh-cn.md` | `/articles/<slug>/` | 3 | 长文、教程、复盘和系统思考 |
+| `articles` | `src/content/articles/<slug>/zh-cn.md` | `/articles/<slug>/` | 4 | 长文、教程、复盘和系统思考 |
 | `resources` | `src/content/resources/<slug>.md` | `/resources/<slug>/` | 5 | 官方来源索引、原创导读、学习状态与结论 |
 | `thoughts` | `src/content/thoughts/<id>.md` | `/thoughts/<id>/` | 3 | 只表达一个观点的短记录 |
 | `journey` | `src/content/journey/<slug>.md` | `/journey/<slug>/` | 5 | 教育、项目、成果与阶段节点 |
-| `pages` | `src/content/pages/<slug>.md` | 由固定路由映射 | 1 | 隐私、版权等固定页面正文 |
+| `pages` | `src/content/pages/<slug>.md` | 由固定路由映射 | 2 | 隐私、版权等固定页面正文 |
 | `spec` | `src/content/spec/<name>/zh-cn.md` | 固定路由 | 2 | 迁移期间保留的 About 与友链说明 |
 
 Schema 集中在 `src/content.config.ts`，受控枚举集中在 `src/content/taxonomy.json`。
@@ -55,7 +55,7 @@ Schema 集中在 `src/content.config.ts`，受控枚举集中在 `src/content/ta
 
 ### Pages
 
-固定页面保存标题、slug、description、更新时间和可见性。当前隐私页从 collection 读取，阶段 5 会补齐版权与完整固定页面导航。
+固定页面保存标题、slug、description、更新时间和可见性。隐私与版权页面均从 collection 读取，并已进入页脚导航。
 
 ## 5. Taxonomy
 
@@ -78,11 +78,11 @@ Astro 的严格 Zod schema 继续负责日期、URL、枚举、长度、范围�
 
 ## 7. 首批迁移内容
 
-- 3 篇真实建站文章，来自当前项目的目标、决策与隐私治理，不使用模板示例。
+- 4 篇真实建站文章，来自当前项目的目标、决策、隐私治理和内容系统复盘，不使用模板示例。
 - 5 条资料，来自本地 PyTorch、uv、Git、macOS 和 IELTS 学习线索；只写原创导读并链接官方来源。
 - 3 条原创短想法，围绕失败记录、收藏与版本信息。
 - 5 条 Journey，包含两段由本人提供的教育经历与三项经证明核验的脱敏成果。
-- 1 个隐私固定页面。
+- 2 个固定页面，分别说明隐私与版权。
 
 本地课程视频、课件、题库、证明扫描件、学号、编号和第三方身份均未复制进入内容目录。
 

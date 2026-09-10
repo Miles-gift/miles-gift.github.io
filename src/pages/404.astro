@@ -1,44 +1,26 @@
 ---
-import MainPageLayout from '@layouts/MainPageLayout.astro';
-import ImageModule from '@components/misc/ImageModule.astro';
-import Cover from '@components/Cover.astro';
-import { getRelativeLocaleUrl } from '@utils/url-utils';
-
-import { siteConfig } from '@/config'
-
-import { i18n } from "astro:config/client";
-import i18nit from '@i18n/translation'
-
-const currentLang = Astro.currentLocale || i18n!.defaultLocale;
-const t = i18nit(currentLang);
-
-console.log("404 page loaded with locale:", currentLang);
-
-const pageTitle = "404 - " + siteConfig.title;
-const indexPage = getRelativeLocaleUrl(currentLang, "/");
+import MainPageLayout from "@layouts/MainPageLayout.astro";
+import Button from "@components/ui/Button.astro";
+import { siteConfig } from "@/config";
 ---
-<MainPageLayout title={pageTitle} lang="zh-CN">
-    <div class="mx-auto w-full max-w-[var(--page-width)] px-4 text-center">
-        <Cover title={t("page404.title")} subTitle={t("page404.subTitle")} />
-        
-        <div class="my-4">
-            <ImageModule src={"assets/404.png"} alt="404" class="mx-auto w-auto h-auto" />
-        </div>
 
-        <div class="mt-8 flex flex-col items-center">
-            <p class="text-[var(--text-color-70)]">{t("page404.notice")}</p>
-            <div class=" mt-2 flex gap-4">
-                <a href={indexPage} 
-                class="px-6 py-2 bg-[var(--link-color)] text-white rounded-lg hover:opacity-90 transition-all">
-                    {t("page404.backToHome")}
-                </a>
-                <a href="javascript:history.back()" 
-                class="px-6 py-2 border border-[var(--button-border-color)] rounded-lg text-[var(--text-color)] hover:bg-[var(--button-hover-color)] transition-all">
-                    {t("page404.backToPreview")}
-                </a>
-            </div>
-        </div>
-
-        <!-- <p class="mt-4 text-sm text-[var(--text-color-70)]">{t("page404.errorCode")}</p> -->
+<MainPageLayout title={`页面没有找到 - ${siteConfig.title}`} description="请求的页面不存在，可能已经迁移或地址输入有误。" lang="zh-cn">
+  <section class="not-found stage-shell" aria-labelledby="not-found-title">
+    <p class="not-found__code">404</p>
+    <h1 id="not-found-title">这里暂时没有内容。</h1>
+    <p>页面可能已经迁移、尚未公开，或地址输入有误。可以回到首页、搜索站内内容，或按新的文章路径继续浏览。</p>
+    <div>
+      <Button href="/" size="large">返回首页</Button>
+      <Button href="/search/" variant="secondary" size="large">全站搜索</Button>
+      <Button href="/articles/" variant="quiet" size="large">浏览文章</Button>
     </div>
+  </section>
 </MainPageLayout>
+
+<style>
+  .not-found { display: grid; min-height: calc(100svh - var(--header-height)); place-content: center; padding-block: var(--space-9); text-align: center; }
+  .not-found__code { margin: 0; color: transparent; background: linear-gradient(110deg, var(--color-accent), #8b5cf6); background-clip: text; -webkit-background-clip: text; font-size: clamp(6rem, 20vw, 14rem); font-weight: 780; letter-spacing: -0.08em; line-height: 0.8; }
+  h1 { margin: var(--space-7) 0 0; font-size: var(--text-display-md); letter-spacing: var(--tracking-tight); }
+  section > p:not(.not-found__code) { max-width: 39rem; margin: var(--space-5) auto 0; color: var(--color-ink-secondary); font-size: 1.08rem; }
+  section > div { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-7); }
+</style>

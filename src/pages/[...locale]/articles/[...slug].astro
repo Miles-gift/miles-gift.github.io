@@ -21,9 +21,22 @@ export async function getStaticPaths() {
     const localeCode = typeof locale === "string" ? locale : locale.path;
     const entries = await getArticleEntrySort(localeCode);
     for (let index = 0; index < entries.length; index += 1) {
+      const current = entries[index];
+      const seriesEntries = current.data.series
+        ? entries
+            .filter((item) => item.data.series === current.data.series)
+            .sort((a, b) => (a.data.seriesOrder || 0) - (b.data.seriesOrder || 0))
+        : [];
+      const seriesIndex = seriesEntries.findIndex((item) => item.id === current.id);
+      const prev = seriesEntries.length > 1
+        ? (seriesIndex > 0 ? seriesEntries[seriesIndex - 1] : null)
+        : (index < entries.length - 1 ? entries[index + 1] : null);
+      const next = seriesEntries.length > 1
+        ? (seriesIndex < seriesEntries.length - 1 ? seriesEntries[seriesIndex + 1] : null)
+        : (index > 0 ? entries[index - 1] : null);
       paths.push({
-        params: { locale: localeCode === i18n?.defaultLocale ? undefined : localeCode, slug: entries[index].id },
-        props: { entry: entries[index], prev: index < entries.length - 1 ? entries[index + 1] : null, next: index > 0 ? entries[index - 1] : null },
+        params: { locale: localeCode === i18n?.defaultLocale ? undefined : localeCode, slug: current.id },
+        props: { entry: current, prev, next },
       });
     }
   }
@@ -35,26 +48,48 @@ const { entry, prev, next } = Astro.props;
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
 const pageTitle = `${entry.data.title} - ${siteConfig.title}`;
 const image = articleCoverUrl(entry.data.cover, entry.id);
+const maintenanceLabels = { active: "持续维护", stable: "内容稳定", archived: "停止维护" } as const;
+const allArticles = await getArticleEntrySort(currentLang);
+const related = allArticles
+  .filter((item) => item.id !== entry.id)
+  .map((item) => ({
+    entry: item,
+    score: Number(item.data.topic === entry.data.topic) * 3 + item.data.tags.filter((tag) => entry.data.tags.includes(tag)).length,
+  }))
+  .filter((item) => item.score > 0)
+  .sort((a, b) => b.score - a.score || b.entry.data.pubDate.valueOf() - a.entry.data.pubDate.valueOf())
+  .slice(0, 2)
+  .map((item) => item.entry);
 ---
 
 <MainPageLayout title={pageTitle} lang={currentLang} description={entry.data.description}>
   <article class="article-page reading-shell">
+    <span class="sr-only" data-pagefind-meta="kind:文章"></span>
+    <span class="sr-only" data-pagefind-meta={`topic:${entry.data.topic}`}></span>
+    <span class="sr-only" data-pagefind-meta={`date:${entry.data.pubDate.toISOString().slice(0, 10)}`}></span>
     <header class="article-header">
-      <p class="article-header__eyebrow">Article</p>
+      <a class="article-header__back" href="/articles/">← 文章</a>
+      <p class="article-header__eyebrow">文章</p>
       <h1>{entry.data.title}</h1>
       <p class="article-header__description">{entry.data.description}</p>
       <div class="article-header__meta">
         <time datetime={entry.data.pubDate.toISOString()}>{formatFullDate(entry.data.pubDate, currentLang)}</time>
+        {entry.data.updatedDate && <span>更新于 {formatFullDate(entry.data.updatedDate, currentLang)}</span>}
+        <span class:list={["article-header__status", `article-header__status--${entry.data.maintenance}`]}>{maintenanceLabels[entry.data.maintenance]}</span>
         <span>{remarkPluginFrontmatter.words || 0} 字</span>
         <span>{remarkPluginFrontmatter.minutes || 0} 分钟</span>
-        <Chip tone="accent">{entry.data.topic}</Chip>
-        {entry.data.tags.map((tag) => <Chip>{tag}</Chip>)}
+        <Chip href={`/topics/${encodeURIComponent(entry.data.topic)}/`} tone="accent">{entry.data.topic}</Chip>
+        {entry.data.tags.map((tag) => <Chip href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</Chip>)}
       </div>
     </header>
     {image && <ImageModule src={image} alt={entry.data.coverAlt} class="article-cover" />}
     <Markdown class="article-body markdown-content onload-animation"><Content /></Markdown>
     {licenseConfig.enable && <LicenseCard title={entry.data.title} pubDate={entry.data.pubDate} />}
     {siteConfig.blogNavi.enable && <BlogNavi prev={prev} next={next} />}
+    {related.length > 0 && <aside class="article-related" aria-labelledby="related-title">
+      <h2 id="related-title">相关推荐</h2>
+      <div>{related.map((item) => <a href={`/articles/${item.data.slug}/`}><span>{item.data.topic}</span><strong>{item.data.title}</strong><p>{item.data.description}</p></a>)}</div>
+    </aside>}
   </article>
   {siteConfig.toc.enable && <TOC headings={headings} language={currentLang} client:load />}
   <FabMenu headings={headings} showComment={false} showBackBottom={true} />
@@ -63,10 +98,22 @@ const image = articleCoverUrl(entry.data.cover, entry.id);
 <style>
   .article-page { padding-top: clamp(5rem, 10vw, 8rem); }
   .article-header { padding-bottom: clamp(2.5rem, 6vw, 4.5rem); border-bottom: 1px solid var(--color-border); }
-  .article-header__eyebrow { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-small); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .article-header__back { display: inline-flex; margin-bottom: var(--space-6); color: var(--color-ink-tertiary); font-size: var(--text-small); text-decoration: none; }
+  .article-header__back:hover { color: var(--color-accent); }
+  .article-header__eyebrow { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-small); font-weight: 700; letter-spacing: 0.02em; }
   h1 { margin: 0; font-family: var(--font-display); font-size: var(--text-display-md); line-height: var(--leading-heading); letter-spacing: var(--tracking-tight); }
   .article-header__description { margin: var(--space-5) 0 0; color: var(--color-ink-secondary); font-size: clamp(1rem, 1.5vw, 1.2rem); }
   .article-header__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-5); color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  .article-header__status { padding: 0.15rem 0.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-pill); }
+  .article-header__status--active { border-color: color-mix(in srgb, var(--color-success) 35%, var(--color-border)); color: var(--color-success); }
+  .article-header__status--archived { color: var(--color-warning); }
   :global(.article-cover) { height: min(52vw, 28rem); margin-top: var(--space-7); border-radius: var(--radius-xl); }
   .article-body { margin-top: clamp(2.5rem, 6vw, 4.5rem); }
+  .article-related { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border); }
+  .article-related h2 { margin: 0 0 var(--space-4); font-size: var(--text-title); }
+  .article-related > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+  .article-related a { display: grid; gap: var(--space-2); padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-solid); color: var(--color-ink); text-decoration: none; }
+  .article-related span { color: var(--color-accent); font-size: var(--text-small); font-weight: 700; }
+  .article-related p { margin: 0; color: var(--color-ink-secondary); font-size: var(--text-small); }
+  @media (max-width: 640px) { .article-related > div { grid-template-columns: 1fr; } }
 </style>

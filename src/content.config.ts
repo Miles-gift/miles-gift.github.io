@@ -28,6 +28,7 @@ const articleCollection = defineCollection({
     draft: z.boolean().default(false),
     visibility,
     kind: z.literal("article"),
+    maintenance: z.enum(["active", "stable", "archived"]).default("active"),
     topic,
     tags,
     series: z.string().trim().max(48).optional(),

@@ -39,6 +39,7 @@ pubDate: ${date}
 draft: true
 visibility: draft
 kind: article
+maintenance: active
 topic: 建站记录
 tags: [待整理]
 cover: ""
