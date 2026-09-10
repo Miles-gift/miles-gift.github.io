@@ -4,6 +4,12 @@ import "@styles/global.css"
 import 'katex/dist/katex.min.css';
 import '@fontsource/noto-serif-sc/400.css';
 import '@fontsource/noto-serif-sc/700.css';
+import '@fontsource/eb-garamond/400.css';
+import '@fontsource/eb-garamond/600.css';
+import '@fontsource/eb-garamond/600-italic.css';
+import '@chinese-fonts/lxgwwenkaibright/dist/LXGWBright-Regular/result.css';
+import '@chinese-fonts/lxgwwenkaibright/dist/LXGWBright-Medium/result.css';
+import '@chinese-fonts/lxgwwenkaibright/dist/LXGWBright-Italic/result.css';
 import { i18n } from "astro:config/client";
 import { ClientRouter } from "astro:transitions";
 
@@ -43,7 +49,6 @@ const pageLang = lang || i18n?.defaultLocale || "zh-cn";
     <meta name="color-scheme" content="light dark">
     <meta name="description" content={(description != null && description !== undefined && description !== "") ? description : profileConfig.description}>
     <meta name="author" content={profileConfig.name}>
-    <link rel="alternate" type="application/rss+xml" title={siteConfig.title} href={new URL("rss.xml", Astro.site)} >
     <link rel="icon" href={siteConfig.favicon} type="image/svg+xml">
     <title>{pageTitle}</title>
     <ClientRouter />
@@ -61,13 +66,11 @@ const pageLang = lang || i18n?.defaultLocale || "zh-cn";
     </script>
 </head>
 <body class="h-full bg-[var(--bg-color)]">
-    
-    <div id="loading-overlay" aria-hidden="true">
-      <div class="spinner"></div>
-    </div>
+
+    <div id="loading-overlay" aria-hidden="true"><span></span></div>
 
     <slot />
-    
+
     <script is:inline>
         let loaderTimeout;
 
@@ -76,13 +79,13 @@ const pageLang = lang || i18n?.defaultLocale || "zh-cn";
             loaderTimeout = setTimeout(() => {
             const overlay = document.getElementById('loading-overlay');
             if (overlay) overlay.style.display = 'flex';
-            }, 500); 
+            }, 420);
         });
 
         // 2. 页面内容交换完成（DOM 已更新）
         document.addEventListener('astro:after-swap', () => {
             clearTimeout(loaderTimeout);
-            
+
             const overlay = document.getElementById('loading-overlay');
             if (overlay) overlay.style.display = 'none';
         });
@@ -102,36 +105,26 @@ const pageLang = lang || i18n?.defaultLocale || "zh-cn";
     position: fixed;
     inset: 0;
     display: none;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-start;
+    justify-content: flex-start;
     background-color: color-mix(in srgb, var(--color-canvas) 72%, transparent);
     z-index: var(--z-toast);
-    backdrop-filter: blur(2px);
-    animation: fadeIn var(--duration-normal) var(--ease-standard);
+    backdrop-filter: blur(3px);
   }
 
   [data-theme="dark"] #loading-overlay {
     background-color: color-mix(in srgb, var(--color-canvas) 72%, transparent);
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  #loading-overlay span {
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-growth), var(--color-accent), var(--color-annotation));
+    transform-origin: left;
+    animation: write-across 1.2s var(--ease-emphasized) infinite;
   }
 
-  .spinner {
-    width: 36px;
-    height: 36px;
-    border: 3px solid var(--color-surface-subtle);
-    border-top-color: var(--color-accent);
-    border-radius: 50%;
-    animation: spin 0.9s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
+  @keyframes write-across { 0% { transform: scaleX(0); } 70%, 100% { transform: scaleX(1); } }
 
 </style>
 
@@ -156,7 +149,7 @@ const pageLang = lang || i18n?.defaultLocale || "zh-cn";
       duration: 800,
       once: true,
     });
-    
+
     // 3. 强力刷新
     AOS.refreshHard();
   }

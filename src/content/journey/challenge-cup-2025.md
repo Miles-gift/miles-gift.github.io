@@ -1,20 +1,21 @@
 ---
-title: “挑战杯”揭榜挂帅擂台赛特等奖第一名
+title: "“挑战杯”揭榜挂帅擂台赛擂主"
 slug: challenge-cup-2025
-pubDate: 2026-09-10
-startDate: "2025"
+pubDate: 2025-11-01
+startDate: "2025-11"
 endDate: null
-dateLabel: "2025"
-kind: project
-summary: 团队项目获“挑战杯”揭榜挂帅擂台赛特等奖第一名。
-highlights: [团队成果, 特等奖第一名]
-skills: [GPU 算子优化]
+dateLabel: "2025.11"
+organization: "第十九届“挑战杯”全国大学生课外学术科技作品竞赛"
+kind: award
+summary: "团队在第十九届“挑战杯”相关擂台赛中获擂主，即特等奖第一名。"
+highlights: ["擂主","特等奖第一名","团队成果"]
+skills: ["GPU 算子优化"]
 featured: true
-order: 50
+order: 114
 sourceLevel: verified-summary
-projectTitle: 迅流：面向声纳、雷达的凌久 GPU 算子优化框架及算法实现
+projectTitle: "迅流：面向声纳、雷达的凌久 GPU 算子优化框架及算法实现"
 draft: false
 visibility: public
 ---
 
-项目名称为《迅流：面向声纳、雷达的凌久 GPU 算子优化框架及算法实现》。本站不公开证明原件、团队成员、指导教师、编号与二维码，也不在缺少本人补充时推测个人贡献。
+这条记录依据本人提供的证明材料核对。本站不展示证书原件、证书编号、二维码、他人姓名或未经确认的个人分工。

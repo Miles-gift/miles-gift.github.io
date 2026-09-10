@@ -1,56 +1,84 @@
 ---
-import MainPageLayout from '@layouts/MainPageLayout.astro'
-import Markdown from '@components/misc/Markdown.astro'
-import PageHero from '@components/ui/PageHero.astro'
-import Button from '@components/ui/Button.astro'
-import FabMenu from '@components/control/FabMenu.astro'
-
-import { getSpec } from '@utils/content-utils'
-
-import { profileConfig, siteConfig } from '@/config'
-import i18nit from '@i18n/translation'
-import { getEntry, render } from 'astro:content'
+import MainPageLayout from "@layouts/MainPageLayout.astro";
+import Markdown from "@components/misc/Markdown.astro";
+import { getSpec } from "@utils/content-utils";
+import { siteConfig } from "@/config";
+import { render } from "astro:content";
 import { i18n } from "astro:config/client";
 
 export async function getStaticPaths() {
-	return i18n?.locales.map(locale => ({ params: { locale: locale == i18n?.defaultLocale ? undefined : (locale as string) } }));
+  return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } }));
 }
-
-
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
-const t = i18nit(currentLang);
-
-const aboutPost = await getSpec(currentLang, 'about');
-if (!aboutPost) {
-    throw new Error('No about post found');
-}
+const aboutPost = await getSpec(currentLang, "about");
+if (!aboutPost) throw new Error("No about post found");
 const { Content } = await render(aboutPost);
-
-const pageTitle = t("header.about") + " - " + siteConfig.title;
 ---
-<MainPageLayout title={pageTitle} lang={currentLang}>
-    <PageHero title="关于 Miles" description="一份仍在生长的个人说明：我在哪里学习、关注什么，以及这个网站选择公开和保留什么。" align="left" />
-    <div class="about-layout stage-shell">
-        <aside class="about-card">
-            <img src={profileConfig.avatar} width="112" height="112" alt="Miles 的抽象 M 标识" />
-            <p class="about-card__name">{profileConfig.name}</p>
-            <p>{profileConfig.description}</p>
-            <div><Button href={profileConfig.indexPage} target="_blank" variant="secondary" size="small">GitHub</Button><Button href="/journey/" variant="quiet" size="small">查看旅程</Button></div>
-        </aside>
-        <Markdown class="about-content onload-animation">
-            <Content />
-        </Markdown>
+
+<MainPageLayout title={`关于 - ${siteConfig.title}`} description="认识 yoyo：研究方向、关注领域、兴趣、学校、公开位置、联系方式与友联。" lang={currentLang}>
+  <div class="about stage-shell">
+    <header class="about__hero">
+      <p>05 / ABOUT THIS TRAVELLER</p>
+      <h1>关于<br /><em>yoyo</em></h1>
+      <blockquote>“在芯片、电源与日常生活之间，认真学习，也认真记录。”</blockquote>
+      <span class="about__scribble">still growing →</span>
+    </header>
+
+    <div class="about__layout">
+      <aside class="dossier">
+        <div class="dossier__photo">
+          <span>YOYO</span>
+          <img src="/brand/yoyo-trail.svg" width="116" height="116" alt="yoyo 的轨迹标志" />
+        </div>
+        <dl>
+          <div><dt>BASE</dt><dd>Wuhan, China</dd></div>
+          <div><dt>SCHOOL</dt><dd>HUST · 集成电路学院</dd></div>
+          <div><dt>MAJOR</dt><dd>电子科学与技术</dd></div>
+          <div><dt>FOCUS</dt><dd>Power Architecture</dd></div>
+          <div><dt>GRAD.</dt><dd>2027 · expected</dd></div>
+        </dl>
+        <nav aria-label="个人入口">
+          <a href="https://github.com/Miles-gift" target="_blank" rel="noopener noreferrer">GitHub / Miles-gift</a>
+          <a href="/journey/">查看完整旅程</a>
+        </nav>
+      </aside>
+
+      <Markdown class="about__content">
+        <Content />
+      </Markdown>
     </div>
-    <FabMenu showBackBottom={true} />
+  </div>
 </MainPageLayout>
 
 <style>
-    .about-layout { display: grid; grid-template-columns: minmax(15rem, 0.34fr) minmax(0, 0.66fr); gap: clamp(3rem, 8vw, 7rem); align-items: start; padding-bottom: var(--space-9); }
-    .about-card { position: sticky; top: calc(var(--header-height) + var(--space-5)); padding: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-solid); box-shadow: var(--shadow-sm); }
-    .about-card img { display: block; border-radius: 1.75rem; }
-    .about-card__name { margin: var(--space-5) 0 var(--space-1); color: var(--color-ink); font-size: var(--text-title); font-weight: 750; letter-spacing: -0.035em; }
-    .about-card > p:not(.about-card__name) { margin: 0; color: var(--color-ink-secondary); }
-    .about-card > div { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-5); }
-    .about-content { margin-top: 0; }
-    @media (max-width: 800px) { .about-layout { grid-template-columns: 1fr; gap: var(--space-7); } .about-card { position: static; } }
+  .about { padding-bottom: var(--space-9); }
+  .about__hero { position: relative; min-height: min(42rem, calc(100svh - var(--header-height))); padding-block: clamp(5rem, 11vw, 9rem); border-bottom: 1px solid var(--color-border-strong); }
+  .about__hero > p { margin: 0 0 1rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
+  h1 { max-width: 8ch; margin: 0; font-family: var(--font-display); font-size: var(--text-display-xl); font-weight: 500; letter-spacing: -.055em; line-height: .78; }
+  h1 em { color: var(--color-annotation); font-family: var(--font-editorial); font-weight: 400; }
+  blockquote { position: absolute; right: 2%; bottom: 17%; max-width: 27rem; margin: 0; color: var(--color-ink-secondary); font-family: var(--font-display); font-size: clamp(1.35rem, 2.6vw, 2.2rem); line-height: 1.5; transform: rotate(-2deg); }
+  .about__scribble { position: absolute; right: 3%; bottom: 7%; color: var(--color-annotation); font-family: var(--font-editorial); font-size: 1.1rem; font-style: italic; }
+  .about__layout { display: grid; grid-template-columns: minmax(16rem, .36fr) minmax(0, .64fr); gap: clamp(3rem, 8vw, 8rem); align-items: start; padding-top: var(--section-space); }
+  .dossier { position: sticky; top: calc(var(--header-height) + 1.5rem); padding: 1.2rem; border: 1px solid var(--color-border-strong); background: var(--color-canvas-raised); box-shadow: 6px 8px 0 color-mix(in srgb, var(--color-growth) 23%, transparent); transform: rotate(-1deg); }
+  .dossier__photo { position: relative; display: grid; min-height: 15rem; place-items: center; overflow: hidden; background: var(--color-ink); }
+  .dossier__photo::before { position: absolute; width: 18rem; height: 18rem; border: 1px dashed var(--color-accent); border-radius: 50%; content: ""; }
+  .dossier__photo span { position: absolute; right: -1.2rem; bottom: -2.5rem; color: color-mix(in srgb, var(--color-canvas-raised) 8%, transparent); font-family: var(--font-editorial); font-size: 6rem; font-weight: 600; }
+  .dossier__photo img { position: relative; z-index: 1; border-radius: 1.8rem; }
+  dl { margin: 1.1rem 0; }
+  dl div { display: grid; grid-template-columns: 4.5rem 1fr; gap: .8rem; padding: .6rem 0; border-bottom: 1px dashed var(--color-border); }
+  dt { color: var(--color-annotation); font-family: var(--font-editorial); font-size: .68rem; font-weight: 600; letter-spacing: .08em; }
+  dd { margin: 0; color: var(--color-ink-secondary); font-size: .82rem; }
+  nav { display: grid; gap: .5rem; }
+  nav a { padding: .55rem .7rem; border: 1px solid var(--color-border); color: var(--color-ink); font-size: .82rem; font-weight: 650; text-decoration: none; }
+  nav a:hover { border-color: var(--color-annotation); color: var(--color-annotation); }
+  .about__content { margin-top: 0; }
+  .about__content :global(h2) { margin-top: 4rem; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 500; }
+  .about__content :global(h2:first-child) { margin-top: 0; }
+  .about__content :global(p), .about__content :global(li) { font-family: var(--font-reading); }
+  @media (max-width: 800px) {
+    .about__hero { min-height: auto; padding-block: 4.5rem; }
+    blockquote { position: static; max-width: 32rem; margin: 3rem 0 0 auto; }
+    .about__scribble { position: static; display: block; margin: 1rem 0 0 auto; text-align: right; }
+    .about__layout { grid-template-columns: 1fr; }.dossier { position: static; transform: none; }
+  }
 </style>

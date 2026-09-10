@@ -11,7 +11,7 @@ const translation: Translation = {
         title: {
             home: "Keep learning. Keep leaving something behind.",
             archive: "Archive",
-            about: "About Miles",
+            about: "About yoyo",
             friends: "Friends",
         },
         subTitle: {

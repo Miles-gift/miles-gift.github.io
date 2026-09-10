@@ -17,7 +17,7 @@ const [articles, resources, thoughts, journey] = await Promise.all([
 const allEntries = [
   ...articles.map((entry) => ({ title: entry.data.title, description: entry.data.description, date: entry.data.pubDate, href: entryPath(entry), kind: "文章", topic: entry.data.topic })),
   ...resources.map((entry) => ({ title: entry.data.title, description: entry.data.description, date: entry.data.pubDate, href: entryPath(entry), kind: "资料", topic: entry.data.topic })),
-  ...thoughts.map((entry) => ({ title: entry.data.title, description: entry.data.description, date: entry.data.pubDate, href: entryPath(entry), kind: "想法", topic: entry.data.topic })),
+  ...thoughts.map((entry) => ({ title: entry.data.title, description: entry.data.description, date: entry.data.pubDate, href: entryPath(entry), kind: "便笺", topic: entry.data.topic })),
   ...journey.map((entry) => ({ title: entry.data.title, description: entry.data.summary, date: entry.data.pubDate, href: entryPath(entry), kind: "旅程", topic: entry.data.kind })),
 ].sort((a, b) => b.date.valueOf() - a.date.valueOf());
 const groups = Object.groupBy(allEntries, (entry) => String(entry.date.getFullYear()));

@@ -1,31 +1,44 @@
 ---
-title: macOS 键盘快捷键索引
+title: "MacBook 快捷键"
 slug: macos-shortcuts
-description: 以 Apple 官方快捷键说明为依据，重写本地简短清单，只保留真正高频且经过当前系统验证的组合键。
+description: "我在 macOS 使用过程中积累的快捷键原始清单，按功能键与组合键保留原有排列。"
 pubDate: 2026-09-10
-resourceType: documentation
-topic: 工程工具
+resourceType: note
+topic: macOS 与效率
 tags: [macOS, 快捷键, 效率]
-sourceUrl: https://support.apple.com/en-us/102650
-author: Apple
-publisher: Apple Support
+sourceKind: personal-note
+sourceUrl: ""
 language: zh-cn
 status: reference
 progress: 100
 rating: null
-completedAt: 2026-09-10
 lastReviewedAt: 2026-09-10
 cover: ""
 coverAlt: ""
-takeaways: [按使用场景而非字母排序, 只收录已经实际使用的快捷键, 标记应用专用和系统级差异]
+takeaways: []
 draft: false
 visibility: public
 ---
 
-## 为什么收藏
+> 这是本人原始学习笔记的公开版本。除移除无法公开访问的本地图片路径并补充站点元数据外，正文保持原有内容与结构。
+# Macbook快捷键
 
-本地清单很短，适合转成一张持续维护的工具卡，而不是扩写成冗长教程。公开版本将以 Apple 官方说明为入口，并按窗口、文本、截图和系统操作等真实场景分组。
+## 一、fn
 
-## 维护原则
+|    按键     |     效果     |
+| :---------: | :----------: |
+|    Fn+F     |     全屏     |
+| Fn + delete | 删除后面内容 |
+|   Fn + Q    |  新建备忘录  |
+|   Fn + N    | 打开通知中心 |
+|   Fn + C    | 打开控制中心 |
 
-只保留已经在当前系统验证、能稳定减少操作成本的快捷键。应用专用快捷键与系统快捷键分开记录，系统大版本变化后重新复核。
+## 二、control
+
+|         按键          |         效果         |
+| :-------------------: | :------------------: |
+|     control + 上      |     打开调度中心     |
+|     control + 下      |     平铺所有窗口     |
+|    control + 左/右    |       切换桌面       |
+|      control + K      | 一键删除光标后的内容 |
+| control + command + D |         翻译         |

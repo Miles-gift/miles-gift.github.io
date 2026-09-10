@@ -14,8 +14,8 @@ const currentLang = Astro.currentLocale || i18n!.defaultLocale;
 const scriptUrl = baseUrl("/pagefind/pagefind.js");
 ---
 
-<MainPageLayout title={`搜索 - ${siteConfig.title}`} description="搜索 Miles 个人站的文章、资料、短想法、经历与固定页面。" lang={currentLang}>
-  <PageHero title="搜索" description="搜索文章、资料、短想法、经历与固定页面。索引在构建时生成，不会把查询发送给远程搜索服务。" align="left" />
+<MainPageLayout title={`搜索 - ${siteConfig.title}`} description="搜索 yoyo 的长篇札记、灵光便笺、学习原文与旅程坐标。" lang={currentLang}>
+  <PageHero title="沿着线索搜索" description="搜索长篇札记、灵光便笺、学习原文与旅程坐标。索引在构建时生成，查询不会发送给远程搜索服务。" align="left" />
   <section class="search-page stage-shell" aria-labelledby="search-page-label" data-pagefind-ignore>
     <h2 id="search-page-label" class="sr-only">全站搜索</h2>
     <form id="site-search-form" role="search">

@@ -7,10 +7,10 @@ import type {
 import type { FriendLink } from "./types/friend"
 
 export const siteConfig: SiteConfig = {
-    title: "Miles",
-    subTitle: "工程、学习与成长",
+    title: "yoyo的旅行日记",
+    subTitle: "把学习、生活与沿途风景写下来",
 
-    favicon: "/brand/miles-mark.svg", // Path of the favicon, relative to the /public directory
+    favicon: "/brand/yoyo-trail.svg", // Path of the favicon, relative to the /public directory
 
     pageSize: 6, // Number of posts per page
     toc: {
@@ -36,15 +36,15 @@ export const siteConfig: SiteConfig = {
 }
 
 export const profileConfig: ProfileConfig = {
-    avatar: "/brand/miles-mark.svg", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
-    name: "Miles",
-    description: "Miles 的工程实践、学习笔记与成长记录。",
+    avatar: "/brand/yoyo-trail.svg", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+    name: "yoyo",
+    description: "yoyo 的学习笔记、生活随笔与成长轨迹。",
     indexPage: "https://github.com/Miles-gift",
     startYear: 2026,
 }
 
 export const licenseConfig: LicenseConfig = {
-	enable: true,
+	enable: false,
 	name: "CC BY-NC-SA 4.0",
 	url: "https://creativecommons.org/licenses/by-nc-sa/4.0/",
 };

@@ -1,6 +1,7 @@
 ---
 import ContentEntryLayout from "@components/content/ContentEntryLayout.astro";
 import Button from "@components/ui/Button.astro";
+import { siteConfig } from "@/config";
 import { getPublicEntries } from "@utils/content-utils";
 import { render } from "astro:content";
 import { i18n } from "astro:config/client";
@@ -16,24 +17,20 @@ export async function getStaticPaths() {
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
 const { entry } = Astro.props;
 const { Content } = await render(entry);
-const typeLabels = { book: "书籍", course: "课程", paper: "论文", article: "文章", documentation: "文档", tool: "工具", video: "视频", podcast: "播客", repository: "代码仓库", dataset: "数据集", website: "网站" } as Record<string, string>;
-const statusLabels = { inbox: "待整理", learning: "学习中", completed: "已完成", reference: "常用参考", archived: "已归档" } as Record<string, string>;
 ---
 
-<ContentEntryLayout pageTitle={`${entry.data.title} - Miles`} title={entry.data.title} description={entry.data.description} eyebrow="资料" lang={currentLang} pubDate={entry.data.pubDate} topic={entry.data.topic} tags={entry.data.tags} backHref="/resources/" backLabel="资料库">
+<ContentEntryLayout pageTitle={`${entry.data.title} - ${siteConfig.title}`} title={entry.data.title} description={entry.data.description} eyebrow="资料库 · 原始笔记" lang={currentLang} pubDate={entry.data.pubDate} topic={entry.data.topic} tags={entry.data.tags} backHref="/resources/" backLabel="资料库">
   <Fragment slot="aside">
     <div class="resource-facts">
-      <div><span>类型</span><strong>{typeLabels[entry.data.resourceType] || entry.data.resourceType}</strong></div>
-      <div><span>状态</span><strong>{statusLabels[entry.data.status] || entry.data.status}</strong></div>
-      <div><span>进度</span><strong>{entry.data.progress}%</strong></div>
-      <div><span>最近复核</span><strong>{entry.data.lastReviewedAt.toISOString().slice(0, 10)}</strong></div>
+      <div><span>格式</span><strong>Markdown 原文</strong></div>
+      <div><span>来源</span><strong>{entry.data.sourceKind === "personal-note" ? "本人原始笔记" : "外部资料"}</strong></div>
+      <div><span>分类</span><strong>{entry.data.topic}</strong></div>
+      <div><span>公开复核</span><strong>{entry.data.lastReviewedAt.toISOString().slice(0, 10)}</strong></div>
     </div>
-    <Button href={entry.data.sourceUrl} target="_blank" variant="secondary" size="small">访问官方来源</Button>
+    {entry.data.sourceKind === "external" && entry.data.sourceUrl && <Button href={entry.data.sourceUrl} target="_blank" variant="secondary" size="small">访问外部来源</Button>}
   </Fragment>
-  <section class="takeaways" aria-labelledby="takeaways-title">
-    <h2 id="takeaways-title">当前收获</h2>
-    <ul>{entry.data.takeaways.map((item) => <li>{item}</li>)}</ul>
-  </section>
+  <p class="original-note">以下为本人原始笔记。除公开展示所需的格式修正外，不作总结或概括。</p>
+  {entry.data.takeaways.length > 0 && <section class="takeaways" aria-labelledby="takeaways-title"><h2 id="takeaways-title">原笔记索引</h2><ul>{entry.data.takeaways.map((item) => <li>{item}</li>)}</ul></section>}
   <Content />
 </ContentEntryLayout>
 
@@ -45,5 +42,6 @@ const statusLabels = { inbox: "待整理", learning: "学习中", completed: "�
   .takeaways { margin-bottom: var(--space-7); padding: var(--space-5); border: 1px solid color-mix(in srgb, var(--color-accent) 22%, var(--color-border)); border-radius: var(--radius-md); background: var(--color-accent-soft); }
   .takeaways h2 { margin-top: 0; }
   .takeaways ul { margin-bottom: 0; }
+  .original-note { margin: 0 0 var(--space-7); padding: var(--space-4) 0; border-block: 1px dashed var(--color-annotation); color: var(--color-annotation); font-family: var(--font-display); font-size: 1.05rem; }
   @media (max-width: 640px) { .resource-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>

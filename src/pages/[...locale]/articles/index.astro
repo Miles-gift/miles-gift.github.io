@@ -1,38 +1,155 @@
 ---
-import CollectionIndexLayout from "@components/content/CollectionIndexLayout.astro";
-import ArticleLibrary from "@components/content/ArticleLibrary.astro";
-import Chip from "@components/ui/Chip.astro";
+import MainPageLayout from "@layouts/MainPageLayout.astro";
 import { siteConfig } from "@/config";
-import { getArticleEntrySort } from "@utils/content-utils";
+import { entryPath, getArticleEntrySort, getPublicEntries } from "@utils/content-utils";
+import { formatFullDate } from "@utils/time";
 import { i18n } from "astro:config/client";
 
 export function getStaticPaths() {
-  return i18n?.locales.map((locale) => ({
-    params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) },
-  }));
+  return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } }));
 }
-
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
 const articles = await getArticleEntrySort(currentLang);
-const topics = [...new Set(articles.map((entry) => entry.data.topic))].sort();
-const tags = [...new Set(articles.flatMap((entry) => entry.data.tags))].sort();
+const thoughts = (await getPublicEntries("thoughts")).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 
-<CollectionIndexLayout
-  title="文章"
-  description="教程、复盘与系统思考。记录问题如何发生、尝试如何展开，以及哪些结论值得再次使用。"
-  pageTitle={`文章 - ${siteConfig.title}`}
-  lang={currentLang}
->
-  <nav class="article-discovery" aria-label="文章主题与标签">
-    <div><strong>主题</strong>{topics.map((topic) => <Chip href={`/topics/${encodeURIComponent(topic)}/`} tone="accent">{topic}</Chip>)}</div>
-    <div><strong>标签</strong>{tags.map((tag) => <Chip href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</Chip>)}</div>
-  </nav>
-  <ArticleLibrary articles={articles} lang={currentLang} />
-</CollectionIndexLayout>
+<MainPageLayout title={`文章 - ${siteConfig.title}`} description="长篇札记与灵光便笺：完整写下所思所想，也及时保存突然出现的念头。" lang={currentLang}>
+  <div class="writing stage-shell">
+    <header class="writing__hero">
+      <div>
+        <p>02 / WRITINGS</p>
+        <h1>写下<br />所思所想</h1>
+      </div>
+      <div class="writing__intro">
+        <blockquote>“长的文字负责想清楚，短的文字负责别忘记。”</blockquote>
+        <nav aria-label="文章分区"><a href="#longform">长篇札记 <b>{articles.length}</b></a><a href="#quick-notes">灵光便笺 <b>{thoughts.length}</b></a><a href="/archives/">时间归档</a></nav>
+      </div>
+    </header>
+
+    <form class="writing__search" id="writing-filter" role="search">
+      <label for="writing-query">在全部文字中筛选</label>
+      <input id="writing-query" name="q" type="search" placeholder="输入标题、主题或一句记得的文字…" />
+      <span id="writing-count" aria-live="polite">{articles.length + thoughts.length} 条记录</span>
+    </form>
+
+    <section id="longform" class="longform" aria-labelledby="longform-title">
+      <header class="section-title">
+        <div><span>LONGFORM</span><h2 id="longform-title">长篇札记</h2></div>
+        <p>日记、复盘和需要展开说清楚的问题。</p>
+      </header>
+      <div class="longform__list">
+        {articles.map((article, index) => (
+          <article data-writing data-search={`${article.data.title} ${article.data.description} ${article.data.topic} ${article.data.tags.join(" ")}`.toLowerCase()}>
+            <a href={entryPath(article)}>
+              <div class="longform__number">{String(index + 1).padStart(2, "0")}</div>
+              <div>
+                <p><span>{article.data.topic}</span><time>{formatFullDate(article.data.pubDate, currentLang)}</time></p>
+                <h3>{article.data.title}</h3>
+                <blockquote>{article.data.description}</blockquote>
+                <ul>{article.data.tags.map((tag) => <li>#{tag}</li>)}</ul>
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section id="quick-notes" class="quick" aria-labelledby="quick-title">
+      <header class="section-title">
+        <div><span>QUICK NOTES</span><h2 id="quick-title">灵光便笺</h2></div>
+        <p>一闪而过的判断、观察和以后想继续追的问题。</p>
+      </header>
+      <div class="quick__list">
+        {thoughts.map((thought, index) => (
+          <article data-writing data-search={`${thought.data.title} ${thought.data.description} ${thought.data.topic} ${thought.data.tags.join(" ")}`.toLowerCase()} style={`--note-index: ${index}`}>
+            <a href={entryPath(thought)}>
+              <time>{formatFullDate(thought.data.pubDate, currentLang)}</time>
+              <h3>{thought.data.title}</h3>
+              <p>{thought.data.description}</p>
+              <span>#{thought.data.topic}</span>
+            </a>
+          </article>
+        ))}
+      </div>
+    </section>
+    <p id="writing-empty" class="writing__empty" hidden>没有找到匹配的文字。试试更短的关键词，或清空输入框。</p>
+  </div>
+</MainPageLayout>
 
 <style>
-  .article-discovery { display: grid; gap: var(--space-3); margin-bottom: var(--space-7); padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-solid); }
-  .article-discovery div { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
-  .article-discovery strong { min-width: 3rem; color: var(--color-ink-secondary); font-size: var(--text-small); }
+  .writing { padding-bottom: var(--space-9); }
+  .writing__hero { display: grid; min-height: min(43rem, calc(100svh - var(--header-height))); grid-template-columns: 1.1fr .9fr; align-items: center; gap: clamp(3rem, 8vw, 8rem); border-bottom: 1px solid var(--color-border-strong); }
+  .writing__hero > div:first-child > p { margin: 0 0 1rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
+  h1 { margin: 0; font-family: var(--font-display); font-size: var(--text-display-lg); font-weight: 500; letter-spacing: -.055em; line-height: .9; }
+  .writing__intro blockquote { margin: 0 0 2.5rem; color: var(--color-annotation); font-family: var(--font-display); font-size: clamp(1.6rem, 3.2vw, 2.8rem); line-height: 1.4; transform: rotate(-1.5deg); }
+  .writing__intro nav { display: grid; border-top: 1px solid var(--color-border); }
+  .writing__intro nav a { display: flex; justify-content: space-between; padding: .85rem 0; border-bottom: 1px solid var(--color-border); color: var(--color-ink); font-weight: 650; text-decoration: none; }
+  .writing__intro nav a:hover { color: var(--color-annotation); padding-left: .5rem; }
+  .writing__intro nav a { transition: padding var(--duration-normal), color var(--duration-fast); }
+  .writing__intro nav b { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-weight: 400; }
+  .writing__search { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1.2rem; margin-block: 3rem var(--section-space); padding: 1rem 0; border-bottom: 2px solid var(--color-ink); }
+  .writing__search label { color: var(--color-annotation); font-family: var(--font-display); font-size: 1.1rem; }
+  .writing__search input { width: 100%; border: 0; background: transparent; color: var(--color-ink); outline: 0; }
+  .writing__search input::placeholder { color: var(--color-ink-tertiary); }
+  .writing__search span { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .8rem; }
+  .section-title { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin-bottom: 3rem; }
+  .section-title span { color: var(--color-accent); font-family: var(--font-editorial); font-size: .75rem; font-weight: 600; letter-spacing: .12em; }
+  .section-title h2 { margin: .3rem 0 0; font-family: var(--font-display); font-size: var(--text-display-md); font-weight: 500; line-height: 1; }
+  .section-title > p { max-width: 27rem; margin: 0; color: var(--color-ink-secondary); text-align: right; }
+  .longform { scroll-margin-top: calc(var(--header-height) + 1rem); }
+  .longform__list { border-top: 1px solid var(--color-border-strong); }
+  .longform article[hidden], .quick article[hidden] { display: none; }
+  .longform article > a { display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: 2rem; padding-block: clamp(2rem, 5vw, 4.5rem); border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
+  .longform__number { color: var(--color-annotation); font-family: var(--font-editorial); font-size: 2rem; }
+  .longform article p { display: flex; gap: 1.2rem; margin: 0 0 1rem; color: var(--color-ink-tertiary); font-size: .8rem; }
+  .longform article p span { color: var(--color-accent); font-weight: 650; }
+  .longform h3 { max-width: 18ch; margin: 0; font-family: var(--font-display); font-size: clamp(2rem, 4.5vw, 4.2rem); font-weight: 500; letter-spacing: -.035em; line-height: 1.08; transition: color var(--duration-normal), transform var(--duration-normal); }
+  .longform article:hover h3 { color: var(--color-annotation); transform: translateX(.5rem); }
+  .longform blockquote { max-width: 43rem; margin: 1.3rem 0; color: var(--color-ink-secondary); font-family: var(--font-reading); }
+  .longform ul { display: flex; flex-wrap: wrap; gap: .8rem; margin: 0; padding: 0; color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .76rem; list-style: none; }
+  .quick { padding-top: var(--section-space); scroll-margin-top: calc(var(--header-height) + 1rem); }
+  .quick__list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; align-items: start; }
+  .quick article:nth-child(3n + 2) { margin-top: 2.5rem; }
+  .quick article > a { display: flex; min-height: 18rem; flex-direction: column; padding: 1.5rem; border-top: 5px solid var(--color-growth); background: var(--color-growth-soft); box-shadow: 5px 7px 0 color-mix(in srgb, var(--color-ink) 8%, transparent); color: var(--color-ink); text-decoration: none; transform: rotate(calc((var(--note-index) - 1) * .3deg)); transition: transform var(--duration-normal); }
+  .quick article:nth-child(even) > a { border-color: var(--color-annotation); background: var(--color-annotation-soft); }
+  .quick article > a:hover { transform: rotate(0) translateY(-5px); }
+  .quick time, .quick article > a > span { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .75rem; }
+  .quick h3 { margin: 1.2rem 0 .7rem; font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; }
+  .quick p { margin: 0 0 1rem; color: var(--color-ink-secondary); line-height: 1.7; }
+  .quick article > a > span { margin-top: auto; }
+  .writing__empty { margin-top: 3rem; padding: 3rem; border: 1px dashed var(--color-annotation); color: var(--color-ink-secondary); font-family: var(--font-display); font-size: 1.2rem; text-align: center; }
+  @media (max-width: 800px) {
+    .writing__hero { grid-template-columns: 1fr; min-height: auto; padding-block: 5rem; }
+    .quick__list { grid-template-columns: 1fr 1fr; }.quick article:nth-child(3n + 2) { margin-top: 0; }.quick article:nth-child(even) { margin-top: 2rem; }
+  }
+  @media (max-width: 580px) {
+    .writing__search { grid-template-columns: 1fr auto; }.writing__search label { grid-column: 1 / -1; }.section-title { align-items: flex-start; flex-direction: column; }.section-title > p { text-align: left; }
+    .longform article > a { grid-template-columns: 2.2rem 1fr; gap: 1rem; }.longform__number { font-size: 1rem; }
+    .quick__list { grid-template-columns: 1fr; }.quick article:nth-child(even) { margin-top: 0; }
+  }
 </style>
+
+<script>
+  function initWritingFilter() {
+    const form = document.getElementById("writing-filter");
+    const input = document.getElementById("writing-query") as HTMLInputElement | null;
+    const count = document.getElementById("writing-count");
+    const empty = document.getElementById("writing-empty");
+    if (!form || !input || form.dataset.bound === "true") return;
+    form.dataset.bound = "true";
+    const items = [...document.querySelectorAll<HTMLElement>("[data-writing]")];
+    const apply = () => {
+      const query = input.value.trim().toLowerCase();
+      let visible = 0;
+      items.forEach((item) => {
+        const show = !query || item.dataset.search?.includes(query);
+        item.hidden = !show;
+        if (show) visible += 1;
+      });
+      if (count) count.textContent = `${visible} 条记录`;
+      if (empty) empty.hidden = visible > 0;
+    };
+    input.addEventListener("input", apply);
+  }
+  document.addEventListener("astro:page-load", initWritingFilter);
+</script>

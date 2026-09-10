@@ -1,24 +1,21 @@
 :root {
   color-scheme: light;
-
-  /* Typography */
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-display: "LXGW Bright", "Kaiti SC", "STKaiti", serif;
+  --font-editorial: "EB Garamond", "LXGW Bright", "Noto Serif SC", serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-reading: "Noto Serif SC", "Songti SC", "STSong", serif;
   --font-mono: "JetBrains Mono Variable", "SFMono-Regular", Consolas, monospace;
-  --text-display-xl: clamp(3.5rem, 9vw, 7.5rem);
-  --text-display-lg: clamp(2.5rem, 6vw, 5rem);
-  --text-display-md: clamp(2rem, 4vw, 3.5rem);
-  --text-title: clamp(1.5rem, 2.2vw, 2rem);
+  --text-display-xl: clamp(4.25rem, 11vw, 9.5rem);
+  --text-display-lg: clamp(3rem, 7vw, 6.75rem);
+  --text-display-md: clamp(2.25rem, 4.6vw, 4.5rem);
+  --text-title: clamp(1.45rem, 2.15vw, 2rem);
   --text-body: 1rem;
   --text-small: 0.875rem;
-  --leading-tight: 1.05;
-  --leading-heading: 1.16;
-  --leading-body: 1.72;
-  --tracking-tight: -0.035em;
-
-  /* Layout and spacing */
-  --stage-width: min(1180px, calc(100vw - 3rem));
+  --leading-tight: 0.98;
+  --leading-heading: 1.12;
+  --leading-body: 1.78;
+  --tracking-tight: -0.025em;
+  --stage-width: min(1160px, calc(100vw - 3rem));
   --content-width: min(760px, calc(100vw - 3rem));
   --header-width: var(--stage-width);
   --page-width: var(--content-width);
@@ -31,63 +28,57 @@
   --space-7: 3rem;
   --space-8: 4rem;
   --space-9: 6rem;
-  --section-space: clamp(5rem, 10vw, 9rem);
-  --header-height: 4.5rem;
+  --section-space: clamp(5.5rem, 11vw, 9rem);
+  --header-height: 4.75rem;
   --toc-offset-left: calc(50vw + var(--page-width) / 2 + 3rem);
   --toc-width: calc((100vw - var(--page-width)) / 2 - 3rem);
   --category-width: min(calc((100vw - var(--page-width)) / 3), 200px);
-
-  /* Shape and elevation */
-  --radius-sm: 0.625rem;
-  --radius-md: 1rem;
-  --radius-lg: 1.5rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.85rem;
+  --radius-lg: 1.25rem;
   --radius-xl: 2rem;
   --radius-pill: 999px;
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px rgb(0 0 0 / 0.04);
-  --shadow-md: 0 16px 50px rgb(0 0 0 / 0.09);
-  --shadow-lg: 0 30px 90px rgb(0 0 0 / 0.14);
-  --blur-surface: 22px;
-
-  /* Motion */
+  --shadow-sm: 0 1px 1px rgb(16 32 42 / 0.04), 0 12px 34px rgb(16 32 42 / 0.055);
+  --shadow-md: 0 22px 70px rgb(16 32 42 / 0.11);
+  --shadow-lg: 0 34px 100px rgb(16 32 42 / 0.16);
+  --blur-surface: 20px;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
-  --duration-fast: 140ms;
-  --duration-normal: 240ms;
-  --duration-slow: 520ms;
-
-  /* Layering */
+  --duration-fast: 150ms;
+  --duration-normal: 260ms;
+  --duration-slow: 680ms;
   --z-base: 0;
   --z-sticky: 40;
   --z-header: 50;
   --z-overlay: 80;
   --z-dialog: 90;
   --z-toast: 100;
-
-  /* Light theme */
-  --color-canvas: #f5f5f7;
-  --color-canvas-raised: #ffffff;
-  --color-surface: rgb(255 255 255 / 0.78);
-  --color-surface-solid: #ffffff;
-  --color-surface-subtle: #ececf0;
-  --color-ink: #1d1d1f;
-  --color-ink-secondary: #5f5f67;
-  --color-ink-tertiary: #86868b;
-  --color-border: rgb(29 29 31 / 0.12);
-  --color-border-strong: rgb(29 29 31 / 0.2);
-  --color-accent: #0066cc;
-  --color-accent-hover: #004f9e;
-  --color-accent-soft: #e7f2ff;
-  --color-focus: #0071e3;
-  --color-success: #16844a;
-  --color-warning: #9a6700;
-  --color-danger: #c91c2b;
-  --selection-bg-color: #0066cc;
-  --selection-text-color: #ffffff;
-  --scrollbar-thumb: #b7b7bd;
-  --scrollbar-thumb-hover: #8e8e95;
+  --color-canvas: #f3f6f4;
+  --color-canvas-raised: #fffefb;
+  --color-surface: rgb(255 254 251 / 0.82);
+  --color-surface-solid: #fffefb;
+  --color-surface-subtle: #e6ece8;
+  --color-ink: #172b3a;
+  --color-ink-secondary: #52646b;
+  --color-ink-tertiary: #7d8b8d;
+  --color-border: rgb(23 43 58 / 0.14);
+  --color-border-strong: rgb(23 43 58 / 0.28);
+  --color-accent: #2e668c;
+  --color-accent-hover: #244f6c;
+  --color-accent-soft: #dfeaf0;
+  --color-annotation: #b84f63;
+  --color-annotation-soft: #f4dfe3;
+  --color-growth: #5f8068;
+  --color-growth-soft: #dfebe2;
+  --color-focus: #2e668c;
+  --color-success: #487558;
+  --color-warning: #946817;
+  --color-danger: #b43b4f;
+  --selection-bg-color: #b84f63;
+  --selection-text-color: #fffefb;
+  --scrollbar-thumb: #a8b4ae;
+  --scrollbar-thumb-hover: #75857f;
   --scrollbar-track: transparent;
-
-  /* Compatibility aliases used by imported Momo components. */
   --bg-color: var(--color-canvas);
   --text-color: var(--color-ink);
   --text-color-70: var(--color-ink-secondary);
@@ -96,55 +87,58 @@
   --button-hover-color: var(--color-surface-subtle);
   --button-border-color: var(--color-border);
   --border-color: var(--color-border);
-  --shadow-color: rgb(0 0 0 / 0.12);
-  --warning-text-color: #6f4b00;
-  --warning-bg-color: #fff7df;
-  --warning-border-color: #d59a00;
-  --danger-text-color: #77101a;
-  --danger-bg-color: #fff0f1;
+  --shadow-color: rgb(16 32 42 / 0.12);
+  --warning-text-color: #72500e;
+  --warning-bg-color: #fff8df;
+  --warning-border-color: #b9801c;
+  --danger-text-color: #7a2030;
+  --danger-bg-color: #fff0f2;
   --danger-border-color: var(--color-danger);
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --color-canvas: #000000;
-  --color-canvas-raised: #101012;
-  --color-surface: rgb(28 28 30 / 0.76);
-  --color-surface-solid: #1c1c1e;
-  --color-surface-subtle: #2c2c2e;
-  --color-ink: #f5f5f7;
-  --color-ink-secondary: #aeaeb2;
-  --color-ink-tertiary: #7c7c80;
-  --color-border: rgb(255 255 255 / 0.14);
-  --color-border-strong: rgb(255 255 255 / 0.22);
-  --color-accent: #2997ff;
-  --color-accent-hover: #66b5ff;
-  --color-accent-soft: #0a2a45;
-  --color-focus: #64b5ff;
-  --color-success: #30d158;
-  --color-warning: #ffd60a;
-  --color-danger: #ff453a;
-  --selection-bg-color: #0a67bd;
-  --scrollbar-thumb: #4c4c50;
-  --scrollbar-thumb-hover: #6d6d72;
-  --scrollbar-track: transparent;
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.28);
-  --shadow-md: 0 16px 50px rgb(0 0 0 / 0.42);
-  --shadow-lg: 0 30px 90px rgb(0 0 0 / 0.56);
-  --shadow-color: rgb(0 0 0 / 0.45);
-  --warning-text-color: #ffe169;
-  --warning-bg-color: #332900;
-  --warning-border-color: #a67c00;
-  --danger-text-color: #ffb3b8;
-  --danger-bg-color: #3b171b;
-  --danger-border-color: #ff453a;
+  --color-canvas: #10202a;
+  --color-canvas-raised: #172b36;
+  --color-surface: rgb(23 43 54 / 0.82);
+  --color-surface-solid: #192f3a;
+  --color-surface-subtle: #223c47;
+  --color-ink: #eef1e8;
+  --color-ink-secondary: #b9c5be;
+  --color-ink-tertiary: #899c96;
+  --color-border: rgb(238 241 232 / 0.15);
+  --color-border-strong: rgb(238 241 232 / 0.29);
+  --color-accent: #83b7d1;
+  --color-accent-hover: #a2cce0;
+  --color-accent-soft: #203f50;
+  --color-annotation: #e48a9a;
+  --color-annotation-soft: #4a2c36;
+  --color-growth: #93b49a;
+  --color-growth-soft: #294538;
+  --color-focus: #83b7d1;
+  --color-success: #93b49a;
+  --color-warning: #e3bf6c;
+  --color-danger: #ee8794;
+  --selection-bg-color: #b9586c;
+  --scrollbar-thumb: #4b6268;
+  --scrollbar-thumb-hover: #70888c;
+  --shadow-sm: 0 1px 1px rgb(0 0 0 / 0.24), 0 12px 34px rgb(0 0 0 / 0.18);
+  --shadow-md: 0 22px 70px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 34px 100px rgb(0 0 0 / 0.4);
+  --shadow-color: rgb(0 0 0 / 0.42);
+  --warning-text-color: #f3d98c;
+  --warning-bg-color: #3c311e;
+  --warning-border-color: #aa8537;
+  --danger-text-color: #f4acb6;
+  --danger-bg-color: #45262d;
+  --danger-border-color: #ee8794;
 }
 
 @media (max-width: 640px) {
   :root {
-    --stage-width: min(100% - 1.5rem, 1180px);
+    --stage-width: min(100% - 1.5rem, 1160px);
     --content-width: min(100% - 1.5rem, 760px);
-    --header-height: 4rem;
-    --section-space: 4.5rem;
+    --header-height: 4.25rem;
+    --section-space: 4.75rem;
   }
 }

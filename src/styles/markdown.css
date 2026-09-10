@@ -164,12 +164,12 @@
 }
 
 .markdown-content blockquote {
-  font-family: "LXGW Bright Medium";
+  font-family: var(--font-display);
   margin: 1.5rem 0;
   padding: 0.1rem 1.2rem;
-  border-left: 3px solid var(--color-accent);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  background-color: var(--color-surface-subtle);
+  border-left: 3px solid var(--color-annotation);
+  border-radius: 0;
+  background-color: var(--color-annotation-soft);
   color: var(--color-ink-secondary);
 }
 
@@ -237,6 +237,7 @@
   margin: 1.5rem 0;
   border-collapse: collapse;
   border-spacing: 0;
+  overflow-x: auto;
 }
 
 .markdown-content tbody tr {

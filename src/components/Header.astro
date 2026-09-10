@@ -1,56 +1,42 @@
 ---
 import "@styles/global.css";
 import { Icon } from "astro-icon/components";
-import { profileConfig, siteConfig } from "@/config";
+import { siteConfig } from "@/config";
 import ThemeIcon from "./control/ThemeIcon.astro";
 import IconButton from "./ui/IconButton.astro";
 import { baseUrl, getRelativeLocaleUrl } from "@utils/url-utils";
 import { i18n } from "astro:config/client";
-import i18nit from "@i18n/translation";
-import { getArticleEntrySort } from "@utils/content-utils";
 
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
-const t = i18nit(currentLang);
-const articles = await getArticleEntrySort(currentLang);
-const categories = [...new Set(articles.map((article) => article.data.topic))].sort();
-
 const indexPage = getRelativeLocaleUrl(currentLang, "/");
-const articlesPage = getRelativeLocaleUrl(currentLang, "/articles/");
-const resourcesPage = getRelativeLocaleUrl(currentLang, "/resources/");
-const journeyPage = getRelativeLocaleUrl(currentLang, "/journey/");
-const aboutPage = getRelativeLocaleUrl(currentLang, "/about/");
 const currentPath = Astro.url.pathname;
-const isActive = (path: string) => path === indexPage ? currentPath === path : currentPath.startsWith(path);
-const introPage = profileConfig.indexPage || import.meta.env.BASE_URL;
-
 const navItems = [
-  { href: indexPage, label: "首页" },
-  { href: articlesPage, label: "文章" },
-  { href: resourcesPage, label: "资料库" },
-  { href: journeyPage, label: "旅程" },
-  { href: aboutPage, label: "关于" },
+  { href: indexPage, label: "首页", mark: "01" },
+  { href: getRelativeLocaleUrl(currentLang, "/articles/"), label: "文章", mark: "02" },
+  { href: getRelativeLocaleUrl(currentLang, "/resources/"), label: "资料库", mark: "03" },
+  { href: getRelativeLocaleUrl(currentLang, "/journey/"), label: "旅程", mark: "04" },
+  { href: getRelativeLocaleUrl(currentLang, "/about/"), label: "关于", mark: "05" },
 ];
+const isActive = (path: string) => path === indexPage ? currentPath === path : currentPath.startsWith(path);
 ---
 
 <header id="main-header" class="site-header">
   <div class="site-header__shell stage-shell">
     <a href={indexPage} class="site-brand" aria-label={`${siteConfig.title} 首页`}>
-      <img src="/brand/miles-mark.svg" width="34" height="34" alt="" />
-      <span>{siteConfig.title}</span>
+      <img src="/brand/yoyo-trail.svg" width="36" height="36" alt="" />
+      <span>yoyo<span class="site-brand__long">的旅行日记</span></span>
     </a>
 
     <nav class="desktop-nav" aria-label="主导航">
       {navItems.map((item) => (
         <a href={item.href} class:list={[isActive(item.href) && "is-active"]} aria-current={isActive(item.href) ? "page" : undefined}>
-          {item.label}
+          <small>{item.mark}</small>{item.label}
         </a>
       ))}
     </nav>
 
     <div class="site-header__tools">
-      <IconButton id="search-button" label="搜索">
-        <Icon name="fa6-solid:magnifying-glass" class="w-4 h-4" />
-      </IconButton>
+      <IconButton id="search-button" label="搜索"><Icon name="fa6-solid:magnifying-glass" class="w-4 h-4" /></IconButton>
       <ThemeIcon class="ui-icon-button" />
       <IconButton id="mobile-menu-button" label="打开菜单" controls="mobile-menu-container" expanded={false} class="mobile-menu-trigger">
         <Icon name="fa6-solid:bars" class="w-5 h-5" />
@@ -63,44 +49,18 @@ const navItems = [
   <button id="mobile-menu-overlay" class="mobile-menu__overlay" aria-label="关闭菜单" tabindex="-1"></button>
   <aside id="mobile-menu-drawer" class="mobile-menu__drawer" role="dialog" aria-modal="true" aria-label="站点导航">
     <div class="mobile-menu__head">
-      <a href={indexPage} class="site-brand">
-        <img src="/brand/miles-mark.svg" width="34" height="34" alt="" />
-        <span>{siteConfig.title}</span>
-      </a>
-      <IconButton id="mobile-menu-close" label="关闭菜单">
-        <Icon name="fa6-solid:xmark" class="w-5 h-5" />
-      </IconButton>
+      <a href={indexPage} class="site-brand"><img src="/brand/yoyo-trail.svg" width="36" height="36" alt="" /><span>yoyo的旅行日记</span></a>
+      <IconButton id="mobile-menu-close" label="关闭菜单"><Icon name="fa6-solid:xmark" class="w-5 h-5" /></IconButton>
     </div>
-
+    <p class="mobile-menu__note">Pick a trail, and keep walking.</p>
     <nav class="mobile-nav" aria-label="移动端主导航">
       {navItems.map((item) => (
         <a href={item.href} class:list={[isActive(item.href) && "is-active"]} aria-current={isActive(item.href) ? "page" : undefined}>
-          {item.label}
-          <Icon name="fa6-solid:chevron-right" class="w-3 h-3" />
+          <small>{item.mark}</small><span>{item.label}</span>
         </a>
       ))}
     </nav>
-
-    {categories.length > 0 && (
-      <div class="mobile-categories">
-        <button id="mobile-category-toggle" aria-expanded="false" aria-controls="mobile-category-list">
-          <span>{t("category")}</span>
-          <Icon id="mobile-category-chevron" name="fa6-solid:chevron-down" class="w-3 h-3" />
-        </button>
-        <div id="mobile-category-list" class="mobile-categories__list" hidden>
-          {categories.map((category) => (
-            <a href={getRelativeLocaleUrl(currentLang, `/archives/?category=${encodeURIComponent(category)}`)}>
-              {category}
-            </a>
-          ))}
-        </div>
-      </div>
-    )}
-
-    <div class="mobile-menu__footer">
-      <p>{siteConfig.subTitle}</p>
-      <p>© {profileConfig.startYear}–{new Date().getFullYear()} <a href={introPage}>{profileConfig.name}</a></p>
-    </div>
+    <div class="mobile-menu__footer">学习在发生，记录也在生长。</div>
   </aside>
 </div>
 
@@ -111,198 +71,44 @@ const navItems = [
     z-index: var(--z-header);
     height: var(--header-height);
     border-bottom: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-canvas) 76%, transparent);
-    -webkit-backdrop-filter: blur(var(--blur-surface)) saturate(170%);
+    background: color-mix(in srgb, var(--color-canvas) 80%, transparent);
+    -webkit-backdrop-filter: blur(var(--blur-surface)) saturate(125%);
     transition: transform var(--duration-normal) var(--ease-standard);
   }
-
-  @supports (backdrop-filter: blur(1px)) {
-    .site-header { backdrop-filter: blur(var(--blur-surface)) saturate(170%); }
-  }
-
-  .site-header__shell {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    height: 100%;
-  }
-
-  .site-brand {
-    display: inline-flex;
-    width: max-content;
-    align-items: center;
-    gap: var(--space-2);
-    color: var(--color-ink);
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    font-weight: 720;
-    letter-spacing: -0.02em;
-    text-decoration: none;
-  }
-
-  .site-brand img {
-    border-radius: 0.55rem;
-  }
-
-  .desktop-nav {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    padding: 0.28rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--color-surface-solid) 62%, transparent);
-  }
-
-  .desktop-nav a {
-    padding: 0.42rem 0.78rem;
-    border-radius: var(--radius-pill);
-    color: var(--color-ink-secondary);
-    font-size: var(--text-small);
-    font-weight: 600;
-    line-height: 1.25;
-    text-decoration: none;
-    transition: color var(--duration-fast), background-color var(--duration-fast);
-  }
-
-  .desktop-nav a:hover,
-  .desktop-nav a.is-active {
-    color: var(--color-ink);
-    background: var(--color-surface-solid);
-  }
-
-  .site-header__tools {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-2);
-  }
-
+  @supports (backdrop-filter: blur(1px)) { .site-header { backdrop-filter: blur(var(--blur-surface)) saturate(125%); } }
+  .site-header__shell { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 100%; }
+  .site-brand { display: inline-flex; width: max-content; align-items: center; gap: .65rem; color: var(--color-ink); font-family: var(--font-display); font-size: 1.02rem; font-weight: 600; text-decoration: none; }
+  .site-brand img { border-radius: .7rem; box-shadow: 0 5px 16px rgb(23 43 58 / .12); transition: transform var(--duration-normal) var(--ease-emphasized); }
+  .site-brand:hover img { transform: rotate(-7deg) scale(1.04); }
+  .site-brand__long { margin-left: .05em; color: var(--color-ink-secondary); font-weight: 400; }
+  .desktop-nav { display: flex; align-items: stretch; gap: 1.35rem; align-self: stretch; }
+  .desktop-nav a { position: relative; display: flex; align-items: center; gap: .34rem; color: var(--color-ink-secondary); font-size: .9rem; font-weight: 600; text-decoration: none; transition: color var(--duration-fast); }
+  .desktop-nav a::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--color-annotation); content: ""; transform: scaleX(0); transform-origin: left; transition: transform var(--duration-normal) var(--ease-emphasized); }
+  .desktop-nav a:hover, .desktop-nav a.is-active { color: var(--color-ink); }
+  .desktop-nav a:hover::after, .desktop-nav a.is-active::after { transform: scaleX(1); }
+  .desktop-nav small { color: var(--color-annotation); font-family: var(--font-editorial); font-size: .66rem; font-weight: 600; }
+  .site-header__tools { display: flex; justify-content: flex-end; gap: var(--space-2); }
   :global(.mobile-menu-trigger) { display: none; }
-
-  .mobile-menu {
-    position: fixed;
-    inset: 0;
-    z-index: var(--z-overlay);
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  .mobile-menu.is-open {
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  .mobile-menu__overlay {
-    position: absolute;
-    inset: 0;
-    border: 0;
-    background: rgb(0 0 0 / 0.46);
-    opacity: 0;
-    transition: opacity var(--duration-normal) var(--ease-standard);
-  }
-
+  .mobile-menu { position: fixed; inset: 0; z-index: var(--z-overlay); visibility: hidden; pointer-events: none; }
+  .mobile-menu.is-open { visibility: visible; pointer-events: auto; }
+  .mobile-menu__overlay { position: absolute; inset: 0; border: 0; background: rgb(8 18 24 / .58); opacity: 0; transition: opacity var(--duration-normal); }
   .mobile-menu.is-open .mobile-menu__overlay { opacity: 1; }
-
-  .mobile-menu__drawer {
-    position: absolute;
-    inset: 0 0 0 auto;
-    display: flex;
-    width: min(88vw, 24rem);
-    flex-direction: column;
-    padding: var(--space-5);
-    border-left: 1px solid var(--color-border);
-    background: var(--color-canvas-raised);
-    box-shadow: var(--shadow-lg);
-    transform: translateX(102%);
-    transition: transform var(--duration-normal) var(--ease-emphasized);
-  }
-
+  .mobile-menu__drawer { position: absolute; inset: 0 0 0 auto; display: flex; width: min(88vw, 24rem); flex-direction: column; padding: var(--space-5); border-left: 1px solid var(--color-border); background: var(--color-canvas-raised); box-shadow: var(--shadow-lg); transform: translateX(102%); transition: transform var(--duration-normal) var(--ease-emphasized); }
   .mobile-menu.is-open .mobile-menu__drawer { transform: translateX(0); }
-
-  .mobile-menu__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: var(--space-5);
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .mobile-nav {
-    display: grid;
-    gap: var(--space-2);
-    padding-block: var(--space-6);
-  }
-
-  .mobile-nav a {
-    display: flex;
-    min-height: 3.25rem;
-    align-items: center;
-    justify-content: space-between;
-    padding-inline: var(--space-4);
-    border-radius: var(--radius-md);
-    color: var(--color-ink);
-    font-size: 1.1rem;
-    font-weight: 650;
-    text-decoration: none;
-  }
-
-  .mobile-nav a:hover,
-  .mobile-nav a.is-active { background: var(--color-surface-subtle); }
-
-  .mobile-categories {
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--color-border);
-  }
-
-  .mobile-categories > button {
-    display: flex;
-    width: 100%;
-    min-height: 2.75rem;
-    align-items: center;
-    justify-content: space-between;
-    padding-inline: var(--space-3);
-    border: 0;
-    background: transparent;
-    color: var(--color-ink-secondary);
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  .mobile-categories__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    padding-top: var(--space-3);
-  }
-
-  .mobile-categories__list[hidden] { display: none; }
-
-  .mobile-categories__list a {
-    padding: 0.35rem 0.7rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    color: var(--color-ink-secondary);
-    font-size: var(--text-small);
-    text-decoration: none;
-  }
-
-  .mobile-menu__footer {
-    margin-top: auto;
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--color-border);
-    color: var(--color-ink-tertiary);
-    font-size: var(--text-small);
-  }
-
-  .mobile-menu__footer p { margin: 0.2rem 0; }
-  .mobile-menu__footer a { color: inherit; }
-
-  @media (max-width: 775px) {
+  .mobile-menu__head { display: flex; align-items: center; justify-content: space-between; padding-bottom: var(--space-5); border-bottom: 1px solid var(--color-border); }
+  .mobile-menu__note { margin: var(--space-6) 0 var(--space-4); color: var(--color-annotation); font-family: var(--font-editorial); font-size: 1.3rem; font-style: italic; }
+  .mobile-nav { display: grid; }
+  .mobile-nav a { display: grid; grid-template-columns: 2.4rem 1fr; align-items: baseline; padding: .85rem 0; border-bottom: 1px dashed var(--color-border); color: var(--color-ink); font-family: var(--font-display); font-size: 1.55rem; text-decoration: none; }
+  .mobile-nav small { color: var(--color-annotation); font-family: var(--font-editorial); font-size: .8rem; }
+  .mobile-nav a.is-active span { text-decoration: underline wavy var(--color-annotation); text-underline-offset: .35rem; }
+  .mobile-menu__footer { margin-top: auto; padding-top: var(--space-5); border-top: 1px solid var(--color-border); color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  @media (max-width: 850px) {
     .site-header__shell { grid-template-columns: 1fr auto; }
     .desktop-nav { display: none; }
     :global(.mobile-menu-trigger) { display: inline-grid; }
     .header-hidden { transform: translateY(-102%); }
   }
+  @media (max-width: 430px) { .site-brand__long { display: none; } }
 </style>
 
 <script>
@@ -311,14 +117,8 @@ const navItems = [
     const closeButton = document.getElementById("mobile-menu-close");
     const container = document.getElementById("mobile-menu-container");
     const overlay = document.getElementById("mobile-menu-overlay");
-    const drawer = document.getElementById("mobile-menu-drawer");
-    const categoryToggle = document.getElementById("mobile-category-toggle");
-    const categoryList = document.getElementById("mobile-category-list");
-    const categoryChevron = document.getElementById("mobile-category-chevron");
-
     if (!menuButton || !container || menuButton.dataset.bound === "true") return;
     menuButton.dataset.bound = "true";
-
     const openMenu = () => {
       container.classList.add("is-open");
       container.setAttribute("aria-hidden", "false");
@@ -326,7 +126,6 @@ const navItems = [
       document.body.style.overflow = "hidden";
       window.requestAnimationFrame(() => closeButton?.focus());
     };
-
     const closeMenu = () => {
       container.classList.remove("is-open");
       container.setAttribute("aria-hidden", "true");
@@ -334,54 +133,26 @@ const navItems = [
       document.body.style.overflow = "";
       menuButton.focus();
     };
-
     menuButton.addEventListener("click", openMenu);
     closeButton?.addEventListener("click", closeMenu);
     overlay?.addEventListener("click", closeMenu);
-    drawer?.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && container.classList.contains("is-open")) closeMenu();
-    });
-
-    categoryToggle?.addEventListener("click", () => {
-      const expanded = categoryToggle.getAttribute("aria-expanded") === "true";
-      categoryToggle.setAttribute("aria-expanded", String(!expanded));
-      if (categoryList) categoryList.hidden = expanded;
-      categoryChevron?.classList.toggle("rotate-180", !expanded);
-    });
+    container.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && container.classList.contains("is-open")) closeMenu(); });
   }
 
   function initHeaderScroll() {
     const header = document.getElementById("main-header");
     if (!header || header.dataset.scrollBound === "true") return;
     header.dataset.scrollBound = "true";
-    let lastScrollY = window.scrollY;
-    let ticking = false;
-
-    const update = () => {
-      const currentScrollY = window.scrollY;
-      if (window.innerWidth < 776) {
-        if (currentScrollY <= 40 || currentScrollY < lastScrollY) header.classList.remove("header-hidden");
-        else if (currentScrollY > 100) header.classList.add("header-hidden");
-      } else {
-        header.classList.remove("header-hidden");
-      }
-      lastScrollY = currentScrollY;
-      ticking = false;
-    };
-
+    let previous = window.scrollY;
     window.addEventListener("scroll", () => {
-      if (!ticking) {
-        window.requestAnimationFrame(update);
-        ticking = true;
-      }
+      const current = window.scrollY;
+      if (window.innerWidth < 851 && current > 100 && current > previous) header.classList.add("header-hidden");
+      else header.classList.remove("header-hidden");
+      previous = current;
     }, { passive: true });
   }
-
-  document.addEventListener("astro:page-load", () => {
-    initSiteHeader();
-    initHeaderScroll();
-  });
+  document.addEventListener("astro:page-load", () => { initSiteHeader(); initHeaderScroll(); });
 </script>
 
 {import.meta.env.PROD && (
@@ -401,7 +172,6 @@ const navItems = [
         window.pagefindLoading = false;
       }
     }
-
     function attachSearchListener() {
       const button = document.getElementById("search-button");
       if (button && button.dataset.searchBound !== "true") {

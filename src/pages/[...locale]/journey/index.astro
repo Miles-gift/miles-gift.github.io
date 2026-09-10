@@ -1,5 +1,5 @@
 ---
-import CollectionIndexLayout from "@components/content/CollectionIndexLayout.astro";
+import MainPageLayout from "@layouts/MainPageLayout.astro";
 import { siteConfig } from "@/config";
 import { entryPath, getPublicEntries } from "@utils/content-utils";
 import { i18n } from "astro:config/client";
@@ -7,51 +7,149 @@ import { i18n } from "astro:config/client";
 export function getStaticPaths() {
   return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } }));
 }
-
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
-const journey = (await getPublicEntries("journey")).sort((a, b) => b.data.order - a.data.order);
-const kindLabels = { education: "教育", work: "工作", project: "项目", life: "生活", milestone: "节点" } as Record<string, string>;
+const all = await getPublicEntries("journey");
+const education = all.filter((item) => item.data.kind === "education").sort((a, b) => a.data.startDate.localeCompare(b.data.startDate));
+const services = all.filter((item) => item.data.kind === "service").sort((a, b) => b.data.startDate.localeCompare(a.data.startDate));
+const awards = all.filter((item) => item.data.kind === "award" || item.data.kind === "milestone").sort((a, b) => b.data.startDate.localeCompare(a.data.startDate));
 ---
 
-<CollectionIndexLayout
-  title="旅程"
-  description="教育、成果与成长节点。公开事实保持准确和克制，不从证明材料推测未被本人确认的故事。"
-  pageTitle={`旅程 - ${siteConfig.title}`}
-  lang={currentLang}
->
-  <ol class="journey-index">
-    {journey.map((item) => (
-      <li>
-        <a href={entryPath(item)}>
-          <time>{item.data.dateLabel}</time>
-          <span aria-hidden="true"></span>
-          <div><span class="journey-index__kind">{kindLabels[item.data.kind] || item.data.kind}</span><h2>{item.data.title}</h2><p>{item.data.summary}</p>{item.data.highlights.length > 0 && <ul>{item.data.highlights.map((highlight) => <li>{highlight}</li>)}</ul>}</div>
-        </a>
-      </li>
-    ))}
-  </ol>
-</CollectionIndexLayout>
+<MainPageLayout title={`旅程 - ${siteConfig.title}`} description="从靖江到武汉：教育经历、校园服务、获奖与里程碑分别记录。" lang={currentLang}>
+  <div class="journey stage-shell">
+    <header class="journey__hero">
+      <div>
+        <p>04 / THE JOURNEY SO FAR</p>
+        <h1>生命不是履历，<br /><em>却值得留下坐标</em></h1>
+      </div>
+      <svg viewBox="0 0 420 230" aria-hidden="true">
+        <path d="M14 181c50-72 99-73 135-16s61 46 87-22S294 30 340 56s36 82 66 102" />
+        <circle cx="14" cy="181" r="7" /><circle cx="149" cy="165" r="7" /><circle cx="236" cy="143" r="7" /><circle cx="406" cy="158" r="7" />
+      </svg>
+      <blockquote>Jingjiang → Wuhan → next stop?</blockquote>
+    </header>
+
+    <nav class="journey__nav" aria-label="旅程分区">
+      <a href="#education">教育经历 <b>{education.length}</b></a>
+      <a href="#service">校园服务 <b>{services.length}</b></a>
+      <a href="#awards">获奖与里程碑 <b>{awards.length}</b></a>
+    </nav>
+
+    <section id="education" class="chapter chapter--education" aria-labelledby="education-title">
+      <header class="chapter__title"><span>CHAPTER I</span><h2 id="education-title">教育经历</h2><p>从高中到大学，记录明确的学校、专业与时间。</p></header>
+      <ol class="education">
+        {education.map((item, index) => (
+          <li>
+            <a href={entryPath(item)}>
+              <div class="education__year">{item.data.dateLabel}</div>
+              <span class="education__dot" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <p>{item.data.location}</p>
+                <h3>{item.data.title}</h3>
+                <blockquote>{item.data.summary}</blockquote>
+                {item.data.highlights.length > 0 && <ul>{item.data.highlights.map((highlight) => <li>{highlight}</li>)}</ul>}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section id="service" class="chapter chapter--service" aria-labelledby="service-title">
+      <header class="chapter__title"><span>CHAPTER II</span><h2 id="service-title">校园服务</h2><p>学习之外，参与班级与学生资助服务的日常。</p></header>
+      <div class="service">
+        {services.map((item, index) => (
+          <a href={entryPath(item)} style={`--tilt: ${index % 2 ? ".65deg" : "-.7deg"}`}>
+            <span>{item.data.dateLabel}</span>
+            <h3>{item.data.title}</h3>
+            <p>{item.data.organization}</p>
+            <blockquote>{item.data.summary}</blockquote>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section id="awards" class="chapter chapter--awards" aria-labelledby="awards-title">
+      <header class="chapter__title"><span>CHAPTER III</span><h2 id="awards-title">获奖与里程碑</h2><p>只写核验后的结果，不展示证书，不延伸未经确认的个人叙事。</p></header>
+      <ol class="awards">
+        {awards.map((item, index) => (
+          <li>
+            <a href={entryPath(item)}>
+              <span class="awards__number">{String(awards.length - index).padStart(2, "0")}</span>
+              <time>{item.data.dateLabel}</time>
+              <div>
+                <h3>{item.data.title}</h3>
+                <p>{item.data.summary}</p>
+                {item.data.projectTitle && <blockquote>项目：{item.data.projectTitle}</blockquote>}
+              </div>
+              <strong>{item.data.highlights[0]}</strong>
+            </a>
+          </li>
+        ))}
+      </ol>
+      <p class="awards__privacy">证书图片、证书编号、二维码、队友与指导教师信息均不在本站展示。</p>
+    </section>
+  </div>
+</MainPageLayout>
 
 <style>
-  .journey-index { margin: 0; padding: 0; list-style: none; }
-  .journey-index > li { position: relative; }
-  .journey-index > li:not(:last-child)::after { position: absolute; top: 3rem; bottom: -3rem; left: calc(11rem + 0.31rem); width: 1px; background: var(--color-border); content: ""; }
-  .journey-index > li > a { display: grid; grid-template-columns: 10rem 1.1rem minmax(0, 1fr); gap: var(--space-5); padding-block: var(--space-7); color: var(--color-ink); text-decoration: none; }
-  time { color: var(--color-accent); font-weight: 700; }
-  .journey-index > li > a > span { position: relative; z-index: 1; width: 0.8rem; height: 0.8rem; margin-top: 0.6rem; border: 3px solid var(--color-canvas); border-radius: 50%; background: var(--color-accent); box-shadow: 0 0 0 1px var(--color-accent); }
-  h2 { margin: 0; font-size: var(--text-title); letter-spacing: -0.035em; }
-  .journey-index__kind { display: inline-block; margin-bottom: var(--space-2); color: var(--color-accent); font-size: 0.75rem; font-weight: 700; }
-  p { margin: var(--space-2) 0 0; color: var(--color-ink-secondary); }
-  ul { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0 0; padding: 0; list-style: none; }
-  ul li { padding: 0.2rem 0.55rem; border-radius: var(--radius-pill); background: var(--color-surface-subtle); color: var(--color-ink-secondary); font-size: 0.75rem; }
-  @media (max-width: 640px) {
-    .journey-index > li:not(:last-child)::after { left: 0.31rem; }
-    .journey-index > li > a { grid-template-columns: 1.1rem minmax(0, 1fr); gap: var(--space-4); }
-    time { grid-column: 1 / -1; }
+  .journey { padding-bottom: var(--space-9); }
+  .journey__hero { position: relative; display: grid; min-height: min(44rem, calc(100svh - var(--header-height))); align-content: center; overflow: hidden; border-bottom: 1px solid var(--color-border-strong); }
+  .journey__hero > div { position: relative; z-index: 1; }
+  .journey__hero > div > p { margin: 0 0 1rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
+  h1 { max-width: 14ch; margin: 0; font-family: var(--font-display); font-size: var(--text-display-lg); font-weight: 500; letter-spacing: -.055em; line-height: .96; }
+  h1 em { color: var(--color-annotation); font-style: normal; }
+  .journey__hero svg { position: absolute; right: -2rem; bottom: 4rem; width: min(46vw, 32rem); overflow: visible; }
+  .journey__hero path { fill: none; stroke: var(--color-accent); stroke-width: 2; stroke-dasharray: 7 9; }
+  .journey__hero circle { fill: var(--color-annotation); stroke: var(--color-canvas); stroke-width: 5; }
+  .journey__hero blockquote { position: absolute; right: 3rem; bottom: 2rem; margin: 0; color: var(--color-annotation); font-family: var(--font-editorial); font-size: 1.1rem; font-style: italic; transform: rotate(-2deg); }
+  .journey__nav { position: sticky; top: var(--header-height); z-index: var(--z-sticky); display: flex; justify-content: center; gap: clamp(1rem, 5vw, 4rem); padding: 1rem 0; border-bottom: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-canvas) 92%, transparent); backdrop-filter: blur(16px); }
+  .journey__nav a { color: var(--color-ink-secondary); font-size: .82rem; font-weight: 650; text-decoration: none; }
+  .journey__nav a:hover { color: var(--color-annotation); }
+  .journey__nav b { margin-left: .25rem; color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-weight: 400; }
+  .chapter { padding-top: var(--section-space); scroll-margin-top: calc(var(--header-height) + 3rem); }
+  .chapter__title { display: grid; grid-template-columns: minmax(0, 1fr) minmax(15rem, .52fr); align-items: end; gap: 2rem; margin-bottom: 4rem; }
+  .chapter__title span { grid-column: 1 / -1; color: var(--color-accent); font-family: var(--font-editorial); font-size: .75rem; font-weight: 600; letter-spacing: .12em; }
+  .chapter__title h2 { margin: 0; font-family: var(--font-display); font-size: var(--text-display-md); font-weight: 500; line-height: 1; }
+  .chapter__title p { margin: 0; color: var(--color-ink-secondary); text-align: right; }
+  .education { position: relative; margin: 0; padding: 0; list-style: none; }
+  .education::before { position: absolute; top: 0; bottom: 0; left: calc(11rem + .85rem); width: 1px; background: var(--color-border-strong); content: ""; }
+  .education > li > a { display: grid; grid-template-columns: 10rem 1.7rem 1fr; gap: 1rem; min-height: 15rem; padding-bottom: 3rem; color: var(--color-ink); text-decoration: none; }
+  .education__year { padding-top: .2rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: 1rem; text-align: right; }
+  .education__dot { position: relative; z-index: 1; display: grid; width: 1.7rem; height: 1.7rem; place-items: center; border: 1px solid var(--color-annotation); border-radius: 50%; background: var(--color-canvas); color: var(--color-annotation); font-family: var(--font-editorial); font-size: .57rem; }
+  .education p { margin: 0; color: var(--color-ink-tertiary); font-size: .8rem; }
+  .education h3 { margin: .4rem 0 .8rem; font-family: var(--font-display); font-size: clamp(2rem, 4.2vw, 3.8rem); font-weight: 500; line-height: 1.1; }
+  .education blockquote { max-width: 40rem; margin: 0; color: var(--color-ink-secondary); font-family: var(--font-reading); }
+  .education ul { display: flex; flex-wrap: wrap; gap: .55rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+  .education ul li { padding: .2rem .55rem; border-bottom: 1px solid var(--color-growth); color: var(--color-growth); font-size: .75rem; }
+  .chapter--service { margin-inline: calc((100vw - var(--stage-width)) / -2); padding-inline: calc((100vw - var(--stage-width)) / 2); padding-bottom: var(--section-space); background: var(--color-canvas-raised); }
+  .service { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .service a { display: flex; min-height: 20rem; flex-direction: column; padding: 2rem; border-top: 5px solid var(--color-annotation); background: var(--color-annotation-soft); box-shadow: 5px 7px 0 color-mix(in srgb, var(--color-ink) 8%, transparent); color: var(--color-ink); text-decoration: none; transform: rotate(var(--tilt)); transition: transform var(--duration-normal); }
+  .service a:nth-child(even) { border-color: var(--color-growth); background: var(--color-growth-soft); }
+  .service a:hover { transform: rotate(0) translateY(-5px); }
+  .service span { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .8rem; }
+  .service h3 { margin: 2rem 0 .4rem; font-family: var(--font-display); font-size: 2rem; font-weight: 500; }
+  .service p { margin: 0; color: var(--color-ink-tertiary); font-size: .82rem; }
+  .service blockquote { margin: auto 0 0; color: var(--color-ink-secondary); font-family: var(--font-reading); }
+  .awards { margin: 0; padding: 0; border-top: 3px double var(--color-border-strong); list-style: none; }
+  .awards a { display: grid; grid-template-columns: 3rem 8rem minmax(0, 1fr) 10rem; align-items: center; gap: 1.3rem; min-height: 9rem; padding: 1.2rem 0; border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
+  .awards__number { color: var(--color-annotation); font-family: var(--font-editorial); }
+  .awards time { color: var(--color-accent); font-family: var(--font-editorial); font-size: .83rem; }
+  .awards h3 { margin: 0; font-family: var(--font-display); font-size: clamp(1.25rem, 2.5vw, 2rem); font-weight: 500; transition: color var(--duration-normal), transform var(--duration-normal); }
+  .awards a:hover h3 { color: var(--color-annotation); transform: translateX(.4rem); }
+  .awards p { margin: .3rem 0 0; color: var(--color-ink-secondary); font-size: .85rem; }
+  .awards blockquote { margin: .5rem 0 0; color: var(--color-ink-tertiary); font-size: .78rem; }
+  .awards strong { color: var(--color-growth); font-family: var(--font-editorial); font-size: .75rem; font-weight: 600; text-align: right; }
+  .awards__privacy { margin: 2rem 0 0; color: var(--color-ink-tertiary); font-size: .8rem; text-align: right; }
+  @media (max-width: 800px) {
+    .journey__hero { min-height: 38rem; }.journey__hero svg { opacity: .45; width: 80vw; }.journey__hero blockquote { right: 1rem; }
+    .service { grid-template-columns: 1fr 1fr; }.service a:last-child { grid-column: 1 / -1; min-height: 15rem; }
+    .awards a { grid-template-columns: 2rem 7rem 1fr; }.awards strong { grid-column: 3; text-align: left; }
   }
-  @media print {
-    .journey-index > li { break-inside: avoid; }
-    .journey-index > li > a { color: #000; text-decoration: none; }
-    .journey-index > li:not(:last-child)::after { background: #bbb; }
+  @media (max-width: 600px) {
+    .journey__nav { justify-content: flex-start; overflow-x: auto; }.journey__nav a { flex: 0 0 auto; }
+    .chapter__title { grid-template-columns: 1fr; }.chapter__title span { grid-column: 1; }.chapter__title p { text-align: left; }
+    .education::before { left: .8rem; }.education > li > a { grid-template-columns: 1.6rem 1fr; }.education__year { grid-column: 1 / -1; text-align: left; }.education__dot { grid-column: 1; }.education > li > a > div:last-child { grid-column: 2; }
+    .service { grid-template-columns: 1fr; }.service a, .service a:last-child { grid-column: auto; min-height: 17rem; }
+    .awards a { grid-template-columns: 2rem 1fr; }.awards time { grid-column: 2; }.awards a > div, .awards strong { grid-column: 2; }
   }
 </style>

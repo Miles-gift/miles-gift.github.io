@@ -11,7 +11,7 @@ const translation: Translation = {
         title: {
             home: "持续学习，也持续留下些什么。",
             archive: "文章归档",
-            about: "关于 Miles",
+            about: "关于 yoyo",
             friends: "友链",
         },
         subTitle: {
