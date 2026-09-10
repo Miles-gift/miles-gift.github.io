@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const contentRoot = path.join(projectRoot, "src", "content");
 const taxonomy = JSON.parse(await readFile(path.join(contentRoot, "taxonomy.json"), "utf8"));
-const collections = ["articles", "resources", "thoughts", "journey", "pages"];
+const collections = ["articles", "resources", "thoughts", "journey"];
 const errors = [];
 const seen = new Map();
 let checked = 0;

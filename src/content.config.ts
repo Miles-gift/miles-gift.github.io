@@ -113,18 +113,6 @@ const journeyCollection = defineCollection({
   }).strict(),
 });
 
-const pageCollection = defineCollection({
-  loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/pages" }),
-  schema: z.object({
-    title: z.string().trim().min(2).max(80),
-    slug,
-    description: z.string().trim().min(12).max(220),
-    updatedDate: z.coerce.date(),
-    draft: z.boolean().default(false),
-    visibility,
-  }).strict(),
-});
-
 const specCollection = defineCollection({
   loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/spec" }),
 });
@@ -134,6 +122,5 @@ export const collections = {
   resources: resourceCollection,
   thoughts: thoughtCollection,
   journey: journeyCollection,
-  pages: pageCollection,
   spec: specCollection,
 };

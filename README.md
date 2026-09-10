@@ -255,6 +255,7 @@ pnpm cms
 
 - 内容预检：36 个 Markdown 文件通过。
 - Astro 静态构建：96 个页面生成成功。
+- 干净环境构建修复：移除已下线 `pages` 内容集合在 schema 与预检器中的残留引用；`CI=true pnpm build` 通过。
 - 桌面实测：首页、文章、资料库、旅程、关于。
 - 手机实测：390 × 844 首页、文章、关于、移动菜单。
 - 主题实测：浅色、深色、跟随系统三态。
@@ -262,7 +263,7 @@ pnpm cms
 - 正文实测：雅思听力原始 Markdown 的标题、列表、表格与目录。
 - 浏览器控制台：未发现运行错误或警告。
 
-正式提交前还会执行完整 `pnpm build`，由 GitHub Actions 再做一次干净环境验证。
+V2 首次远端构建暴露出已删除 `src/content/pages/` 仍被预检器读取的问题；本地已复现并完成根因修复，下一次 GitHub Actions 将再次验证。
 
 ## 十一、Git 与部署
 
@@ -276,7 +277,7 @@ upstream  https://github.com/Motues/Momo.git
 - 部署：GitHub Actions 自动构建并发布 GitHub Pages
 - 线上地址：`https://miles-gift.github.io/`
 
-阶段基线标签已建立到 `baseline/stage-5`；V2 视觉修订会建立新的可回滚基线。
+阶段基线标签已建立到 `baseline/stage-5-v2`；V2 构建修复会作为同一阶段的补充提交保留。
 
 ## 十二、当前限制与下一步
 
