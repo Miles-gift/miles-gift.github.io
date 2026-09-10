@@ -66,8 +66,10 @@ const isActive = (path: string) => path === indexPage ? currentPath === path : c
 
 <style>
   .site-header {
-    position: sticky;
+    position: fixed;
     top: 0;
+    right: 0;
+    left: 0;
     z-index: var(--z-header);
     height: var(--header-height);
     border-bottom: 1px solid var(--color-border);
@@ -106,7 +108,6 @@ const isActive = (path: string) => path === indexPage ? currentPath === path : c
     .site-header__shell { grid-template-columns: 1fr auto; }
     .desktop-nav { display: none; }
     :global(.mobile-menu-trigger) { display: inline-grid; }
-    .header-hidden { transform: translateY(-102%); }
   }
   @media (max-width: 430px) { .site-brand__long { display: none; } }
 </style>
@@ -140,19 +141,7 @@ const isActive = (path: string) => path === indexPage ? currentPath === path : c
     document.addEventListener("keydown", (event) => { if (event.key === "Escape" && container.classList.contains("is-open")) closeMenu(); });
   }
 
-  function initHeaderScroll() {
-    const header = document.getElementById("main-header");
-    if (!header || header.dataset.scrollBound === "true") return;
-    header.dataset.scrollBound = "true";
-    let previous = window.scrollY;
-    window.addEventListener("scroll", () => {
-      const current = window.scrollY;
-      if (window.innerWidth < 851 && current > 100 && current > previous) header.classList.add("header-hidden");
-      else header.classList.remove("header-hidden");
-      previous = current;
-    }, { passive: true });
-  }
-  document.addEventListener("astro:page-load", () => { initSiteHeader(); initHeaderScroll(); });
+  document.addEventListener("astro:page-load", initSiteHeader);
 </script>
 
 {import.meta.env.PROD && (

@@ -1,46 +1,78 @@
-// 与博客 src/content.config.ts 的 schema 对应
-export interface FrontmatterData {
+export type ContentKind = 'articles' | 'resources' | 'thoughts' | 'journey'
+
+export type ContentData = Record<string, unknown> & {
   title: string
   pubDate: string
-  description: string
-  image: string
   draft: boolean
-  slugId: string
-  category: string
-  pinTop: number
-  [key: string]: unknown
+  visibility: 'public' | 'unlisted' | 'draft'
 }
 
-export interface ArticleSummary {
-  path: string
-  langs: string[]
+export interface ContentSummary {
+  kind: ContentKind
+  kindLabel: string
+  id: string
   title: string
   description: string
-  category: string
   pubDate: string
+  topic: string
   draft: boolean
-  pinTop: number
+  visibility: string
+  featured: boolean
+  file: string
+  version: string
 }
 
-export interface ArticleDetail {
-  path: string
-  files: Record<string, { content: string; data: FrontmatterData }>
+export interface ContentDetail {
+  kind: ContentKind
+  kindLabel: string
+  id: string
+  file: string
+  version: string
+  data: ContentData
+  body: string
+  warnings?: ValidationIssue[]
+}
+
+export interface ValidationIssue {
+  field: string
+  message: string
+}
+
+export interface PreflightResult {
+  ok: boolean
+  errors: ValidationIssue[]
+  warnings: ValidationIssue[]
+  data?: ContentData
 }
 
 export interface MetaInfo {
-  total: number
-  drafts: number
-  categories: { name: string; count: number }[]
+  kinds: { value: ContentKind; label: string }[]
+  taxonomy: {
+    topics: string[]
+    resourceTypes: string[]
+    resourceStatuses: string[]
+    journeyKinds: string[]
+    visibilities: string[]
+    licenses: string[]
+  }
+  localOnly: boolean
+  trashRoot: string
 }
 
 export interface Stats {
   total: number
   published: number
   drafts: number
-  pinned: number
-  categories: { name: string; count: number }[]
-  langs: Record<string, number>
-  both: number
+  counts: Record<ContentKind, number>
   words: { cjk: number; latin: number; total: number }
-  recent: ArticleSummary[]
+  recent: ContentSummary[]
+}
+
+export interface UploadResult {
+  name: string
+  url: string
+  bytes: number
+  width: number
+  height: number
+  format: 'webp'
 }

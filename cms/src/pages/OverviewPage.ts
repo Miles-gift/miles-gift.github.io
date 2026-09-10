@@ -1,140 +1,98 @@
 import { api } from '../api'
-import type { ArticleSummary, Stats } from '../types'
-import { el, encodePath, escapeHtml } from '../dom'
+import { el, escapeHtml } from '../dom'
+import { editHash } from '../router'
+import type { ContentKind, ContentSummary, Stats } from '../types'
 import { pageHeader } from './header'
 import { openNewModal } from './new-article'
 
 const fmt = new Intl.NumberFormat('zh-CN')
+const labels: Record<ContentKind, string> = { articles: '长篇札记', resources: '原文资料', thoughts: '灵光便笺', journey: '旅程' }
 
 export async function renderOverview(root: HTMLElement) {
-  const main = el('main', { class: 'cms-main' }, [
-    el('div', { class: 'cms-empty' }, ['加载统计中…']),
-  ])
-  root.append(
-    pageHeader(
-      'overview',
-      el('button', { class: 'btn btn-primary', id: 'btn-new', onclick: () => openNewModal(root, categories) }, [
-        '＋ 新建文章',
-      ]),
-    ),
-    main,
-  )
-
-  let categories: string[] = []
+  const main = el('main', { class: 'cms-main dashboard' }, [el('div', { class: 'cms-empty' }, ['正在读取内容状态…'])])
+  root.append(pageHeader('overview', el('button', { class: 'btn btn-primary', id: 'btn-new', onclick: () => openNewModal(root) }, ['新建内容'])), main)
   try {
     const stats = await api.stats()
-    categories = stats.categories.map((c) => c.name)
-    main.innerHTML = '' // 移除「加载统计中…」占位符
-    renderStats(main, stats)
-  } catch (e) {
     main.innerHTML = ''
-    main.append(el('div', { class: 'cms-error' }, [escapeHtml((e as Error).message)]))
+    renderDashboard(main, stats)
+  } catch (error) {
+    main.innerHTML = ''
+    main.append(el('section', { class: 'cms-error' }, [
+      el('h1', {}, ['无法读取工作台']),
+      el('p', {}, [escapeHtml((error as Error).message)]),
+      el('p', {}, ['确认使用 pnpm cms 启动服务，且端口 5188 未被占用。']),
+    ]))
   }
 }
 
-function renderStats(main: HTMLElement, s: Stats) {
-  const card = (label: string, value: string, sub = '') =>
-    el('div', { class: 'stat-card' }, [
-      el('div', { class: 'stat-label' }, [label]),
-      el('div', { class: 'stat-value' }, [value]),
-      sub ? el('div', { class: 'stat-sub' }, [sub]) : null,
-    ])
-
-  const publishPct = s.total ? Math.round((s.published / s.total) * 100) : 0
-
+function renderDashboard(main: HTMLElement, stats: Stats) {
+  const ratio = stats.total ? Math.round(stats.published / stats.total * 100) : 0
   main.append(
-    el('div', { class: 'stat-grid' }, [
-      card('文章总数', fmt.format(s.total)),
-      card('已发布', fmt.format(s.published), `占全部 ${publishPct}%`),
-      card('草稿', fmt.format(s.drafts)),
-      card('置顶', fmt.format(s.pinned)),
-      card('分类数', fmt.format(s.categories.length)),
-      card('正文总字数', fmt.format(s.words.total), `中文 ${fmt.format(s.words.cjk)} · 英文 ${fmt.format(s.words.latin)}`),
+    el('section', { class: 'dashboard-hero' }, [
+      el('div', {}, [
+        el('p', { class: 'page-kicker' }, ['LOCAL PUBLISHING DESK']),
+        el('h1', {}, [
+          el('span', {}, ['先把一件事说清楚，']),
+          el('span', {}, ['再让它抵达公开世界。']),
+        ]),
+      ]),
+      el('div', { class: 'hero-gauge', style: `--progress:${ratio}%` }, [
+        el('strong', {}, [`${ratio}%`]),
+        el('span', {}, ['内容已公开']),
+      ]),
     ]),
-    el('div', { class: 'overview-cols' }, [
-      categoryPanel(s),
-      langPanel(s),
+    el('section', { class: 'stat-ribbon', 'aria-label': '内容统计' }, [
+      metric('全部记录', stats.total),
+      metric('公开内容', stats.published),
+      metric('草稿', stats.drafts),
+      metric('正文字数', stats.words.total),
     ]),
-    recentPanel(s),
+    contentMap(stats),
+    el('section', { class: 'dashboard-grid' }, [workflowPanel(), recentPanel(stats.recent)]),
   )
 }
 
-// ---------------- 分类分布 ----------------
-
-function categoryPanel(s: Stats) {
-  const max = s.categories.length ? s.categories[0].count : 0
-  const rows =
-    s.categories.length === 0
-      ? el('div', { class: 'panel-empty' }, ['暂无分类'])
-      : el('div', { class: 'bar-list' }, s.categories.map((c) => barRow(c.name, c.count, max)))
-  return el('div', { class: 'panel' }, [
-    el('h2', { class: 'panel-title' }, ['分类分布']),
-    rows,
-  ])
+function metric(label: string, value: number) {
+  return el('div', { class: 'metric' }, [el('strong', {}, [fmt.format(value)]), el('span', {}, [label])])
 }
 
-function barRow(name: string, count: number, max: number) {
-  const pct = max ? Math.round((count / max) * 100) : 0
-  return el('div', { class: 'bar-row' }, [
-    el('span', { class: 'bar-label', title: name }, [name]),
-    el('div', { class: 'bar-track' }, [el('div', { class: 'bar-fill', style: `width: ${pct}%` })]),
-    el('span', { class: 'bar-count' }, [String(count)]),
-  ])
-}
-
-// ---------------- 语言版本 ----------------
-
-function langPanel(s: Stats) {
-  const zh = s.langs['zh-cn'] || 0
-  const en = s.langs['en'] || 0
-  const zhOnly = Math.max(0, zh - s.both)
-  const enOnly = Math.max(0, en - s.both)
-  const total = Math.max(1, s.total)
-  const seg = (w: number, cls: string, title: string) =>
-    el('span', { class: cls, title, style: `width: ${(w / total) * 100}%` })
-
-  return el('div', { class: 'panel' }, [
-    el('h2', { class: 'panel-title' }, ['语言版本']),
-    el('div', { class: 'lang-bar' }, [
-      seg(zhOnly, 'lang-seg lang-seg-zh', `仅中文 ${zhOnly}`),
-      seg(s.both, 'lang-seg lang-seg-both', `双语 ${s.both}`),
-      seg(enOnly, 'lang-seg lang-seg-en', `仅英文 ${enOnly}`),
+function contentMap(stats: Stats) {
+  const descriptions: Record<ContentKind, string> = {
+    articles: '展开一段所思所想', resources: '保留 Markdown 原文', thoughts: '接住片刻念头', journey: '标记真实坐标',
+  }
+  return el('section', { class: 'content-map' }, (Object.keys(labels) as ContentKind[]).map((kind) =>
+    el('a', { href: `#/list`, class: `content-map-item type-${kind}` }, [
+      el('span', { class: 'type-signal', 'aria-hidden': 'true' }),
+      el('div', {}, [el('strong', {}, [labels[kind]]), el('small', {}, [descriptions[kind]])]),
+      el('b', {}, [String(stats.counts[kind] || 0)]),
     ]),
-    el('div', { class: 'lang-legend' }, [
-      el('span', { class: 'legend-item' }, [el('i', { class: 'legend-dot lang-seg-zh' }), `中文版 ${fmt.format(zh)}`]),
-      el('span', { class: 'legend-item' }, [el('i', { class: 'legend-dot lang-seg-both' }), `双语 ${fmt.format(s.both)}`]),
-      el('span', { class: 'legend-item' }, [el('i', { class: 'legend-dot lang-seg-en' }), `英文版 ${fmt.format(en)}`]),
-    ]),
+  ))
+}
+
+function workflowPanel() {
+  const steps = [
+    ['捕捉', '新内容先以 draft 保存，不让半成品进入生产站点。'],
+    ['整理', '填写类型专属字段，补全来源、替代文本与事实边界。'],
+    ['校验', '发布预检先阻断字段错误，再由构建验证全部路由。'],
+    ['交付', '提交、推送、检查 Actions 与线上路径，最后记录回执。'],
+  ]
+  return el('section', { class: 'panel workflow-panel' }, [
+    el('div', { class: 'panel-heading' }, [el('h2', {}, ['每日发布回路']), el('a', { href: '#/list' }, ['进入内容库'])]),
+    el('ol', {}, steps.map(([title, copy]) => el('li', {}, [el('strong', {}, [title]), el('p', {}, [copy])]))),
   ])
 }
 
-// ---------------- 最近文章 ----------------
-
-function recentPanel(s: Stats) {
-  const list =
-    s.recent.length === 0
-      ? el('div', { class: 'panel-empty' }, ['暂无文章，点击右上角「新建文章」开始创作'])
-      : el('div', { class: 'recent-list' }, s.recent.map((a) => recentItem(a)))
-  return el('div', { class: 'panel' }, [
-    el('h2', { class: 'panel-title' }, ['最近文章']),
-    list,
-    s.recent.length > 0 ? el('a', { class: 'recent-more', href: '#/list' }, ['查看全部文章 →']) : null,
+function recentPanel(items: ContentSummary[]) {
+  return el('section', { class: 'panel recent-panel' }, [
+    el('div', { class: 'panel-heading' }, [el('h2', {}, ['最近变化']), el('span', {}, [`${items.length} 条`])]),
+    items.length ? el('div', { class: 'recent-list' }, items.map(recentItem)) : el('div', { class: 'panel-empty' }, ['还没有内容。先创建一条草稿，写清它为何值得留下。']),
   ])
 }
 
-function recentItem(a: ArticleSummary) {
-  const badges: (HTMLElement | string)[] = []
-  if (a.draft) badges.push(el('span', { class: 'badge badge-draft' }, ['草稿']))
-  if (a.pinTop) badges.push(el('span', { class: 'badge badge-pin' }, ['置顶']))
-  return el('a', { class: 'recent-item', href: `#/edit/${encodePath(a.path)}` }, [
-    el('div', { class: 'recent-main' }, [
-      el('div', { class: 'recent-title' }, [a.title || a.path]),
-      el('div', { class: 'recent-meta' }, [
-        a.category ? el('span', { class: 'tag' }, [a.category]) : null,
-        el('span', {}, [a.pubDate || '—']),
-        el('span', { class: 'recent-path' }, [a.path]),
-      ]),
-    ]),
-    el('div', { class: 'recent-badges' }, badges),
+function recentItem(item: ContentSummary) {
+  return el('a', { class: 'recent-item', href: editHash(item.kind, item.id) }, [
+    el('span', { class: `type-signal type-${item.kind}`, 'aria-hidden': 'true' }),
+    el('div', {}, [el('strong', {}, [item.title]), el('small', {}, [`${labels[item.kind]} · ${item.pubDate.slice(0, 10)}`])]),
+    el('span', { class: item.draft ? 'status-pill status-draft' : 'status-pill status-public' }, [item.draft ? '草稿' : '公开']),
   ])
 }

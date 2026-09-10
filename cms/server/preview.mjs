@@ -141,12 +141,12 @@ function createProcessor(base) {
 
 const preview = new Hono()
 
-// POST /api/preview  { data, body, base? }
+// POST /api/preview  { kind, id, data, body, base? }
 preview.post('/', async (c) => {
   const body = await c.req.json().catch(() => null)
   if (!body || typeof body !== 'object') return c.json({ error: '无效请求体' }, 400)
 
-  const data = normalizeData(body.data || {})
+  const data = normalizeData(body.kind || 'articles', body.data || {}, body.id || 'preview')
   const markdown = matter.stringify(body.body || '', data)
   const base = typeof body.base === 'string' ? body.base.replace(/^\/+/, '').replace(/\/+$/, '') : ''
 

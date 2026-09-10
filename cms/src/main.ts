@@ -1,3 +1,7 @@
+import '@fontsource/noto-serif-sc/400.css'
+import '@fontsource/noto-serif-sc/700.css'
+import '@chinese-fonts/lxgwwenkaibright/dist/LXGWBright-Regular/result.css'
+import '@chinese-fonts/lxgwwenkaibright/dist/LXGWBright-Medium/result.css'
 import './styles.css'
 import { parseRoute } from './router'
 import { renderOverview } from './pages/OverviewPage'
@@ -15,7 +19,7 @@ async function render() {
   prev.__cleanup?.()
   app.innerHTML = ''
   const route = parseRoute(location.hash)
-  if (route.name === 'edit') await renderEditor(app, route.path)
+  if (route.name === 'edit') await renderEditor(app, route.kind, route.id)
   else if (route.name === 'list') await renderList(app)
   else await renderOverview(app)
 }

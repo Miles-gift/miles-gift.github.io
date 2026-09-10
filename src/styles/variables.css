@@ -5,9 +5,9 @@
   --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-reading: "Noto Serif SC", "Songti SC", "STSong", serif;
   --font-mono: "JetBrains Mono Variable", "SFMono-Regular", Consolas, monospace;
-  --text-display-xl: clamp(4.25rem, 11vw, 9.5rem);
-  --text-display-lg: clamp(3rem, 7vw, 6.75rem);
-  --text-display-md: clamp(2.25rem, 4.6vw, 4.5rem);
+  --text-display-xl: clamp(3.55rem, 8.6vw, 7.4rem);
+  --text-display-lg: clamp(2.7rem, 5.7vw, 5.35rem);
+  --text-display-md: clamp(2rem, 3.9vw, 3.65rem);
   --text-title: clamp(1.45rem, 2.15vw, 2rem);
   --text-body: 1rem;
   --text-small: 0.875rem;

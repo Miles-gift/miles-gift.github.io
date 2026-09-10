@@ -1,101 +1,91 @@
-# Momo CMS
+# yoyo Studio
 
-一个极简的本地 CMS 管理后台，用于直接管理 Momo 博客的文章内容（`src/content/blog/**/*.md`）。
+`yoyo Studio` 是“yoyo的旅行日记”的本地内容工作台。它只监听本机地址，用来维护已经上线的四类 Markdown 内容：长篇札记、原文资料、灵光便笺与旅程。
 
-## 快速开始
+## 启动
+
+在项目根目录执行：
 
 ```bash
-# 1. 安装依赖（cms 是 pnpm workspace 成员，根目录安装即可）
-pnpm install
-
-# 2. 启动 CMS（根目录执行）
+pnpm install --frozen-lockfile
 pnpm cms
 ```
 
-启动后访问 **http://localhost:5188**（单端口，前端与 API 由 Hono + Vite 一体提供，支持 HMR）。
+浏览器访问 `http://localhost:5188/`。工作台会直接读取和保存 `src/content/`；如需同步查看公开站点，再开一个终端执行 `pnpm dev`。
 
-> 保存文章即直接写入博客内容目录，博客 dev server（`pnpm dev`）会实时热更新。
+## 内容范围
 
-## 功能
+| 工作台类型 | 文件位置 | 标识格式 |
+| --- | --- | --- |
+| 长篇札记 `articles` | `src/content/articles/<slug>/zh-cn.md` | 小写英文、数字、连字符 |
+| 原文资料 `resources` | `src/content/resources/<slug>.md` | 小写英文、数字、连字符 |
+| 灵光便笺 `thoughts` | `src/content/thoughts/<id>.md` | `YYYYMMDD-001` |
+| 旅程 `journey` | `src/content/journey/<slug>.md` | 小写英文、数字、连字符 |
 
-- **概览页**（`#/`）：文章总数 / 已发布 / 草稿 / 置顶 / 分类数 / 正文总字数统计，分类分布条形图，语言版本覆盖（中英双语），最近文章列表
-- **文章列表**（`#/list`）：搜索、分类筛选、草稿/已发布筛选、语言徽章；支持**卡片 / 表格**两种视图模式（localStorage 记忆选择）与**多种排序**（默认置顶+日期 / 发布日期升降序 / 标题 / 路径 / 分类，中文按拼音排序）；表格右侧**行内操作**（置顶/取消置顶、草稿/发布切换、删除）
-- **Markdown 编辑器**：frontmatter 表单 + 正文源码，左侧编辑右侧**实时预览**（防抖 500ms）；编辑区上方**快速插入工具栏**（加粗/斜体/行内代码/链接/图片/引用、代码块/Typst、行内/块公式、提示块（note/tip/important/caution/warning）、GitHub/音乐卡片、注音/折叠/彩虹/下划线），支持选中文本包裹与光标定位
-- **完整自定义语法预览**：与博客渲染管线一致（见下方语法表）
-- **多语言版本**：同路径 `zh-cn.md` / `en.md` 标签页切换，可新建缺失的语言版本
-- **slugId**：文章/评论标识元数据（如 `momo/xxx`），与文件夹位置解耦，保存时**不会**改变文件夹；仅当 slugId 与当前文件夹路径一致（CMS 新建的文章）且被修改时才整体移动文件夹
-- **封面图上传**：图片直接保存到文章文件夹，自动填写 `image: ./xxx.png`
-- **删除保护**：删除前二次确认，未保存内容离开页面时提醒
-- **深色模式**：跟随系统
+工作台不会读取 `/Users/sin/Tools`、评奖评优材料或其他私人目录，也不管理已下线的模板文章、页面集合或多语言副本。
 
-## 技术架构
+## 日常流程
 
-```
-cms/
-├── package.json          # 独立 workspace 包（依赖：hono、@hono/vite-dev-server、unified 插件链…）
-├── vite.config.ts        # devServer 插件：Hono 应用作为 SSR 入口，单端口一体运行
-├── index.html            # SPA 外壳
-├── server/               # Hono 服务端（Node ESM，由 Vite SSR 加载）
-│   ├── index.mjs         # 应用入口：/api/* 路由 + SPA 回退 + 静态资源
-│   ├── store.mjs         # 博客文章文件统一读写层（CRUD / slugId 元数据 / 分类统计）
-│   ├── articles.mjs      # GET/POST/PUT/DELETE /api/articles/*
-│   ├── preview.mjs       # POST /api/preview：复用博客全部 remark/rehype 插件
-│   ├── upload.mjs        # POST /api/upload：封面图上传（multipart）
-│   ├── meta.mjs          # GET /api/meta：分类统计
-│   ├── stats.mjs         # GET /api/stats：概览页统计（字数 / 语言覆盖 / 最近文章）
-│   ├── blog-content.mjs  # GET /blog-content/*：文章文件夹静态资源（预览图片）
-│   └── prose.css         # 预览正文样式（与博客 markdown.css 一致的精简版）
-└── src/                  # 前端（纯 TypeScript SPA，hash 路由，无框架）
-    ├── main.ts / router.ts / api.ts / types.ts / styles.css
-    └── pages/ OverviewPage.ts（概览）、ListPage.ts（列表：卡片/表格）、EditorPage.ts、
-              header.ts（顶栏导航）、new-article.ts（新建文章弹窗）
-```
+1. 在概览或内容列表选择类型并创建草稿。
+2. 填写字段和 Markdown 正文，保持 `visibility=draft` 时可反复保存。
+3. 使用实时预览检查标题、列表、表格、代码、公式、图片和移动端阅读效果。
+4. 准备公开时选择 `public`；工作台会同步设置 `draft=false`。
+5. 先“保存”，再运行“发布预检”。修完所有错误，并人工复核警告。
+6. 回到项目根目录执行 `CI=true pnpm build`。
+7. 按 [发布 SOP](../doc/PUBLISHING_SOP.md) 提交、推送，并确认 GitHub Actions 与线上页面。
 
-- **API 端口**：5188（唯一端口，Vite dev server 内嵌 Hono）
-- **预览管线**：直接复用 `../src/plugins/*.mjs`（remark-typst、remark-directive-rehype、remark-combined、admonition、github/music/quote 卡片、figure 插件）+ KaTeX + shiki 高亮（one-dark-pro 主题），与博客 astro.config.mjs 的插件顺序一致，跳过仅构建期需要的 reading-time 与 LQIP 插件。
+## 安全与可恢复性
 
-## API 一览
+- 服务只由 Vite 在 `localhost:5188` 提供，不应映射到公网。
+- 每次保存都携带当前文件版本；磁盘内容变化后，旧页面不能直接覆盖新版本。
+- 文件先写入同目录临时文件，再以原子重命名替换，降低中途损坏风险。
+- “移入回收区”不会永久删除；正文与对应媒体会进入 `.trash/cms/<时间>/`。
+- 上传仅接受真实的 PNG、JPEG、WebP 或 AVIF，最大 8 MB、最大边 2400 px，统一转为质量 82 的 WebP。
+- 发布预检会阻止本地绝对路径、空正文、无效分类和草稿误发布，并提示可能的敏感信息或办公附件。
+- 证书原件、PDF、Office 文件、压缩包、二维码、学号与第三方个人信息不得上传到公开站点。
+
+恢复与故障处理见 [CMS 恢复手册](../doc/CMS_RECOVERY.md)。
+
+## API
 
 | 方法 | 路径 | 说明 |
-|---|---|---|
-| GET | `/api/articles?q=&category=&draft=` | 文章列表（分组、筛选、搜索） |
-| GET | `/api/articles/:path` | 读取文章全部语言版本 |
-| POST | `/api/articles` | 新建文章 `{ path, lang }` |
-| PUT | `/api/articles/:path/:lang` | 保存 `{ data, body }`；仅当 slugId 与路径一致且被修改时移动文件夹 |
-| DELETE | `/api/articles/:path` | 删除整篇文章（文件夹） |
-| POST | `/api/preview` | 实时预览 `{ data, body, base }` → 完整 HTML 文档 |
-| POST | `/api/upload` | 上传封面图（multipart: file + path） |
-| GET | `/api/meta` | 分类统计 |
-| GET | `/api/stats` | 概览统计（总数/发布/草稿/置顶/分类/字数/语言/最近文章） |
+| --- | --- | --- |
+| GET | `/api/content?kind=&q=&status=` | 查询四类内容 |
+| POST | `/api/content` | 新建草稿 `{ kind, id }` |
+| GET | `/api/content/:kind/:id` | 读取正文、字段与文件版本 |
+| PUT | `/api/content/:kind/:id` | 携带 `{ data, body, version }` 保存 |
+| DELETE | `/api/content/:kind/:id` | 将正文和媒体移入可恢复区 |
+| POST | `/api/content/:kind/:id/preflight` | 执行公开发布预检 |
+| POST | `/api/preview` | 渲染 Markdown 实时预览 |
+| POST | `/api/upload` | 上传、限边并转换图片 |
+| GET | `/api/meta` | 获取类型与受控词表 |
+| GET | `/api/stats` | 获取总量、草稿、字数与最近内容 |
 
-## 自定义语法速查（预览与博客一致）
+## 目录结构
 
-| 语法 | 说明 |
-|---|---|
-| `:::note{name="提示"}`…`:::`（note/tip/important/caution/warning） | Alert 提示块（块级容器，`{name="..."}` 可选） |
-| `::github{repo="owner/repo"}` | GitHub 仓库卡片 |
-| `::music{id="歌曲ID"}` | 网易云音乐卡片 |
-| `::quote[内容]` | 居中引用组件 |
-| `$...$` / `$$...$$` | KaTeX 数学公式 |
-| ```` ```typst ```` | Typst 代码块 → SVG 渲染 |
-| `{中文}(zhong wen)` | 注音（Ruby） |
-| `!!内容!!` | 折叠内容（hover 显示） |
-| `==内容==` | 彩虹文字 |
-| `++内容++` | 下划线 |
-| `![标题图片](./cover.jpg)` | 图片 + figure 标题（`title` 属性作为 figcaption） |
+```text
+cms/
+├── index.html
+├── server/
+│   ├── index.mjs       API 与单页应用入口
+│   ├── content.mjs     四类内容接口
+│   ├── store.mjs       统一读写、字段归一化、校验与回收
+│   ├── preview.mjs     Markdown 预览
+│   ├── upload.mjs      图片安全处理
+│   ├── meta.mjs        受控词表
+│   └── stats.mjs       概览统计
+├── src/                TypeScript 单页工作台
+└── smoke.mjs           API、界面与媒体端到端冒烟测试
+```
 
-## 注意事项
+## 验证
 
-- 内容为本地可信数据；预览 iframe 使用 `sandbox="allow-scripts"` 沙箱。
-- Typst 首次编译需加载原生编译器，约 1-3 秒；失败时预览区显示错误信息。
-- 修改 `server/` 目录下的代码后需要重启 `pnpm cms`（服务端模块不参与 HMR）。
-- 博客根目录相对路径图片（`/images/xxx.png`）在预览中不会加载（仅本地文件相对路径可用）。
-
-## 测试
-
-`smoke.mjs` 是基于 jsdom 的端到端冒烟测试（真实点击「新建文章」→ 创建 → 编辑 → 实时预览 → 保存 → 删除）。需先启动服务再运行：
+先启动 `pnpm cms`，再在另一终端执行：
 
 ```bash
-pnpm cms        # 终端 1：启动服务
-pnpm smoke      # 终端 2：运行冒烟测试
+CI=true pnpm --dir cms build
+CI=true pnpm exec tsc -p cms/tsconfig.json
+CI=true pnpm --dir cms smoke
 ```
+
+冒烟测试会创建四类临时草稿、验证保存和冲突保护、测试图片转换与界面预览，最后将测试内容移入 `.trash/cms/`。测试完成后不应在正式内容目录留下测试稿。

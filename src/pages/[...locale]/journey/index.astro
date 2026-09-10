@@ -102,7 +102,7 @@ const awards = all.filter((item) => item.data.kind === "award" || item.data.kind
   .journey__hero path { fill: none; stroke: var(--color-accent); stroke-width: 2; stroke-dasharray: 7 9; }
   .journey__hero circle { fill: var(--color-annotation); stroke: var(--color-canvas); stroke-width: 5; }
   .journey__hero blockquote { position: absolute; right: 3rem; bottom: 2rem; margin: 0; color: var(--color-annotation); font-family: var(--font-editorial); font-size: 1.1rem; font-style: italic; transform: rotate(-2deg); }
-  .journey__nav { position: sticky; top: var(--header-height); z-index: var(--z-sticky); display: flex; justify-content: center; gap: clamp(1rem, 5vw, 4rem); padding: 1rem 0; border-bottom: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-canvas) 92%, transparent); backdrop-filter: blur(16px); }
+  .journey__nav { display: flex; justify-content: flex-start; gap: clamp(1rem, 5vw, 4rem); padding: 1rem 0; border-bottom: 1px solid var(--color-border); }
   .journey__nav a { color: var(--color-ink-secondary); font-size: .82rem; font-weight: 650; text-decoration: none; }
   .journey__nav a:hover { color: var(--color-annotation); }
   .journey__nav b { margin-left: .25rem; color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-weight: 400; }
@@ -117,7 +117,7 @@ const awards = all.filter((item) => item.data.kind === "award" || item.data.kind
   .education__year { padding-top: .2rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: 1rem; text-align: right; }
   .education__dot { position: relative; z-index: 1; display: grid; width: 1.7rem; height: 1.7rem; place-items: center; border: 1px solid var(--color-annotation); border-radius: 50%; background: var(--color-canvas); color: var(--color-annotation); font-family: var(--font-editorial); font-size: .57rem; }
   .education p { margin: 0; color: var(--color-ink-tertiary); font-size: .8rem; }
-  .education h3 { margin: .4rem 0 .8rem; font-family: var(--font-display); font-size: clamp(2rem, 4.2vw, 3.8rem); font-weight: 500; line-height: 1.1; }
+  .education h3 { margin: .4rem 0 .8rem; font-family: var(--font-display); font-size: clamp(1.85rem, 3.5vw, 3.1rem); font-weight: 500; line-height: 1.12; }
   .education blockquote { max-width: 40rem; margin: 0; color: var(--color-ink-secondary); font-family: var(--font-reading); }
   .education ul { display: flex; flex-wrap: wrap; gap: .55rem; margin: 1rem 0 0; padding: 0; list-style: none; }
   .education ul li { padding: .2rem .55rem; border-bottom: 1px solid var(--color-growth); color: var(--color-growth); font-size: .75rem; }
@@ -127,7 +127,7 @@ const awards = all.filter((item) => item.data.kind === "award" || item.data.kind
   .service a:nth-child(even) { border-color: var(--color-growth); background: var(--color-growth-soft); }
   .service a:hover { transform: rotate(0) translateY(-5px); }
   .service span { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .8rem; }
-  .service h3 { margin: 2rem 0 .4rem; font-family: var(--font-display); font-size: 2rem; font-weight: 500; }
+  .service h3 { margin: 2rem 0 .4rem; font-family: var(--font-display); font-size: 1.72rem; font-weight: 500; }
   .service p { margin: 0; color: var(--color-ink-tertiary); font-size: .82rem; }
   .service blockquote { margin: auto 0 0; color: var(--color-ink-secondary); font-family: var(--font-reading); }
   .awards { margin: 0; padding: 0; border-top: 3px double var(--color-border-strong); list-style: none; }

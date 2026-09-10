@@ -81,7 +81,7 @@ const thoughts = (await getPublicEntries("thoughts")).sort((a, b) => b.data.pubD
   .writing__hero { display: grid; min-height: min(43rem, calc(100svh - var(--header-height))); grid-template-columns: 1.1fr .9fr; align-items: center; gap: clamp(3rem, 8vw, 8rem); border-bottom: 1px solid var(--color-border-strong); }
   .writing__hero > div:first-child > p { margin: 0 0 1rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
   h1 { margin: 0; font-family: var(--font-display); font-size: var(--text-display-lg); font-weight: 500; letter-spacing: -.055em; line-height: .9; }
-  .writing__intro blockquote { margin: 0 0 2.5rem; color: var(--color-annotation); font-family: var(--font-display); font-size: clamp(1.6rem, 3.2vw, 2.8rem); line-height: 1.4; transform: rotate(-1.5deg); }
+  .writing__intro blockquote { margin: 0 0 2.5rem; color: var(--color-annotation); font-family: var(--font-display); font-size: clamp(1.4rem, 2.6vw, 2.25rem); line-height: 1.45; transform: rotate(-1.5deg); }
   .writing__intro nav { display: grid; border-top: 1px solid var(--color-border); }
   .writing__intro nav a { display: flex; justify-content: space-between; padding: .85rem 0; border-bottom: 1px solid var(--color-border); color: var(--color-ink); font-weight: 650; text-decoration: none; }
   .writing__intro nav a:hover { color: var(--color-annotation); padding-left: .5rem; }
@@ -103,7 +103,7 @@ const thoughts = (await getPublicEntries("thoughts")).sort((a, b) => b.data.pubD
   .longform__number { color: var(--color-annotation); font-family: var(--font-editorial); font-size: 2rem; }
   .longform article p { display: flex; gap: 1.2rem; margin: 0 0 1rem; color: var(--color-ink-tertiary); font-size: .8rem; }
   .longform article p span { color: var(--color-accent); font-weight: 650; }
-  .longform h3 { max-width: 18ch; margin: 0; font-family: var(--font-display); font-size: clamp(2rem, 4.5vw, 4.2rem); font-weight: 500; letter-spacing: -.035em; line-height: 1.08; transition: color var(--duration-normal), transform var(--duration-normal); }
+  .longform h3 { max-width: 20ch; margin: 0; font-family: var(--font-display); font-size: clamp(1.85rem, 3.6vw, 3.35rem); font-weight: 500; letter-spacing: -.025em; line-height: 1.12; transition: color var(--duration-normal), transform var(--duration-normal); }
   .longform article:hover h3 { color: var(--color-annotation); transform: translateX(.5rem); }
   .longform blockquote { max-width: 43rem; margin: 1.3rem 0; color: var(--color-ink-secondary); font-family: var(--font-reading); }
   .longform ul { display: flex; flex-wrap: wrap; gap: .8rem; margin: 0; padding: 0; color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .76rem; list-style: none; }

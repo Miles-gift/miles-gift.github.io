@@ -1,10 +1,7 @@
-// meta.mjs — 分类统计 API
 import { Hono } from 'hono'
-import { categoryStats } from './store.mjs'
+import { contentMeta } from './store.mjs'
 
 const meta = new Hono()
-
-// GET /api/meta
-meta.get('/', async (c) => c.json(await categoryStats()))
+meta.get('/', (c) => c.json(contentMeta()))
 
 export { meta }

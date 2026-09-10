@@ -88,7 +88,7 @@ const categories = [
   .library__statement::before { position: absolute; width: 1.1rem; height: 1.1rem; top: .7rem; left: .7rem; border: 3px solid var(--color-annotation); border-radius: 50%; content: ""; }
   .library__statement span { color: var(--color-annotation); font-family: var(--font-editorial); font-size: .72rem; font-weight: 600; letter-spacing: .12em; }
   .library__statement p { margin: 1rem 0 0; font-family: var(--font-reading); font-size: 1.05rem; line-height: 1.85; }
-  .library__tools { position: sticky; top: var(--header-height); z-index: var(--z-sticky); display: grid; grid-template-columns: 1fr minmax(15rem, .42fr); gap: 2rem; align-items: end; padding: 1.4rem 0; border-bottom: 1px solid var(--color-border-strong); background: color-mix(in srgb, var(--color-canvas) 92%, transparent); backdrop-filter: blur(16px); }
+  .library__tools { display: grid; grid-template-columns: 1fr minmax(15rem, .42fr); gap: 2rem; align-items: center; margin-top: 2rem; padding: 1rem 1.1rem; border: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-canvas-raised) 70%, transparent); }
   .library__tools nav { display: flex; flex-wrap: wrap; gap: .5rem; }
   .library__tools button { padding: .45rem .75rem; border: 1px solid var(--color-border); border-radius: .2rem .8rem .25rem .65rem; background: transparent; color: var(--color-ink-secondary); font-size: .78rem; cursor: pointer; }
   .library__tools button:hover, .library__tools button.is-active { border-color: var(--color-annotation); background: var(--color-annotation-soft); color: var(--color-ink); }
@@ -96,18 +96,18 @@ const categories = [
   .library__tools label { display: grid; grid-template-columns: auto 1fr; gap: .7rem; align-items: center; padding-bottom: .35rem; border-bottom: 1px solid var(--color-ink); }
   .library__tools label span { color: var(--color-accent); font-family: var(--font-editorial); font-size: .67rem; letter-spacing: .09em; }
   .library__tools input { min-width: 0; border: 0; background: transparent; color: var(--color-ink); outline: 0; }
-  .library__catalogue { padding-top: var(--section-space); }
+  .library__catalogue { padding-top: clamp(4rem, 8vw, 6.5rem); }
   .library__catalogue > section { margin-bottom: var(--section-space); scroll-margin-top: calc(var(--header-height) + 5rem); }
   .library__catalogue > section[hidden], article[hidden] { display: none; }
   .library__catalogue > section > header { display: grid; grid-template-columns: 4rem 1fr minmax(15rem, .55fr); align-items: end; gap: 1.5rem; margin-bottom: 2rem; }
   .library__catalogue > section > header > span { color: var(--color-annotation); font-family: var(--font-editorial); font-size: 2rem; }
   .library__catalogue header div p { margin: 0; color: var(--color-accent); font-family: var(--font-editorial); font-size: .72rem; letter-spacing: .12em; }
-  .library__catalogue h2 { margin: .2rem 0 0; font-family: var(--font-display); font-size: clamp(2.2rem, 4.6vw, 4.2rem); font-weight: 500; line-height: 1; }
+  .library__catalogue h2 { margin: .2rem 0 0; font-family: var(--font-display); font-size: clamp(2rem, 3.7vw, 3.35rem); font-weight: 500; line-height: 1.05; }
   .library__catalogue > section > header > p { margin: 0; color: var(--color-ink-secondary); font-size: .88rem; text-align: right; }
   .shelf { border-top: 3px double var(--color-border-strong); }
   .shelf article > a { display: grid; grid-template-columns: 4rem minmax(0, 1fr) 12rem; gap: 1.5rem; align-items: center; min-height: 10rem; padding: 1.5rem 0; border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
   .shelf__index { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: 1rem; }
-  .shelf h3 { margin: 0; font-family: var(--font-display); font-size: clamp(1.4rem, 2.7vw, 2.35rem); font-weight: 500; transition: color var(--duration-normal), transform var(--duration-normal); }
+  .shelf h3 { margin: 0; font-family: var(--font-display); font-size: clamp(1.35rem, 2.2vw, 2rem); font-weight: 500; transition: color var(--duration-normal), transform var(--duration-normal); }
   .shelf a:hover h3 { color: var(--color-annotation); transform: translateX(.45rem); }
   .shelf p { max-width: 44rem; margin: .4rem 0 .7rem; color: var(--color-ink-secondary); font-size: .87rem; }
   .shelf ul { display: flex; flex-wrap: wrap; gap: .7rem; margin: 0; padding: 0; color: var(--color-growth); font-family: var(--font-editorial); font-size: .74rem; list-style: none; }

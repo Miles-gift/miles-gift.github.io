@@ -1,37 +1,63 @@
-// upload.mjs — 封面图上传 API
+// 本地图片上传：校验真实格式、限制尺寸并统一转为 WebP。
+import { createHash } from 'node:crypto'
+import { mkdir, writeFile } from 'node:fs/promises'
+import { basename, join } from 'node:path'
 import { Hono } from 'hono'
-import { writeFile, mkdir } from 'node:fs/promises'
-import { join, basename, extname } from 'node:path'
-import { safeRel, blogPath } from './store.mjs'
+import sharp from 'sharp'
+import { assertKind, MEDIA_ROOT, safeRel } from './store.mjs'
 
 const upload = new Hono()
+const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/webp', 'image/avif']
+const ALLOWED_FORMAT = ['png', 'jpeg', 'webp', 'avif']
+const MAX_SIZE = 8 * 1024 * 1024
+const MAX_EDGE = 2400
 
-const ALLOWED = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml', 'image/avif']
-const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+function safeStem(name) {
+  return basename(name || 'image')
+    .replace(/\.[^.]+$/, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48) || 'image'
+}
 
-// POST /api/upload  (multipart: file + path)
 upload.post('/', async (c) => {
   const form = await c.req.parseBody().catch(() => null)
   if (!form) return c.json({ error: '无法解析表单' }, 400)
+  const file = form.file
+  const kind = String(form.kind || '')
+  const id = safeRel(String(form.id || ''))
+  if (typeof File === 'undefined' || !(file instanceof File)) return c.json({ error: '缺少图片文件' }, 400)
+  if (!assertKind(kind) || !id || id.includes('/')) return c.json({ error: '内容类型或标识无效' }, 400)
+  if (!ALLOWED_MIME.includes(file.type)) return c.json({ error: '仅支持 PNG、JPEG、WebP 或 AVIF；SVG 与 GIF 不接受上传' }, 400)
+  if (file.size > MAX_SIZE) return c.json({ error: '图片不能超过 8 MB' }, 400)
 
-  const file = form['file']
-  const path = String(form['path'] || '')
+  const source = Buffer.from(await file.arrayBuffer())
+  const image = sharp(source, { failOn: 'warning', limitInputPixels: 40_000_000 })
+  const metadata = await image.metadata().catch(() => null)
+  if (!metadata?.format || !ALLOWED_FORMAT.includes(metadata.format)) return c.json({ error: '图片实际格式与允许类型不符' }, 400)
+  if (!metadata.width || !metadata.height) return c.json({ error: '无法读取图片尺寸' }, 400)
 
-  if (typeof File === 'undefined' || !(file instanceof File)) {
-    return c.json({ error: '缺少文件字段 file' }, 400)
-  }
-  if (!ALLOWED.includes(file.type)) return c.json({ error: '仅支持图片文件' }, 400)
-  if (file.size > MAX_SIZE) return c.json({ error: '图片大小不能超过 10MB' }, 400)
+  const output = await image
+    .rotate()
+    .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 82, effort: 5 })
+    .toBuffer()
+  const hash = createHash('sha256').update(output).digest('hex').slice(0, 10)
+  const name = `${safeStem(file.name)}-${hash}.webp`
+  const directory = join(MEDIA_ROOT, kind, id)
+  await mkdir(directory, { recursive: true })
+  await writeFile(join(directory, name), output)
+  const resultMeta = await sharp(output).metadata()
 
-  const rel = safeRel(path)
-  if (!rel) return c.json({ error: '无效的文章路径' }, 400)
-
-  const name = basename(file.name || 'image.png').replace(/[^\w.\-]+/g, '_') || 'image.png'
-  const dir = blogPath(rel)
-  await mkdir(dir, { recursive: true })
-  await writeFile(join(dir, name), new Uint8Array(await file.arrayBuffer()))
-
-  return c.json({ name, url: './' + name })
+  return c.json({
+    name,
+    url: `/media/${kind}/${id}/${name}`,
+    bytes: output.length,
+    width: resultMeta.width,
+    height: resultMeta.height,
+    format: 'webp',
+  })
 })
 
 export { upload }

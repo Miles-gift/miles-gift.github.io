@@ -15,7 +15,7 @@ const { title, lang, description } = Astro.props;
 ---
 
 <Layout title={title} lang={lang} description={description}>
-  <div class="flex flex-col min-h-screen">
+  <div class="site-frame flex flex-col min-h-screen">
     <div>
       <Header />
     </div>
@@ -26,3 +26,7 @@ const { title, lang, description } = Astro.props;
     <Search />
   </div>
 </Layout>
+
+<style>
+  .site-frame { padding-top: var(--header-height); }
+</style>

@@ -216,7 +216,7 @@ const journeyPreview = journey.filter((item) => item.data.featured).slice(0, 4);
   .hero__copy { position: relative; z-index: 2; align-self: center; }
   .hero__edition { display: flex; align-items: center; gap: .8rem; margin: 0 0 1.5rem; color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .9rem; letter-spacing: .06em; }
   .hero__edition span { padding: .2rem .55rem; border: 1px solid var(--color-annotation); color: var(--color-annotation); transform: rotate(-2deg); }
-  .hero h1 { max-width: 7ch; margin: 0; font-family: var(--font-display); font-size: var(--text-display-xl); font-weight: 500; letter-spacing: -.055em; line-height: .84; }
+  .hero h1 { max-width: 8ch; margin: 0; font-family: var(--font-display); font-size: var(--text-display-xl); font-weight: 500; letter-spacing: -.04em; line-height: .9; }
   .hero h1 em { position: relative; color: var(--color-annotation); font-style: normal; white-space: nowrap; }
   .hero h1 em::after { position: absolute; right: -.12em; bottom: -.05em; left: .05em; height: .11em; border-radius: 50%; background: var(--color-growth); content: ""; opacity: .6; transform: rotate(-1.5deg); }
   .hero__lead { max-width: 35rem; margin: 2rem 0 0; color: var(--color-ink-secondary); font-family: var(--font-reading); font-size: clamp(1.05rem, 1.8vw, 1.28rem); line-height: 1.85; }
@@ -265,7 +265,7 @@ const journeyPreview = journey.filter((item) => item.data.featured).slice(0, 4);
   .feature__index b { color: var(--color-accent); font-weight: 400; }
   .feature__body { display: flex; flex-direction: column; justify-content: center; padding: clamp(2rem, 6vw, 5rem); }
   .feature__body > p { margin: 0 0 1rem; color: var(--color-accent); font-size: .8rem; }
-  .feature__body h3 { max-width: 13ch; margin: 0; font-family: var(--font-display); font-size: clamp(2.7rem, 6vw, 5.8rem); font-weight: 500; letter-spacing: -.045em; line-height: .98; }
+  .feature__body h3 { max-width: 15ch; margin: 0; font-family: var(--font-display); font-size: clamp(2.35rem, 4.8vw, 4.45rem); font-weight: 500; letter-spacing: -.035em; line-height: 1.02; }
   .feature blockquote { max-width: 38rem; margin: 2rem 0 0; color: var(--color-ink-secondary); font-family: var(--font-reading); font-size: 1rem; }
   .feature__gesture { display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid color-mix(in srgb, var(--color-canvas-raised) 16%, transparent); color: var(--color-annotation); font-family: var(--font-display); }
   .feature__gesture svg { width: 7.5rem; }.feature__gesture path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
@@ -298,17 +298,17 @@ const journeyPreview = journey.filter((item) => item.data.featured).slice(0, 4);
   .passage__portrait { position: relative; align-self: start; padding: clamp(2rem, 4vw, 3.2rem); overflow: hidden; border: 1px solid var(--color-border-strong); background: var(--color-ink); color: var(--color-canvas-raised); transform: rotate(1deg); }
   .passage__portrait > *:not(.passage__orbit) { position: relative; z-index: 1; }.passage__portrait img { border-radius: 1.3rem; }.passage__hello { margin: 1.5rem 0 .5rem; color: var(--color-annotation); font-family: var(--font-editorial); font-size: 1.15rem; font-style: italic; }.passage__portrait h3 { margin: 0; font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 500; line-height: 1.35; }.passage__portrait ul { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.5rem 0 2rem; padding: 0; list-style: none; }.passage__portrait li { padding: .25rem .55rem; border-bottom: 1px solid var(--color-accent); color: var(--color-ink-secondary); font-family: var(--font-editorial); font-size: .82rem; }.passage__portrait .ink-link { border-color: var(--color-canvas-raised); color: var(--color-canvas-raised); }
   .passage__orbit { position: absolute; width: 20rem; height: 20rem; top: -7rem; right: -9rem; border: 1px dashed var(--color-accent); border-radius: 50%; animation: orbit 18s linear infinite; } @keyframes orbit { to { transform: rotate(1turn); } }
-  .ending { padding-block: clamp(8rem, 15vw, 14rem); text-align: center; }.ending > p { margin: 0 0 1rem; font-size: 1.4rem; }.ending h2 { margin: 0 auto 2.5rem; font-family: var(--font-display); font-size: clamp(3rem, 8vw, 7rem); font-weight: 500; letter-spacing: -.045em; line-height: 1; }
+  .ending { padding-block: clamp(7rem, 12vw, 11rem); text-align: center; }.ending > p { margin: 0 0 1rem; font-size: 1.25rem; }.ending h2 { margin: 0 auto 2.5rem; font-family: var(--font-display); font-size: clamp(2.7rem, 6vw, 5.2rem); font-weight: 500; letter-spacing: -.035em; line-height: 1.06; }
   @media (max-width: 900px) {
     .hero { grid-template-columns: 1fr; min-height: auto; }.hero__map { width: min(88vw, 32rem); justify-self: center; }.hero__facts { margin-top: 0; }
     .feature { grid-template-columns: 4rem 1fr; }.feature__gesture { display: none; }.feature__body { padding-inline: 2rem; }
     .passage__layout { grid-template-columns: 1fr; }.passage__portrait { transform: none; }
   }
   @media (max-width: 700px) {
-    .hero { padding-top: 3.5rem; }.hero h1 { max-width: none; white-space: nowrap; }.hero__map { margin-top: 1rem; }.hero__facts { gap: 1rem; justify-content: space-between; }.hero__facts dd { font-size: .7rem; }
+    .hero { padding-top: 3.5rem; }.hero h1 { max-width: 9ch; }.hero__map { margin-top: 1rem; }.hero__facts { gap: 1rem; justify-content: space-between; }.hero__facts dd { font-size: .7rem; }
     .section-heading .hand-note { position: static; display: block; margin-top: .8rem; white-space: normal; }
     .atlas__grid { grid-template-columns: 1fr; }.atlas__grid a:nth-child(odd) { border-right: 0; }.atlas__grid a { min-height: 7.5rem; }
-    .feature { grid-template-columns: 1fr; min-height: auto; }.feature__index { display: none; }.feature__body { padding: 3rem 0; }.feature__body h3 { font-size: clamp(2.5rem, 12vw, 4rem); }
+    .feature { grid-template-columns: 1fr; min-height: auto; }.feature__index { display: none; }.feature__body { padding: 3rem 0; }.feature__body h3 { font-size: clamp(2.2rem, 10vw, 3.45rem); }
     .longform__more { grid-template-columns: 1fr; }.longform__more a:first-child { border-right: 0; }
     .jottings__board { grid-template-columns: 1fr; padding: 2rem 1.5rem; }.jottings__prompt { max-width: 14ch; }.jottings__list { grid-template-columns: 1fr; }
     .library__intro { margin-top: 0; }.library__shelves a { grid-template-columns: 2rem 1fr; padding-block: 1rem; }.library__shelves b { grid-column: 2; }
