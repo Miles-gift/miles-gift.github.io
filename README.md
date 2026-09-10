@@ -305,7 +305,7 @@ upstream  https://github.com/Motues/Momo.git
 - 部署：GitHub Actions 自动构建并发布 GitHub Pages
 - 线上地址：`https://miles-gift.github.io/`
 
-阶段基线标签已建立到 `baseline/stage-5-v2`；阶段 6 在远端验收后建立 `baseline/stage-6`。
+阶段 6 实现提交为 `1c753a0`，基线标签为 `baseline/stage-6`；GitHub Actions 自定义部署运行 `34484384880` 的 Build 与 deploy 均成功。首页、文章、资料库、旅程和真实便笺线上均返回 200，`HEAD` 与 `origin/main` 一致，`git pull --ff-only` 返回已是最新。
 
 ## 十二、当前限制与下一步
 
