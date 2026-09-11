@@ -18,7 +18,6 @@
     margin: 0;
     overflow-y: scroll;
     background:
-      linear-gradient(90deg, transparent 0 49.92%, color-mix(in srgb, var(--color-ink) 2.4%, transparent) 49.92% 50.08%, transparent 50.08%),
       radial-gradient(circle at 12% 4%, color-mix(in srgb, var(--color-growth) 9%, transparent), transparent 30rem),
       var(--color-canvas);
     color: var(--color-ink);
