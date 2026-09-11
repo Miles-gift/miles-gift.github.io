@@ -317,7 +317,7 @@ upstream  https://github.com/Motues/Momo.git
 
 阶段 6 实现提交为 `1c753a0`，基线标签为 `baseline/stage-6`；GitHub Actions 自定义部署运行 `34484384880` 的 Build 与 deploy 均成功。首页、文章、资料库、旅程和真实便笺线上均返回 200，`HEAD` 与 `origin/main` 一致，`git pull --ff-only` 返回已是最新。
 
-阶段 7 建立自动质量门禁、完整 SEO、78 项 sitemap、自有分享图、部署后线上检查与轻量字体策略；本地验收结果见 [首发质量与上线基线](doc/QUALITY_BASELINE.md)。首发提交、标签、Actions 运行与线上复核结果将在本阶段推送完成后补记于此。
+阶段 7 建立自动质量门禁、完整 SEO、78 项 sitemap、自有分享图、部署后线上检查与轻量字体策略；本地验收结果见 [首发质量与上线基线](doc/QUALITY_BASELINE.md)。主体实现提交为 `c88222a`；首次远端部署在干净环境暴露出 Astro 生成类型尚未同步，随后以 `815bcfd` 修复。GitHub Actions 部署运行 `34551274453` 的 Build、deploy 与 Verify live site 三项均成功，`v1.0.1` 发布运行 `34551435002` 成功；验证基线标签为 `baseline/stage-7-verified`。线上核心栏目、sitemap、robots、分享图与真实便笺均返回 200，已移除旧入口返回 404；本地 `HEAD`、`origin/main` 完全一致，`git pull --ff-only` 返回已是最新。
 
 ## 十二、当前限制与下一步
 
