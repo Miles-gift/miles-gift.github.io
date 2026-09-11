@@ -352,6 +352,8 @@ upstream  https://github.com/Motues/Momo.git
 
 阶段 8 首批建立可重复的内容健康报告、180 天资料复核队列、外链巡检与每周只读维护工作流；本地实施与判断口径见 [长期维护基线](doc/MAINTENANCE_BASELINE.md)。实现提交为 `8cb968e`，基线标签为 `baseline/stage-8-maintenance`。GitHub Actions 内容维护运行 `34556683981` 的完整质量、内容健康与外链步骤均成功；部署运行 `34556684079` 的 Build、deploy 与 Verify live site 三项均成功。首页、资料库、PyTorch 原文和 sitemap 返回 200，RSS 旧入口保持 404，修复后的 PyTorch 官方链接已出现在公开页面；本地 `HEAD` 与 `origin/main` 均为 `8cb968eb6b548e51d260c42ceaf489ce9d4d96f1`，`git pull --ff-only` 返回已是最新。
 
+跨设备艺术字体修复实现提交为 `edb73a2`，基线标签为 `baseline/mobile-font-consistency`。GitHub Actions 内容健康运行 `34559213037` 成功；部署运行 `34559213018` 的 Build、deploy 与 Verify live site 三项均成功。线上首页已引用 `Yoyo LXGW Bright` 的生成样式，抽查字体分片返回有效 WOFF2，且 SHA-256 与本地产物一致；390 × 844 本地浏览器验证确认标题实际命中新字体、主导航固定且无横向溢出。
+
 ## 十二、当前限制与下一步
 
 阶段 8 首批维护能力已经完成。后续工作的优先级不再由模板功能驱动，而由真实需求决定：

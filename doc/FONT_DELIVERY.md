@@ -49,3 +49,10 @@
 字体项目：[LXGW Bright](https://github.com/lxgw/LxgwBright)，字体软件采用 SIL Open Font License 1.1。网页字体切分包来自 [chinese-free-web-font-storage](https://github.com/KonghaYao/chinese-free-web-font-storage)，包裹代码采用 MIT 许可。构建产物同时携带字体提示和包裹许可文件。
 
 本方案只覆盖站点中承担视觉角色的短文本。长正文继续使用系统宋体，以控制首次访问的流量；若未来大量新增汉字、繁体字或特殊字符，应先观察生成体积，再决定是否扩大 6 MiB 门禁。
+
+## 7. 远端验收
+
+- 实现提交：`edb73a2`；回滚基线：`baseline/mobile-font-consistency`。
+- GitHub Actions 内容健康运行 `34559213037` 成功。
+- GitHub Pages 部署运行 `34559213018` 的 Build、deploy、Verify live site 三项均成功。
+- 线上首页已加载生成后的字体 CSS；抽查的 WOFF2 文件可公开下载，格式有效，SHA-256 与本地构建产物一致。
