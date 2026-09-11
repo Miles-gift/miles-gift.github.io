@@ -1,5 +1,6 @@
 # build output
 dist/
+public/fonts/lxgw-bright/
 
 # generated types
 .astro/

@@ -1,5 +1,5 @@
 import { readFile, readdir, stat } from "node:fs/promises";
-import { extname, join, normalize, relative, resolve } from "node:path";
+import { extname, join, normalize, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = fileURLToPath(new URL("../", import.meta.url));
@@ -97,6 +97,14 @@ for (const removed of ["rss.xml", "privacy/index.html", "copyright/index.html", 
 }
 if (!await stat(join(distRoot, "brand", "yoyo-social-card.png")).then((item) => item.isFile()).catch(() => false)) errors.push("缺少 PNG 分享图");
 
+const displayFontFiles = files.filter((file) => file.includes(`${join("fonts", "lxgw-bright")}${sep}`) && file.endsWith(".woff2"));
+const displayFontBytes = (await Promise.all(displayFontFiles.map((file) => stat(file).then((item) => item.size))))
+  .reduce((total, size) => total + size, 0);
+const generatedCss = (await Promise.all(files.filter((file) => file.endsWith(".css")).map((file) => readFile(file, "utf8")))).join("\n");
+if (!displayFontFiles.length) errors.push("缺少跨设备中文展示字体");
+if (!generatedCss.includes("Yoyo LXGW Bright") || !generatedCss.includes("/fonts/lxgw-bright/")) errors.push("生成 CSS 未引用中文展示字体子集");
+if (displayFontBytes > 6 * 1024 * 1024) errors.push(`中文展示字体子集异常偏大：${(displayFontBytes / 1024 / 1024).toFixed(2)} MiB`);
+
 const largeFiles = [];
 for (const file of files) {
   const size = await stat(file).then((item) => item.size);
@@ -109,4 +117,4 @@ if (errors.length) {
   console.error(`公开站点检查失败（${errors.length}）：\n- ${[...new Set(errors)].join("\n- ")}`);
   process.exit(1);
 }
-console.log(`公开站点检查通过：${htmlFiles.length} 个 HTML、${links} 个内部链接、sitemap 与 robots 均有效。`);
+console.log(`公开站点检查通过：${htmlFiles.length} 个 HTML、${links} 个内部链接、${displayFontFiles.length} 个中文字体分片（${(displayFontBytes / 1024 / 1024).toFixed(2)} MiB）、sitemap 与 robots 均有效。`);
