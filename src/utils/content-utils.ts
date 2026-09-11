@@ -12,7 +12,7 @@ function isListable(data: { draft?: boolean; visibility?: string }) {
 }
 
 export async function getArticleEntrySort(
-  lang: string = i18n.defaultLocale,
+  lang: string = i18n?.defaultLocale || "zh-cn",
   filter?: (entry: CollectionEntry<"articles">) => boolean | undefined,
   sort?: (a: CollectionEntry<"articles">, b: CollectionEntry<"articles">) => number,
 ): Promise<ArticleEntryWithLocaleStatus[]> {
@@ -21,7 +21,7 @@ export async function getArticleEntrySort(
   };
   const entries = await getCollection("articles", filter || ((entry) => isListable(entry.data)));
   const grouped = new Map<string, Record<string, CollectionEntry<"articles">>>();
-  const defaultLanguage = i18n.defaultLocale;
+  const defaultLanguage = i18n?.defaultLocale || "zh-cn";
 
   for (const entry of entries) {
     if (!grouped.has(entry.data.slug)) grouped.set(entry.data.slug, {});
@@ -40,7 +40,7 @@ export async function getArticleEntrySort(
   return selected.sort(sort || defaultSort);
 }
 
-export async function getPublicEntries<K extends "resources" | "thoughts" | "journey" | "pages">(
+export async function getPublicEntries<K extends "resources" | "thoughts" | "journey">(
   collection: K,
 ): Promise<CollectionEntry<K>[]> {
   return getCollection(collection, (entry) => isListable(entry.data));
@@ -54,7 +54,7 @@ export function entryPath(entry: CollectionEntry<"articles" | "resources" | "tho
 }
 
 export async function getSpec(lang: string, spec: string) {
-  const defaultLanguage = i18n.defaultLocale;
+  const defaultLanguage = i18n?.defaultLocale || "zh-cn";
   let collection = await getEntry("spec", `${spec}/${lang}`);
   if (!collection) collection = await getEntry("spec", `${spec}/${defaultLanguage}`);
   return collection;

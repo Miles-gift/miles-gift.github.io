@@ -19,7 +19,7 @@ const { Content } = await render(entry);
 const tags = [...entry.data.skills, entry.data.kind];
 ---
 
-<ContentEntryLayout pageTitle={`${entry.data.title} - ${siteConfig.title}`} title={entry.data.title} description={entry.data.summary} eyebrow="旅程坐标" lang={currentLang} pubDate={entry.data.pubDate} dateLabel={entry.data.dateLabel} tags={tags} backHref="/journey/" backLabel="完整旅程">
+<ContentEntryLayout pageTitle={`${entry.data.title} - ${siteConfig.title}`} title={entry.data.title} description={entry.data.summary} eyebrow="旅程坐标" lang={currentLang} pubDate={entry.data.pubDate} dateLabel={entry.data.dateLabel} staticTags={tags} backHref="/journey/" backLabel="完整旅程">
   {(entry.data.organization || entry.data.highlights.length > 0) && <div class="journey-facts">
     {entry.data.organization && <p><span>机构</span><strong>{entry.data.organization}</strong></p>}
     {entry.data.highlights.map((item) => <p><span>节点</span><strong>{item}</strong></p>)}

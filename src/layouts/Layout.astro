@@ -2,14 +2,9 @@
 import { siteConfig, profileConfig } from '@/config';
 import "@styles/global.css"
 import 'katex/dist/katex.min.css';
-import '@fontsource/noto-serif-sc/400.css';
-import '@fontsource/noto-serif-sc/700.css';
 import '@fontsource/eb-garamond/400.css';
 import '@fontsource/eb-garamond/600.css';
 import '@fontsource/eb-garamond/600-italic.css';
-import '@chinese-fonts/lxgwwenkaibright/dist/LXGWBright-Regular/result.css';
-import '@chinese-fonts/lxgwwenkaibright/dist/LXGWBright-Medium/result.css';
-import '@chinese-fonts/lxgwwenkaibright/dist/LXGWBright-Italic/result.css';
 import { i18n } from "astro:config/client";
 import { ClientRouter } from "astro:transitions";
 
@@ -17,11 +12,52 @@ interface Props {
   title: string;
   lang?: string;
   description?: string;
+  image?: string;
+  type?: "website" | "article";
+  robots?: string;
+  publishedTime?: Date;
+  updatedTime?: Date;
 }
-const { title, lang, description } = Astro.props;
+const {
+  title,
+  lang,
+  description,
+  image = "/brand/yoyo-social-card.png",
+  type = "website",
+  robots = "index,follow,max-image-preview:large",
+  publishedTime,
+  updatedTime,
+} = Astro.props;
 
 const pageTitle = title;
 const pageLang = lang || i18n?.defaultLocale || "zh-cn";
+const pageDescription = description?.trim() || profileConfig.description;
+const siteOrigin = Astro.site || new URL("https://miles-gift.github.io");
+const canonicalUrl = new URL(Astro.url.pathname, siteOrigin);
+const shareImageUrl = new URL(image, siteOrigin);
+const ogLocale = pageLang.toLowerCase() === "zh-cn" ? "zh_CN" : pageLang.replace("-", "_");
+const structuredData = type === "article" ? {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: pageTitle,
+  description: pageDescription,
+  url: canonicalUrl.href,
+  image: shareImageUrl.href,
+  inLanguage: pageLang,
+  ...(publishedTime ? { datePublished: publishedTime.toISOString() } : {}),
+  ...(updatedTime ? { dateModified: updatedTime.toISOString() } : {}),
+  author: { "@type": "Person", name: profileConfig.name, url: profileConfig.indexPage },
+} : {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteConfig.title,
+  alternateName: siteConfig.subTitle,
+  description: pageDescription,
+  url: canonicalUrl.href,
+  inLanguage: pageLang,
+  author: { "@type": "Person", name: profileConfig.name, url: profileConfig.indexPage },
+};
+const structuredDataJson = JSON.stringify(structuredData).replace(/</g, "\\u003c");
 ---
 
 <!DOCTYPE html>
@@ -47,9 +83,30 @@ const pageLang = lang || i18n?.defaultLocale || "zh-cn";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
-    <meta name="description" content={(description != null && description !== undefined && description !== "") ? description : profileConfig.description}>
+    <meta name="description" content={pageDescription}>
     <meta name="author" content={profileConfig.name}>
+    <meta name="robots" content={robots}>
+    <meta name="theme-color" content="#edf4ef" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#10212a" media="(prefers-color-scheme: dark)">
+    <link rel="canonical" href={canonicalUrl}>
     <link rel="icon" href={siteConfig.favicon} type="image/svg+xml">
+    <meta property="og:site_name" content={siteConfig.title}>
+    <meta property="og:locale" content={ogLocale}>
+    <meta property="og:type" content={type}>
+    <meta property="og:title" content={pageTitle}>
+    <meta property="og:description" content={pageDescription}>
+    <meta property="og:url" content={canonicalUrl}>
+    <meta property="og:image" content={shareImageUrl}>
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="yoyo的旅行日记：沿着知识去旅行">
+    {type === "article" && publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
+    {type === "article" && updatedTime && <meta property="article:modified_time" content={updatedTime.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content={pageTitle}>
+    <meta name="twitter:description" content={pageDescription}>
+    <meta name="twitter:image" content={shareImageUrl}>
+    <script type="application/ld+json" set:html={structuredDataJson}></script>
     <title>{pageTitle}</title>
     <ClientRouter />
     <script is:inline>

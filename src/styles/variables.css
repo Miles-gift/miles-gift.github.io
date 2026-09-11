@@ -1,9 +1,9 @@
 :root {
   color-scheme: light;
-  --font-display: "LXGW Bright", "Kaiti SC", "STKaiti", serif;
-  --font-editorial: "EB Garamond", "LXGW Bright", "Noto Serif SC", serif;
+  --font-display: "Kaiti SC", "STKaiti", "KaiTi", "楷体", serif;
+  --font-editorial: "EB Garamond", "Kaiti SC", "STKaiti", "KaiTi", serif;
   --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-reading: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-reading: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", serif;
   --font-mono: "JetBrains Mono Variable", "SFMono-Regular", Consolas, monospace;
   --text-display-xl: clamp(3.55rem, 8.6vw, 7.4rem);
   --text-display-lg: clamp(2.7rem, 5.7vw, 5.35rem);

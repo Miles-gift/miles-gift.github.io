@@ -15,14 +15,15 @@ interface Props {
   dateLabel?: string;
   topic?: string;
   tags?: string[];
+  staticTags?: string[];
   backHref?: string;
   backLabel?: string;
 }
 
-const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLabel, topic, tags = [], backHref, backLabel } = Astro.props;
+const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLabel, topic, tags = [], staticTags = [], backHref, backLabel } = Astro.props;
 ---
 
-<MainPageLayout title={pageTitle} lang={lang} description={description}>
+<MainPageLayout title={pageTitle} lang={lang} description={description} type="article" publishedTime={pubDate}>
   <article class="content-entry reading-shell">
     <span class="sr-only" data-pagefind-meta={`kind:${eyebrow}`}></span>
     {topic && <span class="sr-only" data-pagefind-meta={`topic:${topic}`}></span>}
@@ -37,6 +38,7 @@ const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLab
         {!dateLabel && pubDate && <time datetime={pubDate.toISOString()}>{formatFullDate(pubDate, lang)}</time>}
         {topic && <Chip href={`/topics/${encodeURIComponent(topic)}/`} tone="accent">{topic}</Chip>}
         {tags.map((tag) => <Chip href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</Chip>)}
+        {staticTags.map((tag) => <Chip>{tag}</Chip>)}
       </div>
       {Astro.slots.has("aside") && <div class="content-entry__aside"><slot name="aside" /></div>}
     </header>

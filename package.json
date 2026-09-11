@@ -9,7 +9,11 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "pnpm validate:content && astro build && pagefind --site dist",
+    "build": "pnpm build:brand && pnpm validate:content && astro build && pagefind --site dist",
+    "build:brand": "node script/build-brand-assets.mjs",
+    "check:public": "node script/check-public-build.mjs",
+    "typecheck": "tsc --noEmit && tsc -p cms/tsconfig.json",
+    "quality": "pnpm typecheck && pnpm build && pnpm check:public",
     "preview": "astro preview",
     "astro": "astro",
     "newpost": "node script/newpost.js",
@@ -19,10 +23,8 @@
   "dependencies": {
     "@astrojs/markdown-remark": "^7.2.2",
     "@astrojs/svelte": "^9.0.1",
-    "@chinese-fonts/lxgwwenkaibright": "^2.0.0",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@fontsource/eb-garamond": "^5.2.7",
-    "@fontsource/noto-serif-sc": "^5.2.9",
     "@iconify/svelte": "^5.2.1",
     "@myriaddreamin/typst-ts-node-compiler": "0.7.0-rc2",
     "@myriaddreamin/typst.ts": "0.7.0-rc2",

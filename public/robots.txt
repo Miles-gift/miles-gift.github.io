@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://miles-gift.github.io/sitemap.xml

@@ -647,7 +647,7 @@
 }
 
 .quote {
-    font-family: "LXGW Bright Medium";
+    font-family: var(--font-display);
     position: relative;
     padding: 0 3rem;
 	  margin: 3.5rem 0;

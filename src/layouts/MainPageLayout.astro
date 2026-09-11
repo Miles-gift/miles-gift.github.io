@@ -9,12 +9,17 @@ interface Props {
   title: string;
   lang: string;
   description?: string;
+  image?: string;
+  type?: "website" | "article";
+  robots?: string;
+  publishedTime?: Date;
+  updatedTime?: Date;
 }
-const { title, lang, description } = Astro.props;
+const { title, lang, description, image, type, robots, publishedTime, updatedTime } = Astro.props;
 
 ---
 
-<Layout title={title} lang={lang} description={description}>
+<Layout title={title} lang={lang} description={description} image={image} type={type} robots={robots} publishedTime={publishedTime} updatedTime={updatedTime}>
   <div class="site-frame flex flex-col min-h-screen">
     <div>
       <Header />

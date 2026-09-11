@@ -1,7 +1,3 @@
-import '@fontsource/noto-serif-sc/400.css'
-import '@fontsource/noto-serif-sc/700.css'
-import '@chinese-fonts/lxgwwenkaibright/dist/LXGWBright-Regular/result.css'
-import '@chinese-fonts/lxgwwenkaibright/dist/LXGWBright-Medium/result.css'
 import './styles.css'
 import { parseRoute } from './router'
 import { renderOverview } from './pages/OverviewPage'

@@ -21,8 +21,8 @@
   --success-bg: #edf6ef;
   --danger-bg: #fff3f3;
   --shadow: 0 20px 55px rgb(23 43 58 / 8%);
-  --sans: "Noto Serif SC", "Songti SC", "STSong", serif;
-  --display: "LXGW Bright", "Kaiti SC", "STKaiti", serif;
+  --sans: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", serif;
+  --display: "Kaiti SC", "STKaiti", "KaiTi", "楷体", serif;
   --mono: "SFMono-Regular", ui-monospace, Menlo, Monaco, Consolas, monospace;
 }
 
