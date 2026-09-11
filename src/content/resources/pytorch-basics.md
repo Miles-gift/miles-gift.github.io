@@ -270,7 +270,7 @@ PyTorch 提供了许多常见的神经网络层，以下是几个常见的：
 | :----------------------------------------------------------- | :-------------------- | :------------------------------------------- |
 | [nn.Transformer](https://www.runoob.com/pytorch/pytorch-torch-nn-transformer.html) | 完整 Transformer 模型 | `nn.Transformer(d_model=512, nhead=8)`       |
 | [nn.TransformerEncoder](https://www.runoob.com/pytorch/pytorch-torch-nn-transformerencoder.html) | Transformer 编码器    | `nn.TransformerEncoder(layer, num_layers=6)` |
-| [nn.TransformerDecoder](https://www.runoob.com/pytorch/pytorch-torch-nn-transformerdecoder.html) | Transformer 解码器    | `nn.TransformerDecoder(layer, num_layers=6)` |
+| [nn.TransformerDecoder](https://docs.pytorch.org/docs/main/generated/torch.nn.TransformerDecoder.html) | Transformer 解码器    | `nn.TransformerDecoder(layer, num_layers=6)` |
 | [nn.TransformerEncoderLayer](https://www.runoob.com/pytorch/pytorch-torch-nn-transformerencoderlayer.html) | Transformer 编码器层  | `nn.TransformerEncoderLayer(512, 8)`         |
 | [nn.MultiheadAttention](https://www.runoob.com/pytorch/pytorch-torch-nn-multiheadattention.html) | 多头注意力机制        | `nn.MultiheadAttention(512, 8)`              |
 
