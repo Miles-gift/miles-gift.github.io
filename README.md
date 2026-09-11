@@ -1,24 +1,24 @@
-# yoyo的旅行日记
+# yoyo 的旅行日记
 
-一个以学习原文、长篇思考、灵光便笺和人生轨迹为核心的个人博客。公开站点采用“流动手稿”视觉：温暖、手工感、青春，但仍保持清楚的信息结构、可读性与工程可靠性。
+一个以学习、生活与成长为线索的个人博客。
 
-当前状态：**阶段 8 首批长期维护能力与跨设备艺术字体交付已完成；网站进入可持续更新阶段。**
+线上站点：[miles-gift.github.io](https://miles-gift.github.io/)
 
-## 一、项目目标
+本项目的重点不是展示模板，而是建立一套可以长期维护的个人内容系统：用 Markdown 保存原文，用清楚的栏目整理知识和经历，用本地 CMS 辅助发布，再由 GitHub Actions 自动检查和部署。
 
-这个项目要建立一座真正属于 yoyo、可以长期维护的个人网站，而不是保留模板作者身份与无关功能的主题演示站。
+## 1. 网站介绍
 
-主要目标：
+### 1.1 核心定位
 
-1. 发布较长的日记、经历复盘与所思所想。
-2. 随时记录短而独立的念头。
-3. 按主题公开并整理个人 Markdown 学习原文，不替原文做总结。
-4. 分开记录教育经历、校园服务、获奖与人生里程碑。
-5. 集中展示个人简介、研究方向、关注领域、兴趣、学校、位置、联系方式与友联。
-6. 在桌面和手机上都保持清楚、流畅、可访问的阅读体验。
-7. 通过 Git、内容校验、自动构建与 GitHub Pages 形成可持续发布流程。
+网站名称为 **yoyo 的旅行日记**，主要记录：
 
-## 二、信息架构
+- 长篇札记：较完整的日记、复盘、项目记录和个人思考。
+- 灵光便笺：随时记录的短想法、观察和正在形成的判断。
+- 资料库：公开整理个人学习 Markdown 原文，不替原文做总结。
+- 旅程：教育经历、校园服务、奖项和人生里程碑。
+- 关于：个人简介、研究方向、关注领域、兴趣、学校、位置、GitHub 与友联。
+
+### 1.2 公开站点的一级栏目
 
 ```text
 首页
@@ -26,7 +26,7 @@
 ├── 最新长篇札记
 ├── 最新灵光便笺
 ├── 资料分类
-└── 旅程与个人简介入口
+└── 旅程与关于入口
 
 文章
 ├── 长篇札记
@@ -52,333 +52,415 @@
 └── 友联
 ```
 
-辅助入口只保留全站搜索与时间归档。RSS、隐私页、版权页、网站源码入口、模板上游入口和旧兼容网址不出现在公开站点。
+公开导航只保留与本人内容相关的入口，以及搜索和归档。RSS、隐私页、版权页、源码入口、模板作者入口和无视觉入口的旧网址均不属于当前站点结构。
 
-## 三、视觉方向
+### 1.3 当前内容规模
 
-视觉主题名为 **流动手稿 / Flowing Field Notes**。
+当前公开内容共 36 条：
 
-- 气质：温暖、手工感、青春。
-- 核心视觉：一条贯穿内容、学习与成长的“知识轨迹”。
-- 浅色：雾青绿色画布、墨蓝文字、莓红批注、苔绿色轨迹。
-- 深色：深墨蓝画布、柔白文字、粉莓批注、浅蓝与浅绿轨迹。
-- 中文标题与引用：站内托管的霞鹜文楷 Bright 子集；各设备使用同一字形，系统楷体只作为极端情况下的后备。
-- 英文、数字与年份：EB Garamond。
-- 长正文：系统宋体栈。
-- 代码：JetBrains Mono。
-- 主题：默认跟随系统，也可手动在浅色、深色、跟随系统间切换。
-- 动效：中等强度；轨迹缓慢流动、内容进入视口时统一显现、卡片只提供轻微交互反馈，并尊重“减少动态效果”系统设置。
+| 内容类型 | 数量 | 存储位置 |
+| --- | ---: | --- |
+| 长篇札记 | 4 | `src/content/articles/` |
+| 原文资料 | 8 | `src/content/resources/` |
+| 灵光便笺 | 3 | `src/content/thoughts/` |
+| 旅程 | 21 | `src/content/journey/` |
 
-完整设计决策见 [doc/DESIGN_DIRECTION_V2.md](doc/DESIGN_DIRECTION_V2.md)。
+资料库中的雅思、PyTorch、Git、uv、macOS 等笔记以用户原始 Markdown 为主体，只做公开展示所需的元数据和必要格式处理。旅程页面不展示证书图片、证书编号、二维码、学号或第三方敏感信息。
 
-## 四、目前已经实现
+### 1.4 视觉与交互特点
 
-### 1. 站点身份
+- 视觉主题：温暖、手工感、青春，核心意象是贯穿学习和成长的“知识轨迹”。
+- 支持浅色、深色和跟随系统三种主题模式。
+- 中文标题和引用使用站内生成的霞鹜文楷 Bright 子集，英文和数字使用 EB Garamond，代码使用 JetBrains Mono。
+- 主导航固定在窗口顶部，桌面和手机端都可以快速切换五个核心栏目。
+- 动效保持中等强度，内容进入视口时平滑显现，并尊重系统的“减少动态效果”设置。
+- 站点不依赖远程图片才能完成首屏展示，品牌标志、轨迹图形和分享图均由仓库内资源生成。
 
-- 展示名称：**yoyo的旅行日记**。
-- 自制轨迹标志：`public/brand/yoyo-trail.svg`。
-- GitHub：`Miles-gift`。
-- 当前学校：华中科技大学集成电路学院。
-- 专业：电子科学与技术，本科大四，预计 2027 年毕业。
-- 公开位置：中国 / 湖北 / 武汉 / 华中科技大学。
-- 研究方向：Power architecture for high-performance processors。
-- 关注领域：AI chip、IC design、power architecture。
-- 兴趣：健身、美食、乒乓球。
-- 友联：Motues。
+## 2. 网站构成与架构
 
-### 2. 首页
+### 2.1 总体数据流
 
-- 用“知识轨迹”替换原来的工程信号图和通用卡片首页。
-- 首屏同时表达个人气质、学习方向、武汉坐标与内容入口。
-- 内容总览、长篇札记、灵光便笺、四类资料、旅程与关于均可直接到达。
-- 不依赖远程图片；核心图形、轨迹和个人标志均由站点自身代码生成。
+```text
+Markdown 内容 / 站点配置
+          │
+          ▼
+Astro Content Collections + Zod Schema
+          │
+          ▼
+页面路由、布局、组件、Markdown 插件
+          │
+          ├── Pagefind 静态搜索索引
+          ├── 字体与品牌资源生成
+          └── Astro 静态构建
+                    │
+                    ▼
+              dist/ 静态产物
+                    │
+                    ▼
+       GitHub Pages + GitHub Actions
+```
 
-### 3. 文章
+本地编辑时，数据流增加一条安全的工作台路径：
 
-- 将长文与短想法合并进同一个“文章”一级栏目。
-- 长文命名为“长篇札记”，短想法命名为“灵光便笺”。
-- 提供同页分区导航和跨两类内容的即时筛选。
-- 长文详情继续支持阅读时间、维护状态、目录、相关内容和代码块。
-- 灵光便笺详情返回文章页对应分区，不再保留独立的短想法首页。
+```text
+yoyo Studio（仅监听 127.0.0.1:5188）
+          │
+          ├── 读取 / 保存 src/content/
+          ├── Markdown 实时预览
+          ├── 发布预检、版本冲突检查
+          └── 图片限边与 WebP 转码
+```
 
-当前公开：
+CMS 不直接替代 Git，也不把内容上传到第三方云数据库。它是本地内容工作台；正式发布仍然通过 Git 提交、GitHub Actions 构建和 GitHub Pages 部署完成。
 
-- 长篇札记：4 篇。
-- 灵光便笺：3 条。
+### 2.2 技术栈
 
-### 4. 资料库
+- **Astro 7**：静态页面生成、路由和页面布局。
+- **TypeScript**：站点、组件、内容工具和 CMS 类型检查。
+- **Svelte**：目录、归档、评论占位等需要客户端交互的组件。
+- **Astro Content Collections**：管理 Markdown 内容并用 Zod 校验 frontmatter。
+- **Unified / remark / rehype**：Markdown、数学公式、代码高亮、自定义指令、Typst 和图片处理。
+- **Pagefind**：构建阶段生成的本地静态搜索索引。
+- **Tailwind CSS 4 + 自定义 CSS**：基础样式、设计令牌和流动手稿视觉。
+- **Sharp**：图片尺寸限制、LQIP 和 WebP 处理。
+- **Vite + Hono**：本地 `yoyo Studio` 的前端开发服务器与本地 API。
+- **pnpm workspace**：统一管理根站点和 `cms/` 子项目。
+- **GitHub Actions + GitHub Pages**：质量门禁、静态部署和线上路由检查。
 
-已将用户授权目录中的 8 份 Markdown 全部作为原始学习笔记发布：
-
-| 分类 | 原始笔记 |
-| --- | --- |
-| AI 与机器学习 | PyTorch 学习记录 |
-| 编程与工程工具 | Git 学习记录、uv 学习记录 |
-| macOS 与效率 | MacBook 快捷键 |
-| 语言学习 | 雅思听力、阅读、口语、写作课堂笔记 |
-
-导入原则：
-
-- 正文不总结、不概括、不重新组织。
-- 只增加站点所需的 frontmatter。
-- 只修正公开展示所需的格式。
-- 绝对本地图片路径不会泄露；对应位置改为明确的缺图说明。
-- 资料详情明确标注“本人原始笔记”与公开复核日期。
-- 分类按钮、关键词搜索和 URL 查询参数可以组合使用。
-
-### 5. 旅程
-
-旅程页已拆为三个明确章节：
-
-- 教育经历：江苏省靖江高级中学；华中科技大学集成电路学院。
-- 校园服务：电创 2301 班资助委员、阳光俱乐部部长、资助服务中心主任。
-- 获奖与里程碑：16 条经材料核验的校级、省级、国家级与国际竞赛/荣誉记录。
-
-公开边界：
-
-- 不展示证书图片。
-- 不公开证书编号、二维码、学号和其他身份识别信息。
-- 不公开证明材料中的队友、指导教师或其他第三方姓名。
-- 不推测未经本人确认的个人贡献与项目分工。
-- 无法可靠确认年份和项目名称的材料不会被强行写入时间线。
-
-### 6. 关于
-
-关于页已包含个人简介、研究方向、关注领域、兴趣、学校、位置、GitHub 和友联。邮箱与网易云音乐保留为后续真实信息入口，不放置空链接。
-
-### 7. 设计与交互
-
-- 中文标题与引用使用站内托管的霞鹜文楷 Bright 子集，正文继续使用系统宋体；EB Garamond 与 JetBrains Mono 继续自托管。
-- 自动深浅主题和手动三态切换。
-- 已修复页面切换后主题按钮重复绑定的问题。
-- 页面过渡改为横向“书写线”，不再使用通用加载转圈。
-- 已统一收紧首页、栏目页、章节和列表标题的字号上限与行距，避免大字挤压内容层级。
-- “首页—文章—资料库—旅程—关于”主导航在桌面与手机端都固定于窗口顶部，不再随向下滚动隐藏。
-- 资料分类与旅程分区导航回到正常内容流，不再悬浮在阅读区域中央或与主导航叠放。
-- 已移除曾贯穿所有页面中心的低透明度灰色装饰线；背景只保留底色与左上角柔和光晕，导航边界和内容内部具有语义的分隔线继续保留。
-- 移动端抽屉只保留五个主栏目，没有模板分类或外部作者入口。
-- 全站提供可见焦点、语义标题、减少动态效果适配和空结果提示。
-
-### 8. 已清理的公开内容
-
-- 模板作者身份与模板示例入口。
-- RSS 页面与头部声明。
-- 隐私、版权和网站源码入口。
-- 独立友链页。
-- 旧 `/blog/` 兼容路由与旧单数归档路由。
-- 公开设计系统演示页。
-- 与当前个人博客无关的页脚链接。
-
-### 9. 本地内容工作台
-
-- 旧 Momo 单一文章后台已重建为 `yoyo Studio`，统一管理长篇札记、原文资料、灵光便笺和旅程。
-- 概览页同时显示四类数量、公开/草稿比例、正文规模、每日发布回路和最近修改。
-- 内容列表支持跨类型搜索、类型筛选与公开/草稿筛选；编辑器根据内容类型提供独立字段。
-- Markdown 实时预览与正文编辑并排，支持常用格式快捷插入。
-- 保存采用文件版本校验与原子替换，磁盘内容发生变化时拒绝旧页面覆盖。
-- 删除正文及对应媒体时移入 `.trash/cms/`，不做不可恢复的直接删除。
-- 图片上传会核验真实格式，限制 8 MB 和 2400 px 最大边，并统一转换为 WebP。
-- 发布预检会检查受控分类、草稿状态、正文、绝对路径、图片替代文本和潜在隐私/附件风险。
-- 已用真实便笺 `20260910-003` 在工作台中完成保存与发布预检，不新增或代写个人观点。
-- 日常步骤见 [发布 SOP](doc/PUBLISHING_SOP.md)，冲突、误删、构建失败与回滚见 [恢复手册](doc/CMS_RECOVERY.md)。
-
-### 10. 长期维护
-
-- 每次 `pnpm quality` 都会统计四类内容、公开状态、主题覆盖、资料复核日期和低复用标签。
-- [内容健康报告](doc/CONTENT_HEALTH_REPORT.md) 当前记录 36 条公开内容、8 条资料、7/8 个已使用主题，没有超过 180 天未复核的资料。
-- 独立外链巡检覆盖公开 Markdown 中 51 个唯一链接；首轮发现并修复 1 个明确失效的 PyTorch 教程链接，复核后全部正常。
-- GitHub Actions 会在内容或维护脚本进入 `main` 时检查，并在每周一北京时间 08:30 定期执行；也可手动触发。
-- 定时工作流只有仓库读取权限，不创建 Issue、不修改内容、不引入评论或统计追踪。
-- 实施依据、判断口径与后续边界见 [长期维护基线](doc/MAINTENANCE_BASELINE.md)。
-
-### 11. 跨设备艺术字体
-
-- 解决了电脑端依赖 macOS 楷体、手机端因缺字库而回退成普通字体的问题。
-- 构建时根据当前站点标题、引用、Markdown 标题和元数据自动选择霞鹜文楷 Bright 的预切分 WOFF2 文件，不发布 57 MB 的完整网页字体包。
-- 当前中文展示字体为 155 个分片、5.02 MiB；全部字体合计约 6.62 MiB / 246 个文件，完整站点产物约 15 MB。
-- 常规、500–700 字重与斜体均有对应字形；`font-display: swap` 保证弱网时内容先可读、字体加载后平滑替换。
-- 每次开发和生产构建都会先重新生成字体清单；公开产物检查会阻止字体缺失或中文子集超过 6 MiB 的回归。
-- 选择、生成、许可与维护方式见 [跨设备字体交付说明](doc/FONT_DELIVERY.md)。
-
-## 五、阶段计划与进度
-
-| 阶段 | 目标 | 状态 |
-| --- | --- | --- |
-| 0 | 清理目录、初始化仓库、导入模板、验证构建与 GitHub 连接 | 已完成 |
-| 1 | 个人品牌、素材盘点、内容边界与初步个性化 | 已完成 |
-| 2 | 设计令牌、基础组件和响应式设计系统 | 已完成，后由 V2 视觉取代 |
-| 3 | 内容模型、受控分类、首批真实内容和构建前校验 | 已完成 |
-| 4 | 首页与五项主导航 | 已完成 |
-| 5 | 文章、资料、旅程、关于、归档、搜索与详情体验 | 已完成 |
-| 5.1 | 按新需求重做“流动手稿”视觉、信息架构和全部真实资料 | 已完成 |
-| 6 | 完成多内容类型本地工作台、保存冲突、媒体、预检、发布与回滚流程 | 已完成 |
-| 7 | 全站质量、无障碍、链接、SEO、性能与上线验收 | 已完成 |
-| 8 | 首发后高价值增强与长期维护机制 | 首批已完成，持续增强 |
-
-阶段 6 之后，每个阶段都必须执行：实现 → 本地验证 → 更新本 README → Git 提交 → 推送 GitHub → 等待 Actions 成功 → 检查线上页面与 pull 一致性 → 再进入下一阶段。
-
-## 六、技术栈
-
-- Astro 7
-- TypeScript
-- Svelte（交互组件）
-- Markdown Content Collections
-- Pagefind 本地静态搜索
-- Tailwind CSS 4（模板遗留与少数组件）
-- Sharp（媒体处理）
-- pnpm workspace
-- GitHub Actions + GitHub Pages
-
-## 七、项目结构
+### 2.3 目录结构
 
 ```text
 .
-├── cms/                         本地内容工作台
-├── doc/                         设计、内容与执行文档
-├── public/brand/                自有标志
-├── public/fonts/                构建时生成的中文展示字体子集（不提交）
-├── script/                      内容校验、字体生成与辅助脚本
-├── src/
-│   ├── components/              页面与交互组件
-│   ├── content/
-│   │   ├── articles/            长篇札记
-│   │   ├── thoughts/            灵光便笺
-│   │   ├── resources/           原始学习笔记
-│   │   ├── journey/             教育、服务、奖项
-│   │   └── spec/                关于等结构化说明
+├── src/                         公开站点源码
+│   ├── pages/                   页面路由
 │   ├── layouts/                 全站布局
-│   ├── pages/                   路由页面
-│   └── styles/                  视觉令牌与正文样式
-├── BLOG_REBUILD_PLAN.md         总执行计划
-└── README.md                    累计目标、进度和验证记录
+│   ├── components/              页面、内容和交互组件
+│   ├── content/                 所有正式内容与内容分类
+│   │   ├── articles/            长篇札记
+│   │   ├── resources/           原文资料
+│   │   ├── thoughts/             灵光便笺
+│   │   ├── journey/              教育、服务、奖项与里程碑
+│   │   ├── spec/                 关于等结构化说明
+│   │   └── taxonomy.json         受控分类、状态和旅程类型
+│   ├── plugins/                 Markdown remark/rehype 插件
+│   ├── styles/                  设计令牌、正文和字体样式
+│   ├── config.ts                站点、个人资料和功能开关
+│   └── content.config.ts        内容集合与 frontmatter schema
+├── public/                      不经过 Markdown 的公开静态资源
+│   ├── brand/                   标志和社交分享图
+│   ├── fonts/                   构建时生成的展示字体子集
+│   ├── illustrations/           插图
+│   └── media/                   已确认可公开的媒体
+├── cms/                         yoyo Studio 本地内容工作台
+│   ├── src/                     工作台页面、编辑器和 UI
+│   ├── server/                  本地 API、读写、预览、上传和统计
+│   ├── smoke.mjs                API、媒体和 UI 冒烟测试
+│   └── AGENT.md                 CMS 使用与安全说明
+├── script/                      构建、内容校验、字体和外链检查脚本
+├── doc/                         设计、发布、恢复和维护文档
+├── .github/workflows/           部署、内容健康和 Release 工作流
+├── astro.config.mjs             Astro、Markdown 和插件配置
+├── package.json                 根项目命令和依赖
+├── pnpm-workspace.yaml          workspace 与构建依赖策略
+└── README.md                    本项目总说明
 ```
 
-## 八、本地运行
+### 2.4 页面和内容关系
 
-要求：
+公开页面位于 `src/pages/[...locale]/`。当前只启用 `zh-cn`，默认语言不带语言前缀。
 
-- Node.js 24 或更高版本
-- pnpm 11
+| 路径 | 用途 |
+| --- | --- |
+| `/` | 首页总览 |
+| `/articles/` | 长篇札记与灵光便笺统一入口 |
+| `/articles/<slug>/` | 长篇札记详情 |
+| `/thoughts/<id>/` | 灵光便笺详情 |
+| `/resources/` | 资料库入口与分类筛选 |
+| `/resources/<slug>/` | 原文资料详情 |
+| `/journey/` | 教育、校园服务、获奖与里程碑 |
+| `/journey/<slug>/` | 单条旅程详情 |
+| `/about/` | 关于页 |
+| `/archives/` | 按时间归档 |
+| `/search/` | Pagefind 搜索页 |
+
+内容集合在 `src/content.config.ts` 中定义。构建时如果 frontmatter 缺字段、类型不正确、分类不受控或 slug 不符合规则，Astro 会直接失败，不会生成不完整的公开页面。
+
+### 2.5 内容模型
+
+| 集合 | 标识规则 | 关键字段 |
+| --- | --- | --- |
+| `articles` | `src/content/articles/<slug>/zh-cn.md` | `title`、`slug`、`description`、`pubDate`、`topic`、`tags`、`kind: article` |
+| `resources` | `src/content/resources/<slug>.md` | `title`、`slug`、`resourceType`、`topic`、`tags`、`status`、`lastReviewedAt` |
+| `thoughts` | `src/content/thoughts/YYYYMMDD-001.md` | `id`、`title`、`description`、`pubDate`、`topic`、`tags` |
+| `journey` | `src/content/journey/<slug>.md` | `title`、`startDate`、`dateLabel`、`kind`、`summary`、`sourceLevel` |
+
+所有正式内容都应明确 `draft` 和 `visibility`。准备公开时使用 `draft: false`、`visibility: public`；未完成内容保持草稿，不要依赖页面隐藏来代替状态字段。
+
+## 3. 如何更新内容
+
+### 3.1 推荐方式：使用本地 CMS
+
+先安装依赖并启动工作台：
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm validate:content
-pnpm dev
-pnpm build
-```
-
-`pnpm dev` 与 `pnpm build` 会自动执行 `pnpm build:fonts`。只有排查字体交付时才需要单独运行该命令；内容标题或引用发生变化后无需手工维护字体文件。
-
-本地内容工作台：
-
-```bash
 pnpm cms
 ```
 
-工作台验证：
+然后访问 [http://localhost:5188/](http://localhost:5188/)。若需要同时检查公开页面，再开另一个终端运行 `pnpm dev`。
 
-```bash
-CI=true pnpm --dir cms build
-CI=true pnpm typecheck
-# 先运行 pnpm cms，再在另一终端执行：
-pnpm --dir cms exec tsx smoke.mjs
+标准流程：
+
+1. 在概览或内容列表中选择内容类型并新建草稿。
+2. 填写标题、日期、分类、标签和正文。
+3. 使用实时预览检查标题、列表、表格、代码、公式、图片和移动端阅读效果。
+4. 草稿阶段反复保存；准备公开时切换为公开状态。
+5. 点击保存后执行“发布预检”，先修复错误，再人工确认警告。
+6. 回到项目根目录执行质量检查和正式构建。
+7. 提交并推送到 `main`，等待 GitHub Actions 完成后检查线上页面。
+
+CMS 管理的四类文件与 API 说明见 [cms/AGENT.md](cms/AGENT.md)。CMS 具备文件版本冲突保护、原子写入和可恢复删除，适合日常编辑；但它仍然需要 Git 记录和远端构建才能发布。
+
+### 3.2 直接编辑 Markdown
+
+适合批量导入、迁移或需要精确控制正文时使用。新增文件前先查看同类型现有内容，不要从旧模板目录复制过时字段。
+
+通用要求：
+
+- `slug` 只使用小写英文、数字和连字符，并且不能重复。
+- `topic` 必须来自 `src/content/taxonomy.json`。
+- `tags` 至少 1 个，最多 6 个。
+- 日期使用 `YYYY-MM-DD`；灵光便笺的 `pubDate` 可以包含时区。
+- 正式公开内容使用 `draft: false` 和 `visibility: public`。
+- 正文中的本地绝对路径、密钥、精确住址、学号、二维码和第三方个人信息不得公开。
+- 资料库正文遵循“保留 Markdown 原文”的原则，不要为了页面简介擅自总结正文。
+
+长篇札记路径示例：
+
+```text
+src/content/articles/my-new-note/zh-cn.md
 ```
 
-首发质量门禁：
+灵光便笺路径示例：
+
+```text
+src/content/thoughts/20260911-001.md
+```
+
+旅程内容需要额外填写 `startDate`、`endDate`、`dateLabel`、`kind`、`summary` 和 `sourceLevel`。奖项或证书只写经确认的公开信息，不上传证书原件。
+
+### 3.3 更新站点资料与分类
+
+- 修改站点名称、副标题、个人头像、GitHub、主题功能开关：编辑 `src/config.ts`。
+- 修改关于页正文、研究方向、兴趣、学校、位置和友联：编辑 `src/content/spec/about/zh-cn.md`。
+- 新增或调整资料分类、资料状态和旅程类型：编辑 `src/content/taxonomy.json`，然后运行内容校验。
+- 修改页面结构、导航、Markdown 渲染或主题样式：分别检查 `src/pages/`、`src/components/`、`src/plugins/` 和 `src/styles/`。
+- 不要直接编辑 `dist/`、`.astro/` 或 Pagefind 生成文件；这些内容会在构建时重新生成。
+
+### 3.4 内容发布前检查
+
+最少执行：
+
+```bash
+pnpm validate:content
+pnpm typecheck
+pnpm build
+pnpm check:public
+```
+
+内容较多或准备发布到线上时，执行完整质量门禁：
 
 ```bash
 CI=true pnpm quality
 ```
 
-长期维护检查：
+如果新增了资料、外链或长期内容，还应执行：
 
 ```bash
 pnpm content:health
-pnpm content:health:write
 pnpm check:external
 ```
 
-## 九、内容发布与校验
+## 4. 本地运行与构建
 
-所有正式公开内容均保存在 `src/content/`。发布前至少检查：
+### 4.1 环境要求
 
-1. frontmatter 满足集合 schema。
-2. slug 与路径一致且不重复。
-3. topic 属于受控分类。
-4. draft、visibility 与发布意图一致。
-5. 不包含 PDF、Office、压缩包等不应进入公开内容目录的附件。
-6. 不包含本地绝对路径、密钥、精确住址或第三方敏感信息。
-7. `pnpm build` 完整通过并生成 Pagefind 索引。
+- Node.js `>=24`
+- pnpm `>=11 <12`
+- macOS、Linux 或能够运行 Node.js 24 的开发环境
 
-## 十、验证记录
+安装依赖：
 
-本次 V2 重建已完成：
-
-- 内容预检：36 个 Markdown 文件通过。
-- Astro 静态构建：96 个页面生成成功。
-- 干净环境构建修复：移除已下线 `pages` 内容集合在 schema 与预检器中的残留引用；`CI=true pnpm build` 通过。
-- 桌面实测：首页、文章、资料库、旅程、关于。
-- 手机实测：390 × 844 首页、文章、关于、移动菜单。
-- 主题实测：浅色、深色、跟随系统三态。
-- 交互实测：移动菜单、资料分类筛选、文章筛选、主题切换。
-- 正文实测：雅思听力原始 Markdown 的标题、列表、表格与目录。
-- 浏览器控制台：未发现运行错误或警告。
-- 视觉精修复测：1440 × 900 与窄屏下标题尺度更克制；主导航持续可见；资料筛选带会随内容自然滚走。
-- 首发质量门禁：96 个 HTML、2735 条站内链接、78 个 sitemap URL、canonical、Open Graph、JSON-LD、robots 与分享图全部通过。
-- 性能精简：公开产物由约 43 MB 降至 8.9 MB；字体文件由约 35 MB / 914 个降至约 1.8 MB / 91 个。
-- 跨设备字体复测：在阶段 7 的轻量基线上增加按当前文本自动选择的霞鹜文楷 Bright；中文展示字体 155 个分片 / 5.02 MiB，全部字体约 6.62 MiB / 246 个，站点产物约 15 MB，仍明显低于最初的 43 MB。
-- 手机实测：390 × 844 首页艺术标题实际命中 `Yoyo LXGW Bright` 500，字号 56.8 px，固定导航正常且无横向溢出；资料正文页的 400 与 700 字重均成功加载，控制台为 0 个 warning / error。
-- 中央灰线修复复测：移除全局 `body` 位于 49.92%–50.08% 的线性渐变；1440 × 900 下首页、文章、资料库、旅程、关于均确认不再包含中央背景带，首页截图确认接缝消失，固定主导航与原有背景光晕不受影响。
-- 键盘交互：移动菜单可用 Esc 关闭并把焦点返回菜单按钮；搜索与 404 明确不参与索引。
-- yoyo Studio 构建与 TypeScript 检查通过；概览、列表、四类编辑器和实时预览完成视觉检查。
-- CMS 端到端冒烟测试通过：36 条真实内容统计、四类草稿创建/保存/预检、版本冲突、图片 WebP 转码与可恢复删除全部符合预期。
-- 真实便笺 `20260910-003` 已通过工作台保存和发布预检；完整 ISO 发布时间不会在保存时被截断。
-
-V2 首次远端构建暴露出已删除 `src/content/pages/` 仍被预检器读取的问题；修复提交 `0a11651` 的 GitHub Actions 运行 `34459930362` 已构建并部署成功。
-
-## 十一、Git 与部署
-
-```text
-origin    https://github.com/Miles-gift/miles-gift.github.io.git
-upstream  https://github.com/Motues/Momo.git
+```bash
+pnpm install --frozen-lockfile
 ```
 
-- 发布分支：`main`
-- 功能分支默认前缀：`codex/`
-- 部署：GitHub Actions 自动构建并发布 GitHub Pages
-- 线上地址：`https://miles-gift.github.io/`
+### 4.2 常用命令
 
-阶段 6 实现提交为 `1c753a0`，基线标签为 `baseline/stage-6`；GitHub Actions 自定义部署运行 `34484384880` 的 Build 与 deploy 均成功。首页、文章、资料库、旅程和真实便笺线上均返回 200，`HEAD` 与 `origin/main` 一致，`git pull --ff-only` 返回已是最新。
+| 命令 | 作用 |
+| --- | --- |
+| `pnpm dev` | 生成品牌与字体资源并启动 Astro 开发服务器 |
+| `pnpm build` | 校验内容、生成资源、构建 Astro 页面并生成 Pagefind 索引 |
+| `pnpm preview` | 预览最近一次 `dist/` 构建产物 |
+| `pnpm typecheck` | 同步 Astro 类型并检查站点与 CMS TypeScript |
+| `pnpm validate:content` | 检查内容路径、frontmatter、分类和公开边界 |
+| `pnpm check:public` | 检查静态产物中的路由、SEO、链接和公开文件 |
+| `pnpm content:health` | 统计内容规模、资料复核日期和分类覆盖 |
+| `pnpm check:external` | 检查公开 Markdown 中的外部链接 |
+| `pnpm quality` | 依次执行类型检查、内容健康、完整构建和公开产物检查 |
+| `pnpm cms` | 启动本地 yoyo Studio |
 
-阶段 7 建立自动质量门禁、完整 SEO、78 项 sitemap、自有分享图、部署后线上检查与轻量字体策略；本地验收结果见 [首发质量与上线基线](doc/QUALITY_BASELINE.md)。主体实现提交为 `c88222a`；首次远端部署在干净环境暴露出 Astro 生成类型尚未同步，随后以 `815bcfd` 修复。GitHub Actions 部署运行 `34551274453` 的 Build、deploy 与 Verify live site 三项均成功，`v1.0.1` 发布运行 `34551435002` 成功；验证基线标签为 `baseline/stage-7-verified`。线上核心栏目、sitemap、robots、分享图与真实便笺均返回 200，已移除旧入口返回 404；本地 `HEAD`、`origin/main` 完全一致，`git pull --ff-only` 返回已是最新。
+`pnpm dev` 和 `pnpm build` 会自动生成展示字体子集，因此通常不需要手工维护 `public/fonts/`。如果 pnpm 提示要删除并重新安装已有 modules，请先停止操作并确认 Node/pnpm 版本和 lockfile；不要在未确认的情况下接受破坏性重装。
 
-阶段 8 首批建立可重复的内容健康报告、180 天资料复核队列、外链巡检与每周只读维护工作流；本地实施与判断口径见 [长期维护基线](doc/MAINTENANCE_BASELINE.md)。实现提交为 `8cb968e`，基线标签为 `baseline/stage-8-maintenance`。GitHub Actions 内容维护运行 `34556683981` 的完整质量、内容健康与外链步骤均成功；部署运行 `34556684079` 的 Build、deploy 与 Verify live site 三项均成功。首页、资料库、PyTorch 原文和 sitemap 返回 200，RSS 旧入口保持 404，修复后的 PyTorch 官方链接已出现在公开页面；本地 `HEAD` 与 `origin/main` 均为 `8cb968eb6b548e51d260c42ceaf489ce9d4d96f1`，`git pull --ff-only` 返回已是最新。
+### 4.3 构建产物
 
-跨设备艺术字体修复实现提交为 `edb73a2`，基线标签为 `baseline/mobile-font-consistency`。GitHub Actions 内容健康运行 `34559213037` 成功；部署运行 `34559213018` 的 Build、deploy 与 Verify live site 三项均成功。线上首页已引用 `Yoyo LXGW Bright` 的生成样式，抽查字体分片返回有效 WOFF2，且 SHA-256 与本地产物一致；390 × 844 本地浏览器验证确认标题实际命中新字体、主导航固定且无横向溢出。
+- `dist/`：Astro 生成的静态站点和 Pagefind 索引，不需要手动编辑。
+- `public/fonts/`：根据当前站点文字生成的字体资源，通常由脚本维护。
+- `.astro/`：Astro 类型和构建缓存。
+- `cms/dist/`：CMS 的前端构建产物，不是公开站点内容。
 
-中央灰线修复提交为 `6d36006`。GitHub Pages 部署运行 `34575840372` 的 Build、deploy 与 Verify live site 三项均成功；线上全局 CSS 已不再包含 `49.92%–50.08%` 的中央渐变，五个主栏目仍保持固定主导航与原有背景光晕。
+构建产物出现问题时，优先删除对应缓存后重新运行构建，不要直接修改 `dist/` 里的 HTML。
 
-## 十二、当前限制与下一步
+## 5. 本地 CMS：yoyo Studio
 
-阶段 8 首批维护能力已经完成。后续工作的优先级不再由模板功能驱动，而由真实需求决定：
+`yoyo Studio` 是仅本机可访问的内容工作台，默认监听 `127.0.0.1:5188`。它负责：
 
-1. 新内容发布后更新健康报告，并按 180 天队列复核资料。
-2. 观察每周定时检查；只有明确失效的外链才需要修改原文。
-3. 等邮箱、网易云、项目案例或英文内容有真实资料后再加入，不创建空入口。
-4. 远程 Studio、评论、统计和对象存储需要账号、权限、成本与隐私选择，确认方案后再实施，不提前引入第三方追踪。
+- 查询四类内容和概览统计。
+- 创建、编辑、保存和删除 Markdown 内容。
+- 实时渲染 Markdown、代码、公式和图片。
+- 检查分类、草稿状态、空正文、绝对路径和潜在隐私风险。
+- 真实图片格式校验、最大 8 MB 限制、最大边 2400 px 限制和 WebP 转码。
+- 在磁盘版本发生变化时阻止旧编辑器覆盖新内容。
+- 将删除的正文和媒体移入 `.trash/cms/<时间>/`，便于恢复。
 
-## 十三、文档维护规则
+它不会读取 `/Users/sin/Tools`、评奖评优原始材料或其他私人目录，也不会管理已经下线的模板内容。
 
-每完成一项任务或一个阶段，必须更新本 README，至少说明：
+CMS 的接口包括：
 
-- 目标是什么。
-- 计划是什么。
-- 已经实现了什么。
-- 当前特点是什么。
-- 做过哪些验证。
-- 有哪些限制、风险和下一步。
-- 对应 Git 提交、标签、Actions 与线上验证结果。
+```text
+GET    /api/content?kind=&q=&status=
+POST   /api/content
+GET    /api/content/:kind/:id
+PUT    /api/content/:kind/:id
+DELETE /api/content/:kind/:id
+POST   /api/content/:kind/:id/preflight
+POST   /api/preview
+POST   /api/upload
+GET    /api/meta
+GET    /api/stats
+```
 
-## 十四、上游说明
+验证 CMS：先运行 `pnpm cms`，再开另一个终端执行：
 
-工程最初基于 [Motues/Momo](https://github.com/Motues/Momo) 的 Astro 框架重建。模板来源只在仓库文档中保留，不作为公开网站导航或视觉入口。模板许可见 [LICENSE](LICENSE)。
+```bash
+CI=true pnpm --dir cms build
+CI=true pnpm exec tsc -p cms/tsconfig.json
+CI=true pnpm --dir cms smoke
+```
+
+冒烟测试会创建临时四类内容、检查保存和版本冲突、测试图片转码和界面预览，最后将测试内容移入可恢复回收区。测试结束后不应在正式内容目录留下测试稿。
+
+## 6. 发布与 GitHub Actions
+
+### 6.1 正式发布链路
+
+```text
+本地编辑
+  → pnpm quality
+  → git diff / git status 复核
+  → git add / git commit
+  → git push origin main
+  → GitHub Actions 构建与检查
+  → GitHub Pages 部署
+  → Verify live site 检查公开路由
+```
+
+远程仓库：`https://github.com/Miles-gift/miles-gift.github.io.git`
+
+线上地址：[https://miles-gift.github.io/](https://miles-gift.github.io/)
+
+### 6.2 工作流
+
+| 工作流 | 触发方式 | 作用 |
+| --- | --- | --- |
+| `deploy.yml` | `main` 推送 | 安装依赖、类型检查、构建、公开产物检查、部署和线上路由验证 |
+| `content-health.yml` | 内容相关推送、每周一 08:30（北京时间）、手动触发 | 运行质量门禁、内容健康报告和外链检查；只读仓库，不改内容 |
+| `release.yml` | 推送 `v*` 标签 | 生成 Release 压缩包 |
+
+部署失败时，先打开 Actions 查看失败步骤，再在本地复现同一命令。不要直接修改 GitHub Pages 产物；修复源码或内容后重新提交。
+
+## 7. 运行维护与故障恢复
+
+### 7.1 每次发布后的检查
+
+1. 确认 `git status` 没有误加入的个人材料、证书或临时文件。
+2. 确认 `pnpm quality` 完整通过。
+3. 检查 Actions 的 Build、deploy 和 Verify live site 均成功。
+4. 打开首页、文章、资料库、旅程、关于和新内容详情页。
+5. 检查移动端固定导航、主题切换、搜索和正文排版。
+6. 确认 `git pull --ff-only` 与远端保持一致。
+
+### 7.2 定期维护
+
+- 每周查看内容健康工作流；只有确认失效的外链才修改原文。
+- 按 `lastReviewedAt` 复核资料内容，避免工具版本和学习笔记长期过时。
+- 新增内容后关注分类是否失衡、标签是否重复以及首页入口是否需要调整。
+- 依赖升级前先记录当前 Node、pnpm、Astro 和构建状态，升级后执行完整 `pnpm quality`。
+- 真实邮箱、网易云音乐、项目案例或英文内容准备好后再增加入口，不创建空链接。
+
+维护口径和自动化基线见 [长期维护基线](doc/MAINTENANCE_BASELINE.md)，内容统计见 [内容健康报告](doc/CONTENT_HEALTH_REPORT.md)。
+
+### 7.3 恢复策略
+
+- **误删内容**：优先从 `.trash/cms/` 找到对应时间目录恢复；该目录是 CMS 的可恢复回收区，不要在未确认前清空。
+- **误发布内容**：先将内容恢复为草稿或通过 Git 回退对应提交，再重新运行质量检查和部署。
+- **构建失败**：查看 Astro schema、frontmatter 和最近一次内容改动，执行 `pnpm validate:content`、`pnpm typecheck` 和 `pnpm build` 定位问题。
+- **线上版本异常**：确认 GitHub Actions 运行结果、本地 `HEAD` 与 `origin/main`，必要时使用 Git 的可追溯提交回退，而不是手工编辑线上文件。
+- **CMS 保存冲突**：重新读取最新内容后再编辑和保存，不要强行覆盖版本号。
+
+详细步骤见 [CMS 发布 SOP](doc/PUBLISHING_SOP.md) 和 [CMS 恢复手册](doc/CMS_RECOVERY.md)。
+
+## 8. 当前状态与后续计划
+
+### 已完成
+
+- 完成从 Momo 模板到个人博客的重建和个人化。
+- 完成首页、文章、资料库、旅程、关于五个核心栏目。
+- 完成 36 条真实内容导入、分类和公开边界处理。
+- 完成暖色手工感视觉、自动深浅主题、固定主导航和跨设备艺术字体。
+- 完成本地 CMS、版本冲突保护、图片处理、发布预检和可恢复删除。
+- 完成 SEO、站内搜索、内容健康、外链检查、GitHub Pages 部署和线上验证。
+- 修复页面中央灰色装饰线、移动端字体回退和页面结构层级问题。
+
+### 后续计划
+
+1. 持续发布长篇札记、灵光便笺和原始学习资料。
+2. 按资料复核周期更新工具版本、链接和公开边界。
+3. 根据真实使用情况微调首页入口、搜索和内容分类。
+4. 在确认账号、隐私和成本后，再考虑评论、远程编辑或对象存储；在此之前不提前引入第三方追踪。
+
+## 9. 相关文档
+
+- [内容模型](doc/CONTENT_MODEL.md)
+- [发布 SOP](doc/PUBLISHING_SOP.md)
+- [CMS 恢复手册](doc/CMS_RECOVERY.md)
+- [长期维护基线](doc/MAINTENANCE_BASELINE.md)
+- [内容健康报告](doc/CONTENT_HEALTH_REPORT.md)
+- [设计方向](doc/DESIGN_DIRECTION_V2.md)
+- [字体交付说明](doc/FONT_DELIVERY.md)
+- [上线质量基线](doc/QUALITY_BASELINE.md)
+- [CMS 使用说明](cms/AGENT.md)
+- [总执行计划](BLOG_REBUILD_PLAN.md)
+
+## 10. README 维护规则
+
+每完成一个阶段或一次具有范围的维护任务，都要同步更新本 README，至少说明：
+
+- 目标和实施范围。
+- 当前已实现的能力。
+- 网站结构或架构是否发生变化。
+- 做过哪些本地、线上和 Git 验证。
+- 当前限制、风险和下一步。
+- 对应的提交、Actions 运行和线上结果（如有）。
+
+本项目最初基于 [Motues/Momo](https://github.com/Motues/Momo) 的 Astro 框架重建。上游模板只作为工程来源保留在文档中，不作为公开网站导航或视觉入口。
