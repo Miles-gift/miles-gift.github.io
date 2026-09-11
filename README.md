@@ -356,6 +356,8 @@ upstream  https://github.com/Motues/Momo.git
 
 跨设备艺术字体修复实现提交为 `edb73a2`，基线标签为 `baseline/mobile-font-consistency`。GitHub Actions 内容健康运行 `34559213037` 成功；部署运行 `34559213018` 的 Build、deploy 与 Verify live site 三项均成功。线上首页已引用 `Yoyo LXGW Bright` 的生成样式，抽查字体分片返回有效 WOFF2，且 SHA-256 与本地产物一致；390 × 844 本地浏览器验证确认标题实际命中新字体、主导航固定且无横向溢出。
 
+中央灰线修复提交为 `6d36006`。GitHub Pages 部署运行 `34575840372` 的 Build、deploy 与 Verify live site 三项均成功；线上全局 CSS 已不再包含 `49.92%–50.08%` 的中央渐变，五个主栏目仍保持固定主导航与原有背景光晕。
+
 ## 十二、当前限制与下一步
 
 阶段 8 首批维护能力已经完成。后续工作的优先级不再由模板功能驱动，而由真实需求决定：
