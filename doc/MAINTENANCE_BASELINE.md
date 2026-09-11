@@ -101,3 +101,13 @@ pnpm check:external
 - 有足够真实案例后再建立项目独立栏目。
 
 在上述选择明确前，不使用占位链接或未经授权的第三方服务填充功能。
+
+## 7. 发布与远端验收
+
+- 阶段实现提交：`8cb968e`。
+- 可回退基线：`baseline/stage-8-maintenance`。
+- 内容维护运行 `34556683981` 成功；其中完整质量门禁、内容健康和公开外链三个核心步骤分别通过。
+- GitHub Pages 运行 `34556684079` 成功；Build、deploy、Verify live site 三个任务分别通过。
+- 线上复核：首页、资料库、PyTorch 原文与 sitemap 返回 200；RSS 旧入口保持 404。
+- PyTorch 原文页已包含修复后的官方 `TransformerDecoder` 文档链接。
+- 同步复核：本地 `HEAD` 与 `origin/main` 均为 `8cb968eb6b548e51d260c42ceaf489ce9d4d96f1`，`git pull --ff-only` 返回已是最新。

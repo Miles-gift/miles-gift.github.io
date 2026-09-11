@@ -336,7 +336,7 @@ upstream  https://github.com/Motues/Momo.git
 
 阶段 7 建立自动质量门禁、完整 SEO、78 项 sitemap、自有分享图、部署后线上检查与轻量字体策略；本地验收结果见 [首发质量与上线基线](doc/QUALITY_BASELINE.md)。主体实现提交为 `c88222a`；首次远端部署在干净环境暴露出 Astro 生成类型尚未同步，随后以 `815bcfd` 修复。GitHub Actions 部署运行 `34551274453` 的 Build、deploy 与 Verify live site 三项均成功，`v1.0.1` 发布运行 `34551435002` 成功；验证基线标签为 `baseline/stage-7-verified`。线上核心栏目、sitemap、robots、分享图与真实便笺均返回 200，已移除旧入口返回 404；本地 `HEAD`、`origin/main` 完全一致，`git pull --ff-only` 返回已是最新。
 
-阶段 8 首批建立可重复的内容健康报告、180 天资料复核队列、外链巡检与每周只读维护工作流；本地实施与判断口径见 [长期维护基线](doc/MAINTENANCE_BASELINE.md)。阶段实现提交、基线标签、Actions 与线上复核结果将在推送完成后补记于此。
+阶段 8 首批建立可重复的内容健康报告、180 天资料复核队列、外链巡检与每周只读维护工作流；本地实施与判断口径见 [长期维护基线](doc/MAINTENANCE_BASELINE.md)。实现提交为 `8cb968e`，基线标签为 `baseline/stage-8-maintenance`。GitHub Actions 内容维护运行 `34556683981` 的完整质量、内容健康与外链步骤均成功；部署运行 `34556684079` 的 Build、deploy 与 Verify live site 三项均成功。首页、资料库、PyTorch 原文和 sitemap 返回 200，RSS 旧入口保持 404，修复后的 PyTorch 官方链接已出现在公开页面；本地 `HEAD` 与 `origin/main` 均为 `8cb968eb6b548e51d260c42ceaf489ce9d4d96f1`，`git pull --ff-only` 返回已是最新。
 
 ## 十二、当前限制与下一步
 
