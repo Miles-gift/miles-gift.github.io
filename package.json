@@ -12,7 +12,7 @@
     "build": "pnpm build:brand && pnpm validate:content && astro build && pagefind --site dist",
     "build:brand": "node script/build-brand-assets.mjs",
     "check:public": "node script/check-public-build.mjs",
-    "typecheck": "tsc --noEmit && tsc -p cms/tsconfig.json",
+    "typecheck": "astro sync && tsc --noEmit && tsc -p cms/tsconfig.json",
     "quality": "pnpm typecheck && pnpm build && pnpm check:public",
     "preview": "astro preview",
     "astro": "astro",

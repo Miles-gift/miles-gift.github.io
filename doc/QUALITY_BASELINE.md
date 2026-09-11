@@ -85,7 +85,7 @@
 ## 6. 发布与回滚
 
 - 发布链路：功能分支 → `main` → GitHub Actions 类型/构建/公开产物检查 → Pages 部署 → 线上核心路径检查。
-- 本阶段首发标签：`v1.0.0`；阶段快照标签：`baseline/stage-7`。
+- 首发标签以远端完整部署成功的版本为准；若仅 Release 打包成功而 Pages 未通过，不作为上线完成依据。
 - 若线上异常，优先回退到 `baseline/stage-6`，或恢复首发标签对应提交并重新触发部署。
 - 日常内容发布见 `doc/PUBLISHING_SOP.md`，冲突、误删和构建失败处理见 `doc/CMS_RECOVERY.md`。
 
