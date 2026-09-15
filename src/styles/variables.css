@@ -16,7 +16,7 @@
   --leading-body: 1.78;
   --tracking-tight: -0.025em;
   --stage-width: min(1160px, calc(100vw - 3rem));
-  --content-width: min(760px, calc(100vw - 3rem));
+  --content-width: min(820px, calc(100vw - 3rem));
   --header-width: var(--stage-width);
   --page-width: var(--content-width);
   --space-1: 0.25rem;
@@ -137,7 +137,7 @@
 @media (max-width: 640px) {
   :root {
     --stage-width: min(100% - 1.5rem, 1160px);
-    --content-width: min(100% - 1.5rem, 760px);
+    --content-width: min(100% - 1.5rem, 820px);
     --header-height: 4.25rem;
     --section-space: 4.75rem;
   }
