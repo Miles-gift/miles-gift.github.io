@@ -20,8 +20,7 @@ const { Content } = await render(aboutPost);
     <header class="about__hero">
       <p>05 / ABOUT THIS TRAVELLER</p>
       <h1>关于<br /><em>yoyo</em></h1>
-      <blockquote>“在芯片、电源与日常生活之间，认真学习，也认真记录。”</blockquote>
-      <span class="about__scribble">still growing →</span>
+      <p class="about__intro">个人简介、关注方向与联系方式。</p>
     </header>
 
     <div class="about__layout">
@@ -52,33 +51,30 @@ const { Content } = await render(aboutPost);
 
 <style>
   .about { padding-bottom: var(--space-9); }
-  .about__hero { position: relative; min-height: min(42rem, calc(100svh - var(--header-height))); padding-block: clamp(5rem, 11vw, 9rem); border-bottom: 1px solid var(--color-border-strong); }
+  .about__hero { position: relative; min-height: auto; padding-block: clamp(4rem, 10vw, 7rem) 2rem; border-bottom: 1px solid var(--color-border); }
   .about__hero > p { margin: 0 0 1rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
-  h1 { max-width: 8ch; margin: 0; font-family: var(--font-display); font-size: var(--text-display-xl); font-weight: 500; letter-spacing: -.04em; line-height: .9; }
-  h1 em { color: var(--color-annotation); font-family: var(--font-editorial); font-weight: 400; }
-  blockquote { position: absolute; right: 2%; bottom: 17%; max-width: 27rem; margin: 0; color: var(--color-ink-secondary); font-family: var(--font-display); font-size: clamp(1.25rem, 2.2vw, 1.9rem); line-height: 1.55; transform: rotate(-2deg); }
-  .about__scribble { position: absolute; right: 3%; bottom: 7%; color: var(--color-annotation); font-family: var(--font-editorial); font-size: 1.1rem; font-style: italic; }
-  .about__layout { display: grid; grid-template-columns: minmax(16rem, .36fr) minmax(0, .64fr); gap: clamp(3rem, 8vw, 8rem); align-items: start; padding-top: var(--section-space); }
-  .dossier { position: sticky; top: calc(var(--header-height) + 1.5rem); padding: 1.2rem; border: 1px solid var(--color-border-strong); background: var(--color-canvas-raised); box-shadow: 6px 8px 0 color-mix(in srgb, var(--color-growth) 23%, transparent); transform: rotate(-1deg); }
-  .dossier__photo { position: relative; display: grid; min-height: 15rem; place-items: center; overflow: hidden; background: var(--color-ink); }
+  h1 { max-width: 8ch; margin: 0; font-size: clamp(2.7rem, 7vw, 5.3rem); font-weight: 650; letter-spacing: -.06em; line-height: 1; }
+  h1 em { color: var(--color-ink-secondary); font-style: normal; font-weight: 650; }
+  .about__intro { margin: 1.2rem 0 0; color: var(--color-ink-secondary); }
+  .about__layout { display: grid; grid-template-columns: minmax(16rem, .36fr) minmax(0, .64fr); gap: clamp(2rem, 7vw, 5rem); align-items: start; padding-top: clamp(2.5rem, 6vw, 4.5rem); }
+  .dossier { position: sticky; top: calc(var(--header-height) + 1.5rem); padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-solid); }
+  .dossier__photo { position: relative; display: grid; min-height: 11rem; place-items: center; overflow: hidden; border-radius: var(--radius-sm); background: var(--color-surface); }
   .dossier__photo::before { position: absolute; width: 18rem; height: 18rem; border: 1px dashed var(--color-accent); border-radius: 50%; content: ""; }
-  .dossier__photo span { position: absolute; right: -1.2rem; bottom: -2.5rem; color: color-mix(in srgb, var(--color-canvas-raised) 8%, transparent); font-family: var(--font-editorial); font-size: 6rem; font-weight: 600; }
-  .dossier__photo img { position: relative; z-index: 1; border-radius: 1.8rem; }
+  .dossier__photo span { position: absolute; right: .8rem; bottom: .3rem; color: var(--color-ink-tertiary); font-size: 2rem; font-weight: 650; }
+  .dossier__photo img { position: relative; z-index: 1; border-radius: 1rem; }
   dl { margin: 1.1rem 0; }
   dl div { display: grid; grid-template-columns: 4.5rem 1fr; gap: .8rem; padding: .6rem 0; border-bottom: 1px dashed var(--color-border); }
-  dt { color: var(--color-annotation); font-family: var(--font-editorial); font-size: .68rem; font-weight: 600; letter-spacing: .08em; }
+  dt { color: var(--color-ink-tertiary); font-size: .68rem; font-weight: 600; letter-spacing: .08em; }
   dd { margin: 0; color: var(--color-ink-secondary); font-size: .82rem; }
   nav { display: grid; gap: .5rem; }
-  nav a { padding: .55rem .7rem; border: 1px solid var(--color-border); color: var(--color-ink); font-size: .82rem; font-weight: 650; text-decoration: none; }
-  nav a:hover { border-color: var(--color-annotation); color: var(--color-annotation); }
+  nav a { padding: .65rem .7rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); color: var(--color-ink); font-size: .82rem; font-weight: 600; text-decoration: none; }
+  nav a:hover { border-color: var(--color-accent); color: var(--color-accent); }
   .about__content { margin-top: 0; }
   .about__content :global(h2) { margin-top: 4rem; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 500; }
   .about__content :global(h2:first-child) { margin-top: 0; }
   .about__content :global(p), .about__content :global(li) { font-family: var(--font-reading); }
   @media (max-width: 800px) {
     .about__hero { min-height: auto; padding-block: 4.5rem; }
-    blockquote { position: static; max-width: 32rem; margin: 3rem 0 0 auto; }
-    .about__scribble { position: static; display: block; margin: 1rem 0 0 auto; text-align: right; }
-    .about__layout { grid-template-columns: 1fr; }.dossier { position: static; transform: none; }
+    .about__layout { grid-template-columns: 1fr; }.dossier { position: static; }
   }
 </style>

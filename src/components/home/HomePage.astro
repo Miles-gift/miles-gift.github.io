@@ -9,329 +9,116 @@ const thoughts = (await getPublicEntries("thoughts")).sort((a, b) => b.data.pubD
 const journey = (await getPublicEntries("journey")).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 const featuredArticle = articles.find((item) => item.data.featured) || articles[0];
 const latestArticles = articles.slice(0, 3);
-const latestThoughts = thoughts.slice(0, 4);
-const publicCount = articles.length + resources.length + thoughts.length + journey.length;
-const categories = ["AI 与机器学习", "编程与工程工具", "macOS 与效率", "语言学习"];
-const categoryNotes: Record<string, string> = {
-  "AI 与机器学习": "模型、PyTorch 与算力",
-  "编程与工程工具": "Git、环境与工作流",
-  "macOS 与效率": "快捷键与个人系统",
-  "语言学习": "IELTS 课堂原始笔记",
-};
-const journeyPreview = journey.filter((item) => item.data.featured).slice(0, 4);
+const latestThoughts = thoughts.slice(0, 3);
+const latestJourney = journey.slice(0, 3);
+const topics = [...new Set(resources.map((item) => item.data.topic))].sort();
 ---
 
-<div class="home">
-  <section class="hero stage-shell" aria-labelledby="hero-title">
-    <div class="hero__copy">
-      <p class="hero__edition"><span>VOL. 01</span> Yoyo's field notes</p>
-      <h1 id="hero-title">沿着知识<br /><em>去旅行</em></h1>
-      <p class="hero__lead">这里收集正在学习的技术、偶然冒出的念头，以及从靖江到武汉一路留下的坐标。</p>
-      <div class="hero__actions">
-        <a class="ink-link ink-link--solid" href="/articles/">翻开文章</a>
-        <a class="ink-link" href="/resources/">走进资料库</a>
-      </div>
-      <p class="hero__whisper">warm thoughts, honest records, unfinished journeys.</p>
-    </div>
-
-    <div class="hero__map" aria-label="一条从学习到记录、再到成长的知识轨迹图">
-      <svg viewBox="0 0 600 660" role="img">
-        <title>知识轨迹：阅读、实验、记录、连接与成长</title>
-        <path class="map__ghost" d="M64 92C197 13 248 171 382 112s180 39 131 131-222 17-292 121 87 164 205 118 130 70 58 129-213-44-330 41" />
-        <path class="map__route" d="M64 92C197 13 248 171 382 112s180 39 131 131-222 17-292 121 87 164 205 118 130 70 58 129-213-44-330 41" />
-        <g class="map__points">
-          <circle cx="64" cy="92" r="9" /><circle cx="221" cy="364" r="9" /><circle cx="426" cy="482" r="9" /><circle cx="154" cy="652" r="9" />
-        </g>
-      </svg>
-      <span class="map__label map__label--read">READ<br /><b>阅读</b></span>
-      <span class="map__label map__label--build">BUILD<br /><b>实验</b></span>
-      <span class="map__label map__label--write">WRITE<br /><b>记录</b></span>
-      <span class="map__label map__label--grow">GROW<br /><b>生长</b></span>
-      <div class="map__stamp">
-        <img src="/brand/yoyo-trail.svg" width="70" height="70" alt="" />
-        <span>WUHAN<br />30.5°N</span>
-      </div>
-    </div>
-
-    <dl class="hero__facts">
-      <div><dt>{publicCount}</dt><dd>公开记录</dd></div>
-      <div><dt>{resources.length}</dt><dd>学习资料</dd></div>
-      <div><dt>2027</dt><dd>下一站 · 毕业</dd></div>
-    </dl>
-  </section>
-
-  <section class="atlas stage-shell reveal" aria-labelledby="atlas-title">
-    <header class="section-heading">
-      <p>01 / CONTENT ATLAS</p>
-      <h2 id="atlas-title">从哪里开始？</h2>
-      <span class="hand-note">挑一条感兴趣的线索吧。</span>
-    </header>
-    <nav class="atlas__grid" aria-label="内容总览">
-      <a href="/articles/">
-        <span class="atlas__number">01</span>
-        <div><h3>文章</h3><p>长篇札记与灵光便笺</p></div>
-        <strong>{articles.length + thoughts.length}</strong>
-      </a>
-      <a href="/resources/">
-        <span class="atlas__number">02</span>
-        <div><h3>资料库</h3><p>未经概括的学习原文</p></div>
-        <strong>{resources.length}</strong>
-      </a>
-      <a href="/journey/">
-        <span class="atlas__number">03</span>
-        <div><h3>旅程</h3><p>教育、实践与里程碑</p></div>
-        <strong>{journey.length}</strong>
-      </a>
-      <a href="/about/">
-        <span class="atlas__number">04</span>
-        <div><h3>关于</h3><p>现在的我与关注方向</p></div>
-        <strong>y</strong>
-      </a>
-    </nav>
-  </section>
-
-  {featuredArticle && (
-    <section class="longform reveal" aria-labelledby="longform-title">
-      <div class="longform__inner stage-shell">
-        <header class="section-heading section-heading--light">
-          <p>02 / LONGFORM</p>
-          <h2 id="longform-title">长篇札记</h2>
-          <span class="hand-note">把一个问题想得久一点。</span>
-        </header>
-        <a class="feature" href={entryPath(featuredArticle)}>
-          <div class="feature__index">
-            <span>FEATURED</span>
-            <b>{formatFullDate(featuredArticle.data.pubDate, lang)}</b>
-          </div>
-          <div class="feature__body">
-            <p>{featuredArticle.data.topic}</p>
-            <h3>{featuredArticle.data.title}</h3>
-            <blockquote>“{featuredArticle.data.description}”</blockquote>
-          </div>
-          <div class="feature__gesture" aria-hidden="true">
-            <svg viewBox="0 0 160 80"><path d="M6 57c34-32 70-38 139-22m-22-18 23 18-23 20" /></svg>
-            <span>继续读</span>
-          </div>
-        </a>
-        <div class="longform__more">
-          {latestArticles.filter((item) => item.id !== featuredArticle.id).slice(0, 2).map((article, index) => (
-            <a href={entryPath(article)}>
-              <small>0{index + 2}</small>
-              <h3>{article.data.title}</h3>
-              <time>{formatFullDate(article.data.pubDate, lang)}</time>
-            </a>
-          ))}
-        </div>
-        <a class="text-link" href="/articles/#longform">查看全部长篇札记</a>
-      </div>
-    </section>
-  )}
-
-  <section class="jottings stage-shell reveal" aria-labelledby="jottings-title">
-    <header class="section-heading">
-      <p>03 / QUICK NOTES</p>
-      <h2 id="jottings-title">灵光便笺</h2>
-      <span class="hand-note">短一点，但不敷衍。</span>
-    </header>
-    <div class="jottings__board">
-      <p class="jottings__prompt">一些还没长成文章的想法，先钉在这里。</p>
-      <div class="jottings__list">
-        {latestThoughts.map((thought, index) => (
-          <a href={entryPath(thought)} style={`--tilt: ${index % 2 === 0 ? "-0.8deg" : "0.65deg"}`}>
-            <time>{formatFullDate(thought.data.pubDate, lang)}</time>
-            <h3>{thought.data.title}</h3>
-            <p>{thought.data.description}</p>
-            <span>#{thought.data.topic}</span>
-          </a>
-        ))}
-      </div>
-    </div>
-    <a class="text-link" href="/articles/#quick-notes">展开全部灵光便笺</a>
-  </section>
-
-  <section class="library reveal" aria-labelledby="library-title">
-    <div class="library__inner stage-shell">
-      <header class="section-heading">
-        <p>04 / PERSONAL LIBRARY</p>
-        <h2 id="library-title">资料库</h2>
-        <span class="hand-note">原文留下，脉络交给分类。</span>
-      </header>
-      <p class="library__intro">课堂上的句子、练习时的错误、工具用法与技术笔记，保留原本的细节，不替过去的自己做摘要。</p>
-      <ol class="library__shelves">
-        {categories.map((category, index) => {
-          const count = resources.filter((item) => item.data.topic === category).length;
-          return (
-            <li>
-              <a href={`/resources/?topic=${encodeURIComponent(category)}`}>
-                <span>0{index + 1}</span>
-                <div><h3>{category}</h3><p>{categoryNotes[category]}</p></div>
-                <b>{String(count).padStart(2, "0")} notes</b>
-              </a>
-            </li>
-          );
-        })}
-      </ol>
-      <a class="ink-link ink-link--solid" href="/resources/">进入资料库</a>
+<main class="home stage-shell">
+  <section class="home-intro" aria-labelledby="home-title">
+    <p class="eyebrow">YOYO · PERSONAL NOTES</p>
+    <h1 id="home-title">记录学习，也记录<br /><span>一路上的想法。</span></h1>
+    <div class="home-intro__bottom">
+      <p>这里收集文章、学习资料、短想法与个人旅程。</p>
+      <a class="primary-link" href="/articles/">从文章开始 <span aria-hidden="true">↗</span></a>
     </div>
   </section>
 
-  <section class="passage stage-shell reveal" aria-labelledby="passage-title">
-    <header class="section-heading">
-      <p>05 / LIFE PASSAGE</p>
-      <h2 id="passage-title">旅程与我</h2>
-      <span class="hand-note">坐标会变，方向还在生长。</span>
-    </header>
-    <div class="passage__layout">
-      <div class="passage__timeline">
-        {journeyPreview.map((item) => (
-          <a href={entryPath(item)}>
-            <time>{item.data.dateLabel}</time>
-            <i aria-hidden="true"></i>
-            <div><h3>{item.data.title}</h3><p>{item.data.summary}</p></div>
-          </a>
-        ))}
-        <a class="text-link" href="/journey/">打开完整旅程</a>
-      </div>
-      <aside class="passage__portrait">
-        <span class="passage__orbit" aria-hidden="true"></span>
-        <img src="/brand/yoyo-trail.svg" width="92" height="92" alt="yoyo 的轨迹标志" />
-        <p class="passage__hello">Hello, I'm yoyo.</p>
-        <h3>在武汉读电子科学与技术，也在寻找高性能处理器的能效答案。</h3>
-        <ul><li>AI chip</li><li>IC design</li><li>Power architecture</li></ul>
-        <a class="ink-link" href="/about/">认识我</a>
-      </aside>
-    </div>
-  </section>
+  <nav class="home-sections" aria-label="内容栏目">
+    <a href="/articles/"><span>01</span><strong>文章</strong><small>{articles.length} 篇</small></a>
+    <a href="/resources/"><span>02</span><strong>资料</strong><small>{resources.length} 条</small></a>
+    <a href="/articles/#quick-notes"><span>03</span><strong>想法</strong><small>{thoughts.length} 条</small></a>
+    <a href="/journey/"><span>04</span><strong>旅程</strong><small>{journey.length} 条</small></a>
+  </nav>
 
-  <section class="ending stage-shell reveal">
-    <p class="hand-note">to be continued...</p>
-    <h2>把今天写下来，<br />明天就多了一枚路标。</h2>
-    <a class="ink-link ink-link--solid" href="/archives/">沿时间翻阅</a>
-  </section>
-</div>
+  {featuredArticle && <section class="home-feature" aria-labelledby="featured-title">
+    <header class="section-heading"><p>精选文章</p><a href="/articles/">全部文章 <span aria-hidden="true">↗</span></a></header>
+    <a class="featured-row" href={entryPath(featuredArticle)}>
+      <div><span class="featured-row__topic">{featuredArticle.data.topic}</span><h2 id="featured-title">{featuredArticle.data.title}</h2><p>{featuredArticle.data.description}</p></div>
+      <time datetime={featuredArticle.data.pubDate.toISOString()}>{formatFullDate(featuredArticle.data.pubDate, lang)}</time>
+      <span class="row-arrow" aria-hidden="true">↗</span>
+    </a>
+    <div class="recent-articles">
+      {latestArticles.filter((item) => item.id !== featuredArticle.id).map((article) => <a href={entryPath(article)}><span>{article.data.topic}</span><strong>{article.data.title}</strong><time datetime={article.data.pubDate.toISOString()}>{formatFullDate(article.data.pubDate, lang)}</time><span class="row-arrow" aria-hidden="true">↗</span></a>)}
+    </div>
+  </section>}
+
+  {topics.length > 0 && <section class="home-topics" aria-labelledby="topics-title">
+    <header class="section-heading"><div><p>资料库</p><h2 id="topics-title">按主题浏览</h2></div><a href="/resources/">查看全部 <span aria-hidden="true">↗</span></a></header>
+    <div class="topic-links">{topics.map((topic) => <a href={`/resources/?topic=${encodeURIComponent(topic)}`}><span>{topic}</span><span aria-hidden="true">↗</span></a>)}</div>
+  </section>}
+
+  {latestThoughts.length > 0 && <section class="home-notes" aria-labelledby="notes-title">
+    <header class="section-heading"><div><p>近期更新</p><h2 id="notes-title">短想法</h2></div><a href="/articles/#quick-notes">查看全部 <span aria-hidden="true">↗</span></a></header>
+    <div class="simple-list">{latestThoughts.map((item) => <a href={entryPath(item)}><time datetime={item.data.pubDate.toISOString()}>{formatFullDate(item.data.pubDate, lang)}</time><strong>{item.data.title}</strong><span>{item.data.topic}</span><span class="row-arrow" aria-hidden="true">↗</span></a>)}</div>
+  </section>}
+
+  {latestJourney.length > 0 && <section class="home-journey" aria-labelledby="journey-title">
+    <header class="section-heading"><div><p>个人记录</p><h2 id="journey-title">旅程片段</h2></div><a href="/journey/">查看旅程 <span aria-hidden="true">↗</span></a></header>
+    <div class="simple-list">{latestJourney.map((item) => <a href={entryPath(item)}><time>{item.data.dateLabel}</time><strong>{item.data.title}</strong><span>{item.data.kind}</span><span class="row-arrow" aria-hidden="true">↗</span></a>)}</div>
+  </section>}
+
+  <section class="home-about"><p>ABOUT</p><div><h2>关于 yoyo</h2><p>更多关于我的介绍与关注方向。</p></div><a href="/about/" aria-label="阅读关于 yoyo">↗</a></section>
+</main>
 
 <style>
-  .home { overflow: clip; }
-  .hero { position: relative; display: grid; min-height: calc(100svh - var(--header-height)); grid-template-columns: minmax(0, 1fr) minmax(22rem, .9fr); align-content: center; gap: 2rem clamp(2rem, 6vw, 6rem); padding-block: clamp(4.5rem, 9vh, 7rem) 2rem; }
-  .hero__copy { position: relative; z-index: 2; align-self: center; }
-  .hero__edition { display: flex; align-items: center; gap: .8rem; margin: 0 0 1.5rem; color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .9rem; letter-spacing: .06em; }
-  .hero__edition span { padding: .2rem .55rem; border: 1px solid var(--color-annotation); color: var(--color-annotation); transform: rotate(-2deg); }
-  .hero h1 { max-width: 8ch; margin: 0; font-family: var(--font-display); font-size: var(--text-display-xl); font-weight: 500; letter-spacing: -.04em; line-height: .9; }
-  .hero h1 em { position: relative; color: var(--color-annotation); font-style: normal; white-space: nowrap; }
-  .hero h1 em::after { position: absolute; right: -.12em; bottom: -.05em; left: .05em; height: .11em; border-radius: 50%; background: var(--color-growth); content: ""; opacity: .6; transform: rotate(-1.5deg); }
-  .hero__lead { max-width: 35rem; margin: 2rem 0 0; color: var(--color-ink-secondary); font-family: var(--font-reading); font-size: clamp(1.05rem, 1.8vw, 1.28rem); line-height: 1.85; }
-  .hero__actions { display: flex; flex-wrap: wrap; gap: .9rem; margin-top: 2.2rem; }
-  .ink-link { display: inline-flex; min-height: 2.8rem; align-items: center; justify-content: center; padding: .58rem 1.15rem; border: 1px solid var(--color-ink); border-radius: .25rem 1rem .3rem .8rem; color: var(--color-ink); font-weight: 650; text-decoration: none; transform: rotate(.25deg); transition: transform var(--duration-fast), color var(--duration-fast), background var(--duration-fast); }
-  .ink-link:hover { color: var(--color-annotation); transform: rotate(-1deg) translateY(-2px); }
-  .ink-link--solid { border-color: var(--color-ink); background: var(--color-ink); color: var(--color-canvas-raised); }
-  .ink-link--solid:hover { background: var(--color-annotation); color: #fff; }
-  .hero__whisper { margin: 2.4rem 0 0 1rem; color: var(--color-annotation); font-family: var(--font-editorial); font-size: 1.05rem; font-style: italic; transform: rotate(-1.2deg); }
-  .hero__map { position: relative; width: min(100%, 34rem); aspect-ratio: 10 / 11; align-self: center; justify-self: end; }
-  .hero__map svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .map__ghost { fill: none; stroke: var(--color-border); stroke-width: 12; stroke-linecap: round; }
-  .map__route { fill: none; stroke: var(--color-accent); stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 8 11; animation: trail 24s linear infinite; }
-  @keyframes trail { to { stroke-dashoffset: -380; } }
-  .map__points circle { fill: var(--color-annotation); stroke: var(--color-canvas); stroke-width: 6; transform-box: fill-box; transform-origin: center; animation: pulse 3.5s ease-in-out infinite; }
-  .map__points circle:nth-child(2) { animation-delay: .5s; fill: var(--color-growth); }
-  .map__points circle:nth-child(3) { animation-delay: 1s; }
-  .map__points circle:nth-child(4) { animation-delay: 1.5s; fill: var(--color-growth); }
-  @keyframes pulse { 50% { transform: scale(1.35); } }
-  .map__label { position: absolute; color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .72rem; letter-spacing: .09em; line-height: 1.25; }
-  .map__label b { color: var(--color-ink); font-family: var(--font-display); font-size: 1rem; font-weight: 500; letter-spacing: 0; }
-  .map__label--read { top: 9%; left: 2%; }.map__label--build { top: 49%; left: 28%; }.map__label--write { top: 66%; right: 11%; }.map__label--grow { right: 65%; bottom: 0; }
-  .map__stamp { position: absolute; top: 23%; right: 5%; display: flex; align-items: center; gap: .7rem; padding: .7rem; border: 1px solid var(--color-border-strong); background: color-mix(in srgb, var(--color-canvas-raised) 82%, transparent); box-shadow: var(--shadow-sm); transform: rotate(4deg); }
-  .map__stamp img { border-radius: .9rem; }.map__stamp span { font-family: var(--font-editorial); font-size: .7rem; line-height: 1.3; }
-  .hero__facts { display: flex; grid-column: 1 / -1; gap: clamp(2rem, 8vw, 7rem); margin: 1rem 0 0; padding: 1.25rem 0 0; border-top: 1px solid var(--color-border); }
-  .hero__facts div { display: grid; }.hero__facts dt { font-family: var(--font-editorial); font-size: 1.7rem; line-height: 1; }.hero__facts dd { margin: .25rem 0 0; color: var(--color-ink-tertiary); font-size: .78rem; }
-  .reveal { opacity: 0; transform: translateY(2rem); transition: opacity .8s var(--ease-emphasized), transform .8s var(--ease-emphasized); }
-  .reveal.is-visible { opacity: 1; transform: none; }
-  .section-heading { position: relative; max-width: 48rem; margin-bottom: clamp(2.8rem, 6vw, 5rem); }
-  .section-heading > p { margin: 0 0 .7rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
-  .section-heading h2 { margin: 0; font-family: var(--font-display); font-size: var(--text-display-md); font-weight: 500; letter-spacing: -.035em; line-height: 1; }
-  .section-heading .hand-note { position: absolute; left: clamp(11rem, 29vw, 21rem); bottom: -.6rem; font-size: 1.05rem; transform: rotate(-2deg); white-space: nowrap; }
-  .atlas { padding-block: var(--section-space); }
-  .atlas__grid { display: grid; grid-template-columns: 1.15fr .85fr; border-top: 1px solid var(--color-border-strong); }
-  .atlas__grid a { display: grid; grid-template-columns: 3rem 1fr auto; align-items: center; gap: 1.2rem; min-height: 9.5rem; padding: 1.4rem clamp(1rem, 3vw, 2.5rem); border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; transition: background var(--duration-normal), padding var(--duration-normal); }
-  .atlas__grid a:nth-child(odd) { border-right: 1px solid var(--color-border); }
-  .atlas__grid a:hover { padding-left: 3rem; background: var(--color-surface); }
-  .atlas__number { color: var(--color-annotation); font-family: var(--font-editorial); font-size: .8rem; }
-  .atlas h3 { margin: 0; font-family: var(--font-display); font-size: 2rem; font-weight: 500; }
-  .atlas p { margin: .2rem 0 0; color: var(--color-ink-secondary); font-size: .88rem; }
-  .atlas strong { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: 2.4rem; font-weight: 400; }
-  .longform { padding-block: var(--section-space); background: var(--color-ink); color: var(--color-canvas-raised); }
-  .section-heading--light > p { color: var(--color-accent); }.section-heading--light .hand-note { color: var(--color-annotation); }
-  .feature { display: grid; grid-template-columns: 9rem 1fr 11rem; min-height: 27rem; align-items: stretch; border-block: 1px solid color-mix(in srgb, var(--color-canvas-raised) 24%, transparent); color: inherit; text-decoration: none; }
-  .feature__index { display: flex; flex-direction: column; justify-content: space-between; padding-block: 2rem; border-right: 1px solid color-mix(in srgb, var(--color-canvas-raised) 16%, transparent); color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .75rem; letter-spacing: .08em; writing-mode: vertical-rl; }
-  .feature__index b { color: var(--color-accent); font-weight: 400; }
-  .feature__body { display: flex; flex-direction: column; justify-content: center; padding: clamp(2rem, 6vw, 5rem); }
-  .feature__body > p { margin: 0 0 1rem; color: var(--color-accent); font-size: .8rem; }
-  .feature__body h3 { max-width: 15ch; margin: 0; font-family: var(--font-display); font-size: clamp(2.35rem, 4.8vw, 4.45rem); font-weight: 500; letter-spacing: -.035em; line-height: 1.02; }
-  .feature blockquote { max-width: 38rem; margin: 2rem 0 0; color: var(--color-ink-secondary); font-family: var(--font-reading); font-size: 1rem; }
-  .feature__gesture { display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid color-mix(in srgb, var(--color-canvas-raised) 16%, transparent); color: var(--color-annotation); font-family: var(--font-display); }
-  .feature__gesture svg { width: 7.5rem; }.feature__gesture path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-  .feature:hover .feature__gesture svg { animation: nudge .7s var(--ease-emphasized); } @keyframes nudge { 50% { transform: translateX(.7rem); } }
-  .longform__more { display: grid; grid-template-columns: 1fr 1fr; }
-  .longform__more a { display: grid; grid-template-columns: 2rem 1fr; gap: 1rem; padding: 2rem 2rem 2rem 0; border-bottom: 1px solid color-mix(in srgb, var(--color-canvas-raised) 16%, transparent); color: inherit; text-decoration: none; }
-  .longform__more a:first-child { border-right: 1px solid color-mix(in srgb, var(--color-canvas-raised) 16%, transparent); }
-  .longform__more small { color: var(--color-annotation); font-family: var(--font-editorial); }.longform__more h3 { margin: 0; font-family: var(--font-display); font-size: 1.4rem; font-weight: 500; }.longform__more time { grid-column: 2; color: var(--color-ink-tertiary); font-size: .78rem; }
-  .text-link { display: inline-block; margin-top: 2rem; color: var(--color-accent); font-weight: 650; text-decoration-thickness: 1px; }
-  .jottings { padding-block: var(--section-space); }
-  .jottings__board { position: relative; display: grid; grid-template-columns: .7fr 1.3fr; gap: 3rem; padding: clamp(2rem, 5vw, 4rem); border: 1px solid var(--color-border); background: var(--color-canvas-raised); box-shadow: var(--shadow-sm); }
-  .jottings__board::before { position: absolute; inset: 1rem; border: 1px dashed var(--color-border); content: ""; pointer-events: none; }
-  .jottings__prompt { position: relative; align-self: center; margin: 0; color: var(--color-annotation); font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 3.2rem); line-height: 1.25; transform: rotate(-2deg); }
-  .jottings__list { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  .jottings__list a { display: flex; min-height: 13rem; flex-direction: column; padding: 1.25rem; border-top: 4px solid var(--color-growth); background: var(--color-growth-soft); color: var(--color-ink); box-shadow: 3px 5px 0 color-mix(in srgb, var(--color-ink) 8%, transparent); text-decoration: none; transform: rotate(var(--tilt)); transition: transform var(--duration-normal); }
-  .jottings__list a:nth-child(2n) { border-color: var(--color-annotation); background: var(--color-annotation-soft); }
-  .jottings__list a:hover { transform: rotate(0) translateY(-4px); }
-  .jottings time, .jottings__list span { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .72rem; }
-  .jottings h3 { margin: .8rem 0 .45rem; font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; }.jottings__list p { margin: 0; color: var(--color-ink-secondary); font-size: .87rem; line-height: 1.65; }.jottings__list span { margin-top: auto; }
-  .library { padding-block: var(--section-space); background: var(--color-canvas-raised); }
-  .library__intro { max-width: 42rem; margin: -2rem 0 3rem auto; color: var(--color-ink-secondary); font-family: var(--font-reading); font-size: 1.06rem; }
-  .library__shelves { margin: 0 0 2.5rem; padding: 0; border-top: 3px double var(--color-border-strong); list-style: none; }
-  .library__shelves a { display: grid; grid-template-columns: 4rem minmax(0, 1fr) auto; align-items: center; gap: 1rem; min-height: 7.5rem; border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
-  .library__shelves a > span { color: var(--color-annotation); font-family: var(--font-editorial); font-size: 1.2rem; }.library__shelves h3 { margin: 0; font-family: var(--font-display); font-size: clamp(1.45rem, 3vw, 2.45rem); font-weight: 500; }.library__shelves p { margin: .15rem 0 0; color: var(--color-ink-tertiary); font-size: .85rem; }.library__shelves b { color: var(--color-growth); font-family: var(--font-editorial); font-size: .82rem; font-weight: 600; letter-spacing: .05em; }
-  .library__shelves a:hover h3 { color: var(--color-annotation); transform: translateX(.5rem); }.library__shelves h3 { transition: color var(--duration-normal), transform var(--duration-normal); }
-  .passage { padding-block: var(--section-space); }
-  .passage__layout { display: grid; grid-template-columns: 1.2fr .8fr; gap: clamp(2rem, 7vw, 7rem); }
-  .passage__timeline > a:not(.text-link) { display: grid; grid-template-columns: 8rem 1.2rem 1fr; gap: 1rem; padding: 1.4rem 0; border-top: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
-  .passage__timeline time { color: var(--color-accent); font-family: var(--font-editorial); font-size: .88rem; }.passage__timeline i { width: .7rem; height: .7rem; margin-top: .55rem; border: 2px solid var(--color-canvas); border-radius: 50%; background: var(--color-annotation); box-shadow: 0 0 0 1px var(--color-annotation); }.passage__timeline h3 { margin: 0; font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; }.passage__timeline p { margin: .35rem 0 0; color: var(--color-ink-secondary); font-size: .88rem; }
-  .passage__portrait { position: relative; align-self: start; padding: clamp(2rem, 4vw, 3.2rem); overflow: hidden; border: 1px solid var(--color-border-strong); background: var(--color-ink); color: var(--color-canvas-raised); transform: rotate(1deg); }
-  .passage__portrait > *:not(.passage__orbit) { position: relative; z-index: 1; }.passage__portrait img { border-radius: 1.3rem; }.passage__hello { margin: 1.5rem 0 .5rem; color: var(--color-annotation); font-family: var(--font-editorial); font-size: 1.15rem; font-style: italic; }.passage__portrait h3 { margin: 0; font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 500; line-height: 1.35; }.passage__portrait ul { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.5rem 0 2rem; padding: 0; list-style: none; }.passage__portrait li { padding: .25rem .55rem; border-bottom: 1px solid var(--color-accent); color: var(--color-ink-secondary); font-family: var(--font-editorial); font-size: .82rem; }.passage__portrait .ink-link { border-color: var(--color-canvas-raised); color: var(--color-canvas-raised); }
-  .passage__orbit { position: absolute; width: 20rem; height: 20rem; top: -7rem; right: -9rem; border: 1px dashed var(--color-accent); border-radius: 50%; animation: orbit 18s linear infinite; } @keyframes orbit { to { transform: rotate(1turn); } }
-  .ending { padding-block: clamp(7rem, 12vw, 11rem); text-align: center; }.ending > p { margin: 0 0 1rem; font-size: 1.25rem; }.ending h2 { margin: 0 auto 2.5rem; font-family: var(--font-display); font-size: clamp(2.7rem, 6vw, 5.2rem); font-weight: 500; letter-spacing: -.035em; line-height: 1.06; }
-  @media (max-width: 900px) {
-    .hero { grid-template-columns: 1fr; min-height: auto; }.hero__map { width: min(88vw, 32rem); justify-self: center; }.hero__facts { margin-top: 0; }
-    .feature { grid-template-columns: 4rem 1fr; }.feature__gesture { display: none; }.feature__body { padding-inline: 2rem; }
-    .passage__layout { grid-template-columns: 1fr; }.passage__portrait { transform: none; }
-  }
-  @media (max-width: 700px) {
-    .hero { padding-top: 3.5rem; }.hero h1 { max-width: 9ch; }.hero__map { margin-top: 1rem; }.hero__facts { gap: 1rem; justify-content: space-between; }.hero__facts dd { font-size: .7rem; }
-    .section-heading .hand-note { position: static; display: block; margin-top: .8rem; white-space: normal; }
-    .atlas__grid { grid-template-columns: 1fr; }.atlas__grid a:nth-child(odd) { border-right: 0; }.atlas__grid a { min-height: 7.5rem; }
-    .feature { grid-template-columns: 1fr; min-height: auto; }.feature__index { display: none; }.feature__body { padding: 3rem 0; }.feature__body h3 { font-size: clamp(2.2rem, 10vw, 3.45rem); }
-    .longform__more { grid-template-columns: 1fr; }.longform__more a:first-child { border-right: 0; }
-    .jottings__board { grid-template-columns: 1fr; padding: 2rem 1.5rem; }.jottings__prompt { max-width: 14ch; }.jottings__list { grid-template-columns: 1fr; }
-    .library__intro { margin-top: 0; }.library__shelves a { grid-template-columns: 2rem 1fr; padding-block: 1rem; }.library__shelves b { grid-column: 2; }
-    .passage__timeline > a:not(.text-link) { grid-template-columns: 6rem .8rem 1fr; }
+  .home { padding-bottom: var(--space-9); }
+  .home-intro { padding-block: clamp(5rem, 13vw, 10rem) clamp(3rem, 7vw, 5.5rem); }
+  .eyebrow, .section-heading > p, .section-heading > div > p, .home-about > p { margin: 0; color: var(--color-accent); font-size: var(--text-small); font-weight: 650; letter-spacing: .09em; text-transform: uppercase; }
+  h1 { max-width: 17ch; margin: 1.4rem 0 0; font-size: clamp(2.7rem, 7.5vw, 5.9rem); font-weight: 650; letter-spacing: -.065em; line-height: 1.08; }
+  h1 span { color: var(--color-ink-secondary); }
+  .home-intro__bottom { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin-top: 2rem; }
+  .home-intro__bottom p { max-width: 35rem; margin: 0; color: var(--color-ink-secondary); font-size: 1.05rem; line-height: 1.8; }
+  .primary-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 1.4rem; padding: .85rem 1.1rem; border-radius: var(--radius-sm); background: var(--color-accent); color: white; font-weight: 600; text-decoration: none; }
+  .primary-link:hover { filter: brightness(.92); }
+  .home-sections { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+  .home-sections a { display: grid; grid-template-columns: 1fr auto; gap: .55rem; padding: 1.25rem 1rem; color: var(--color-ink); text-decoration: none; }
+  .home-sections a + a { border-left: 1px solid var(--color-border); }
+  .home-sections a:hover { background: var(--color-surface); }
+  .home-sections span { grid-column: 1 / -1; color: var(--color-ink-tertiary); font-size: .75rem; }
+  .home-sections strong { font-size: 1.05rem; }
+  .home-sections small { align-self: end; color: var(--color-ink-tertiary); }
+  .home-feature, .home-topics, .home-notes, .home-journey { padding-top: clamp(4rem, 9vw, 7rem); }
+  .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.2rem; }
+  .section-heading h2 { margin: .35rem 0 0; font-size: clamp(1.6rem, 3vw, 2.25rem); letter-spacing: -.04em; }
+  .section-heading > a { flex: 0 0 auto; color: var(--color-ink-secondary); font-size: var(--text-small); text-decoration: none; }
+  .section-heading > a:hover { color: var(--color-accent); }
+  .featured-row { display: grid; grid-template-columns: minmax(0, 1fr) 8rem 1.5rem; align-items: center; gap: 1.5rem; padding: 1.7rem 0; border-top: 1px solid var(--color-border-strong); border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
+  .featured-row:hover h2, .recent-articles a:hover strong, .simple-list a:hover strong { color: var(--color-accent); }
+  .featured-row__topic { color: var(--color-accent); font-size: var(--text-small); }
+  .featured-row h2 { margin: .5rem 0; font-size: clamp(1.5rem, 3vw, 2.2rem); letter-spacing: -.045em; transition: color var(--duration-fast); }
+  .featured-row p { max-width: 48rem; margin: 0; color: var(--color-ink-secondary); line-height: 1.7; }
+  time { color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  .row-arrow { color: var(--color-ink-tertiary); text-align: right; }
+  .recent-articles a, .simple-list a { display: grid; grid-template-columns: minmax(6rem, .25fr) minmax(0, 1fr) minmax(6rem, .25fr) 1.5rem; align-items: center; gap: 1rem; min-height: 4.2rem; border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
+  .recent-articles a > span:first-child, .simple-list a > span:not(.row-arrow) { color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  .recent-articles strong, .simple-list strong { font-weight: 550; transition: color var(--duration-fast); }
+  .topic-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--color-border); }
+  .topic-links a { display: flex; justify-content: space-between; gap: 1rem; padding: 1.1rem .2rem; border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
+  .topic-links a:nth-child(odd) { margin-right: 1.5rem; }
+  .topic-links a:nth-child(even) { margin-left: 1.5rem; }
+  .topic-links a:hover { color: var(--color-accent); }
+  .home-about { display: grid; grid-template-columns: 1fr 2fr 2rem; align-items: center; gap: 1.5rem; margin-top: clamp(4rem, 9vw, 7rem); padding: 1.5rem 0; border-top: 1px solid var(--color-border-strong); border-bottom: 1px solid var(--color-border); }
+  .home-about h2 { margin: 0; font-size: 1.3rem; }
+  .home-about div p { margin: .3rem 0 0; color: var(--color-ink-secondary); font-size: var(--text-small); }
+  .home-about > a { color: var(--color-accent); font-size: 1.4rem; text-align: right; text-decoration: none; }
+  @media (max-width: 640px) {
+    .home-intro__bottom { align-items: flex-start; flex-direction: column; }
+    .home-sections { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .home-sections a:nth-child(3) { border-left: 0; }
+    .home-sections a:nth-child(n + 3) { border-top: 1px solid var(--color-border); }
+    .featured-row { grid-template-columns: minmax(0, 1fr) 1.2rem; gap: .75rem; }
+    .featured-row time { grid-column: 1; grid-row: 2; }
+    .featured-row .row-arrow { grid-column: 2; grid-row: 1 / 3; }
+    .recent-articles a, .simple-list a { grid-template-columns: minmax(0, 1fr) 1.2rem; gap: .35rem .75rem; padding-block: .8rem; }
+    .recent-articles a > span:first-child, .simple-list a time { grid-column: 1; }
+    .recent-articles strong, .simple-list strong { grid-column: 1; grid-row: 2; }
+    .recent-articles time, .simple-list a > span:not(.row-arrow) { grid-column: 1; grid-row: 3; }
+    .recent-articles .row-arrow, .simple-list .row-arrow { grid-column: 2; grid-row: 1 / 4; }
+    .topic-links { grid-template-columns: 1fr; }
+    .topic-links a:nth-child(n) { margin-inline: 0; }
+    .home-about { grid-template-columns: 1fr auto; }
+    .home-about > p { grid-column: 1 / -1; }
+    .home-about > a { grid-column: 2; grid-row: 2; }
   }
 </style>
-
-<script>
-  function initHomeReveals() {
-    const sections = document.querySelectorAll(".reveal");
-    if (!("IntersectionObserver" in window)) {
-      sections.forEach((section) => section.classList.add("is-visible"));
-      return;
-    }
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("is-visible");
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    sections.forEach((section) => observer.observe(section));
-  }
-  document.addEventListener("astro:page-load", initHomeReveals);
-</script>

@@ -80,15 +80,15 @@ const categories = [
 
 <style>
   .library { padding-bottom: var(--space-9); }
-  .library__hero { display: grid; min-height: min(43rem, calc(100svh - var(--header-height))); grid-template-columns: 1.1fr .9fr; align-items: center; gap: clamp(3rem, 8vw, 8rem); border-bottom: 1px solid var(--color-border-strong); }
+  .library__hero { display: grid; min-height: auto; grid-template-columns: 1.1fr .9fr; align-items: end; gap: clamp(2rem, 7vw, 6rem); padding-block: clamp(4rem, 10vw, 7rem); border-bottom: 1px solid var(--color-border); }
   .library__hero > div:first-child > p { margin: 0 0 1rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
-  h1 { margin: 0; font-family: var(--font-display); font-size: var(--text-display-lg); font-weight: 500; letter-spacing: -.055em; line-height: .9; }
-  h1 em { color: var(--color-annotation); font-style: normal; }
-  .library__statement { position: relative; padding: 2.3rem 2rem; border: 1px solid var(--color-border-strong); background: var(--color-canvas-raised); box-shadow: 7px 8px 0 var(--color-growth-soft); transform: rotate(1.1deg); }
-  .library__statement::before { position: absolute; width: 1.1rem; height: 1.1rem; top: .7rem; left: .7rem; border: 3px solid var(--color-annotation); border-radius: 50%; content: ""; }
+  h1 { margin: 0; font-size: clamp(2.7rem, 7vw, 5.3rem); font-weight: 650; letter-spacing: -.06em; line-height: 1; }
+  h1 em { color: var(--color-ink-secondary); font-style: normal; }
+  .library__statement { position: relative; padding: 1.4rem 0 0; border: 0; border-top: 2px solid var(--color-accent); background: transparent; box-shadow: none; }
+  .library__statement::before { display: none; }
   .library__statement span { color: var(--color-annotation); font-family: var(--font-editorial); font-size: .72rem; font-weight: 600; letter-spacing: .12em; }
   .library__statement p { margin: 1rem 0 0; font-family: var(--font-reading); font-size: 1.05rem; line-height: 1.85; }
-  .library__tools { display: grid; grid-template-columns: 1fr minmax(15rem, .42fr); gap: 2rem; align-items: center; margin-top: 2rem; padding: 1rem 1.1rem; border: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-canvas-raised) 70%, transparent); }
+  .library__tools { display: grid; grid-template-columns: 1fr minmax(15rem, .42fr); gap: 2rem; align-items: center; margin-top: 1.5rem; padding: 1rem 0; border-bottom: 1px solid var(--color-border); background: transparent; }
   .library__tools nav { display: flex; flex-wrap: wrap; gap: .5rem; }
   .library__tools button { padding: .45rem .75rem; border: 1px solid var(--color-border); border-radius: .2rem .8rem .25rem .65rem; background: transparent; color: var(--color-ink-secondary); font-size: .78rem; cursor: pointer; }
   .library__tools button:hover, .library__tools button.is-active { border-color: var(--color-annotation); background: var(--color-annotation-soft); color: var(--color-ink); }
@@ -99,13 +99,13 @@ const categories = [
   .library__catalogue { padding-top: clamp(4rem, 8vw, 6.5rem); }
   .library__catalogue > section { margin-bottom: var(--section-space); scroll-margin-top: calc(var(--header-height) + 5rem); }
   .library__catalogue > section[hidden], article[hidden] { display: none; }
-  .library__catalogue > section > header { display: grid; grid-template-columns: 4rem 1fr minmax(15rem, .55fr); align-items: end; gap: 1.5rem; margin-bottom: 2rem; }
+  .library__catalogue > section > header { display: grid; grid-template-columns: 3rem 1fr minmax(15rem, .55fr); align-items: end; gap: 1rem; margin-bottom: 1.5rem; }
   .library__catalogue > section > header > span { color: var(--color-annotation); font-family: var(--font-editorial); font-size: 2rem; }
   .library__catalogue header div p { margin: 0; color: var(--color-accent); font-family: var(--font-editorial); font-size: .72rem; letter-spacing: .12em; }
   .library__catalogue h2 { margin: .2rem 0 0; font-family: var(--font-display); font-size: clamp(2rem, 3.7vw, 3.35rem); font-weight: 500; line-height: 1.05; }
   .library__catalogue > section > header > p { margin: 0; color: var(--color-ink-secondary); font-size: .88rem; text-align: right; }
-  .shelf { border-top: 3px double var(--color-border-strong); }
-  .shelf article > a { display: grid; grid-template-columns: 4rem minmax(0, 1fr) 12rem; gap: 1.5rem; align-items: center; min-height: 10rem; padding: 1.5rem 0; border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
+  .shelf { border-top: 1px solid var(--color-border-strong); }
+  .shelf article > a { display: grid; grid-template-columns: 3rem minmax(0, 1fr) 12rem; gap: 1rem; align-items: center; min-height: 8rem; padding: 1.2rem 0; border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
   .shelf__index { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: 1rem; }
   .shelf h3 { margin: 0; font-family: var(--font-display); font-size: clamp(1.35rem, 2.2vw, 2rem); font-weight: 500; transition: color var(--duration-normal), transform var(--duration-normal); }
   .shelf a:hover h3 { color: var(--color-annotation); transform: translateX(.45rem); }
@@ -115,7 +115,7 @@ const categories = [
   .shelf dl div { display: grid; grid-template-columns: 4rem 1fr; gap: .5rem; }
   .shelf dt { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .63rem; letter-spacing: .08em; }
   .shelf dd { margin: 0; color: var(--color-ink-secondary); font-family: var(--font-editorial); font-size: .75rem; }
-  .library__empty { padding: 4rem 1rem; border: 1px dashed var(--color-annotation); color: var(--color-ink-secondary); font-family: var(--font-display); font-size: 1.2rem; text-align: center; }
+  .library__empty { padding: 2rem 1rem; border-block: 1px solid var(--color-border); color: var(--color-ink-secondary); text-align: center; }
   @media (max-width: 800px) {
     .library__hero { grid-template-columns: 1fr; min-height: auto; padding-block: 5rem; }
     .library__tools { grid-template-columns: 1fr; }.library__catalogue > section > header { grid-template-columns: 3rem 1fr; }.library__catalogue > section > header > p { grid-column: 2; text-align: left; }

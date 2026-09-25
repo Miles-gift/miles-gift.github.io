@@ -93,15 +93,15 @@ const awards = all.filter((item) => item.data.kind === "award" || item.data.kind
 
 <style>
   .journey { padding-bottom: var(--space-9); }
-  .journey__hero { position: relative; display: grid; min-height: min(44rem, calc(100svh - var(--header-height))); align-content: center; overflow: hidden; border-bottom: 1px solid var(--color-border-strong); }
+  .journey__hero { position: relative; display: grid; min-height: auto; align-content: center; overflow: hidden; padding-block: clamp(4rem, 10vw, 7rem); border-bottom: 1px solid var(--color-border); }
   .journey__hero > div { position: relative; z-index: 1; }
   .journey__hero > div > p { margin: 0 0 1rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
-  h1 { max-width: 14ch; margin: 0; font-family: var(--font-display); font-size: var(--text-display-lg); font-weight: 500; letter-spacing: -.055em; line-height: .96; }
-  h1 em { color: var(--color-annotation); font-style: normal; }
-  .journey__hero svg { position: absolute; right: -2rem; bottom: 4rem; width: min(46vw, 32rem); overflow: visible; }
+  h1 { max-width: 14ch; margin: 0; font-size: clamp(2.7rem, 7vw, 5.2rem); font-weight: 650; letter-spacing: -.06em; line-height: 1.04; }
+  h1 em { color: var(--color-ink-secondary); font-style: normal; }
+  .journey__hero svg { position: absolute; right: -2rem; bottom: 2rem; width: min(34vw, 23rem); overflow: visible; opacity: .45; }
   .journey__hero path { fill: none; stroke: var(--color-accent); stroke-width: 2; stroke-dasharray: 7 9; }
   .journey__hero circle { fill: var(--color-annotation); stroke: var(--color-canvas); stroke-width: 5; }
-  .journey__hero blockquote { position: absolute; right: 3rem; bottom: 2rem; margin: 0; color: var(--color-annotation); font-family: var(--font-editorial); font-size: 1.1rem; font-style: italic; transform: rotate(-2deg); }
+  .journey__hero blockquote { position: absolute; right: 1rem; bottom: 1rem; margin: 0; color: var(--color-ink-tertiary); font-size: .9rem; font-style: normal; }
   .journey__nav { display: flex; justify-content: flex-start; gap: clamp(1rem, 5vw, 4rem); padding: 1rem 0; border-bottom: 1px solid var(--color-border); }
   .journey__nav a { color: var(--color-ink-secondary); font-size: .82rem; font-weight: 650; text-decoration: none; }
   .journey__nav a:hover { color: var(--color-annotation); }
@@ -112,10 +112,10 @@ const awards = all.filter((item) => item.data.kind === "award" || item.data.kind
   .chapter__title h2 { margin: 0; font-family: var(--font-display); font-size: var(--text-display-md); font-weight: 500; line-height: 1; }
   .chapter__title p { margin: 0; color: var(--color-ink-secondary); text-align: right; }
   .education { position: relative; margin: 0; padding: 0; list-style: none; }
-  .education::before { position: absolute; top: 0; bottom: 0; left: calc(11rem + .85rem); width: 1px; background: var(--color-border-strong); content: ""; }
+  .education::before { position: absolute; top: 0; bottom: 0; left: calc(11rem + .85rem); width: 1px; background: var(--color-border); content: ""; }
   .education > li > a { display: grid; grid-template-columns: 10rem 1.7rem 1fr; gap: 1rem; min-height: 15rem; padding-bottom: 3rem; color: var(--color-ink); text-decoration: none; }
   .education__year { padding-top: .2rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: 1rem; text-align: right; }
-  .education__dot { position: relative; z-index: 1; display: grid; width: 1.7rem; height: 1.7rem; place-items: center; border: 1px solid var(--color-annotation); border-radius: 50%; background: var(--color-canvas); color: var(--color-annotation); font-family: var(--font-editorial); font-size: .57rem; }
+  .education__dot { position: relative; z-index: 1; display: grid; width: 1.7rem; height: 1.7rem; place-items: center; border: 1px solid var(--color-border-strong); border-radius: 50%; background: var(--color-canvas); color: var(--color-accent); font-size: .57rem; }
   .education p { margin: 0; color: var(--color-ink-tertiary); font-size: .8rem; }
   .education h3 { margin: .4rem 0 .8rem; font-family: var(--font-display); font-size: clamp(1.85rem, 3.5vw, 3.1rem); font-weight: 500; line-height: 1.12; }
   .education blockquote { max-width: 40rem; margin: 0; color: var(--color-ink-secondary); font-family: var(--font-reading); }
@@ -123,9 +123,9 @@ const awards = all.filter((item) => item.data.kind === "award" || item.data.kind
   .education ul li { padding: .2rem .55rem; border-bottom: 1px solid var(--color-growth); color: var(--color-growth); font-size: .75rem; }
   .chapter--service { margin-inline: calc((100vw - var(--stage-width)) / -2); padding-inline: calc((100vw - var(--stage-width)) / 2); padding-bottom: var(--section-space); background: var(--color-canvas-raised); }
   .service { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
-  .service a { display: flex; min-height: 20rem; flex-direction: column; padding: 2rem; border-top: 5px solid var(--color-annotation); background: var(--color-annotation-soft); box-shadow: 5px 7px 0 color-mix(in srgb, var(--color-ink) 8%, transparent); color: var(--color-ink); text-decoration: none; transform: rotate(var(--tilt)); transition: transform var(--duration-normal); }
-  .service a:nth-child(even) { border-color: var(--color-growth); background: var(--color-growth-soft); }
-  .service a:hover { transform: rotate(0) translateY(-5px); }
+  .service a { display: flex; min-height: 18rem; flex-direction: column; padding: 1.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-solid); color: var(--color-ink); text-decoration: none; transition: border-color var(--duration-fast), background var(--duration-fast); }
+  .service a:nth-child(even) { border-color: var(--color-border); background: var(--color-surface-solid); }
+  .service a:hover { border-color: var(--color-accent); background: var(--color-surface); }
   .service span { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .8rem; }
   .service h3 { margin: 2rem 0 .4rem; font-family: var(--font-display); font-size: 1.72rem; font-weight: 500; }
   .service p { margin: 0; color: var(--color-ink-tertiary); font-size: .82rem; }
@@ -141,7 +141,7 @@ const awards = all.filter((item) => item.data.kind === "award" || item.data.kind
   .awards strong { color: var(--color-growth); font-family: var(--font-editorial); font-size: .75rem; font-weight: 600; text-align: right; }
   .awards__privacy { margin: 2rem 0 0; color: var(--color-ink-tertiary); font-size: .8rem; text-align: right; }
   @media (max-width: 800px) {
-    .journey__hero { min-height: 38rem; }.journey__hero svg { opacity: .45; width: 80vw; }.journey__hero blockquote { right: 1rem; }
+    .journey__hero { min-height: auto; }.journey__hero svg { opacity: .25; width: 60vw; }.journey__hero blockquote { right: 1rem; }
     .service { grid-template-columns: 1fr 1fr; }.service a:last-child { grid-column: 1 / -1; min-height: 15rem; }
     .awards a { grid-template-columns: 2rem 7rem 1fr; }.awards strong { grid-column: 3; text-align: left; }
   }

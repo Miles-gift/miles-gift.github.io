@@ -107,7 +107,7 @@ const years = [...new Set(articles.map((item) => String(item.data.pubDate.getFul
 </script>
 
 <style>
-  .article-filter { display: grid; grid-template-columns: minmax(14rem, 1.5fr) repeat(3, minmax(9rem, 1fr)) auto; gap: var(--space-3); align-items: end; margin-bottom: var(--space-7); padding: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-solid); }
+  .article-filter { display: grid; grid-template-columns: minmax(14rem, 1.5fr) repeat(3, minmax(9rem, 1fr)) auto; gap: var(--space-3); align-items: end; margin-bottom: var(--space-7); padding: var(--space-5) 0; border-block: 1px solid var(--color-border); background: transparent; }
   .article-filter__heading { display: flex; grid-column: 1 / -1; align-items: end; justify-content: space-between; gap: var(--space-5); margin-bottom: var(--space-3); }
   .article-filter__heading p { margin: 0; color: var(--color-ink-tertiary); font-size: var(--text-small); }
   .article-filter__heading div > p { color: var(--color-accent); font-weight: 720; }
@@ -115,11 +115,11 @@ const years = [...new Set(articles.map((item) => String(item.data.pubDate.getFul
   label { display: grid; gap: var(--space-2); color: var(--color-ink-secondary); font-size: var(--text-small); font-weight: 650; }
   input, select { width: 100%; min-height: 2.75rem; padding-inline: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-canvas); color: var(--color-ink); }
   button { min-height: 2.75rem; padding-inline: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: transparent; color: var(--color-ink); cursor: pointer; }
-  .article-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+  .article-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
   .article-list > article:first-child { grid-column: span 2; }
   .article-list > article[hidden] { display: none; }
   .article-list > article :global(.content-list-card) { height: 100%; }
-  .article-empty { padding: var(--space-8); border: 1px dashed var(--color-border); border-radius: var(--radius-lg); color: var(--color-ink-secondary); text-align: center; }
+  .article-empty { padding: var(--space-6); border-block: 1px solid var(--color-border); color: var(--color-ink-secondary); text-align: center; }
   @media (max-width: 900px) { .article-filter { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 700px) { .article-list { grid-template-columns: 1fr; } .article-list > article:first-child { grid-column: auto; } }
   @media (max-width: 560px) { .article-filter { grid-template-columns: 1fr; padding: var(--space-5); } .article-filter__heading { align-items: flex-start; flex-direction: column; } }
