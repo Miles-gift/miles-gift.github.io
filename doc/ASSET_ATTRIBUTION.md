@@ -9,3 +9,7 @@
 | Plus Jakarta Sans Variable | `@fontsource-variable/plus-jakarta-sans` 5.3.0；版权归 Plus Jakarta Sans Project Authors | SIL Open Font License 1.1（OFL-1.1） | 本地加载界面字体。许可证副本：[`plus-jakarta-sans-OFL.txt`](../public/licenses/fonts/plus-jakarta-sans-OFL.txt)。 |
 
 品牌标志、内容图片和现有图标集沿用本站原有资源；本次改版没有引入远程图片或新的第三方照片素材。
+
+## 2026-09-26 完整迁移补充
+
+新的摄影 Hero `public/visual/forest-path-hero.webp` 由 OpenAI 图像生成工具根据本站“学习与沿途探索”主题生成，并在本仓库中转为 WebP。它参考 Ulbo 全屏森林摄影的构图方式，没有复制上游默认照片。前端组件将按 Ulbo 上游提交 `a2b4999` 的布局结构在本站架构中重写；上游项目仍按 MIT 许可证归属。

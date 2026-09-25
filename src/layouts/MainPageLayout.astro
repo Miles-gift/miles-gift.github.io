@@ -26,7 +26,7 @@ const { title, lang, description, image, type, robots, canonical, redirectTo, pu
     <div>
       <Header />
     </div>
-    <main class="flex-grow">
+    <main id="main-content" class="flex-grow">
       <slot />
     </main>
     <Footer />
@@ -36,4 +36,5 @@ const { title, lang, description, image, type, robots, canonical, redirectTo, pu
 
 <style>
   .site-frame { padding-top: var(--header-height); }
+  .site-frame:has(.cinematic-hero) { padding-top: 0; }
 </style>

@@ -1,40 +1,19 @@
 ---
-import { profileConfig } from "../config";
+import { profileConfig, siteConfig } from "../config";
 const currentYear = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <div class="site-footer__inner stage-shell">
-    <a class="site-footer__voice" href="/" aria-label="yoyo的旅行日记首页">
-      <img src="/brand/yoyo-trail.svg" width="42" height="42" alt="" />
-      <div>
-        <p>把走过的路，慢慢写成可以回看的地图。</p>
-        <small>© {profileConfig.startYear}–{currentYear} {profileConfig.name}</small>
-      </div>
-    </a>
-    <nav aria-label="页脚导航">
-      <a href="/articles/">文章</a>
-      <a href="/resources/">资料库</a>
-      <a href="/journey/">旅程</a>
-      <a href="/about/">关于</a>
-      <a href="/archives/">归档</a>
-      <a href="/search/">搜索</a>
-    </nav>
-  </div>
+  <p>© {profileConfig.startYear}–{currentYear} {profileConfig.name} · {siteConfig.title}</p>
+  <nav aria-label="页脚导航">
+    <a href="/articles/">文章</a><a href="/resources/">资料库</a><a href="/journey/">旅程</a><a href="/archives/">归档</a><a href="/about/">关于</a>
+  </nav>
 </footer>
 
 <style>
-  .site-footer { margin-top: var(--section-space); border-top: 1px solid var(--color-border); color: var(--color-ink-tertiary); }
-  .site-footer__inner { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-7); padding-block: var(--space-7); }
-  .site-footer__voice { display: flex; align-items: center; gap: var(--space-4); color: inherit; text-decoration: none; }
-  .site-footer__voice img { border-radius: .65rem; }
-  p { margin: 0; color: var(--color-ink); font-family: var(--font-display); font-size: 1.08rem; }
-  small { font-family: var(--font-editorial); font-size: .82rem; letter-spacing: .03em; }
-  nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .55rem 1.5rem; font-size: var(--text-small); }
-  a { color: inherit; text-decoration: none; }
-  nav a:hover { color: var(--color-accent); text-decoration: underline; text-underline-offset: .25rem; }
-  @media (max-width: 700px) {
-    .site-footer__inner { align-items: flex-start; flex-direction: column; }
-    nav { justify-content: flex-start; }
-  }
+  .site-footer { display: grid; justify-items: center; gap: .75rem; margin-top: 4rem; padding: 2rem 1rem 5rem; border-top: 1px solid var(--color-border); background: var(--color-canvas); color: var(--color-ink-secondary); text-align: center; }
+  p { margin: 0; font-size: .9rem; }
+  nav { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
+  a { padding: .2rem .55rem; border: 1px solid var(--color-border); border-radius: 999px; color: inherit; font-size: .85rem; text-decoration: none; }
+  a:hover { color: var(--color-accent); background: var(--color-surface-solid); }
 </style>
