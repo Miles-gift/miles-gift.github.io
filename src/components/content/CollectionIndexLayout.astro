@@ -1,6 +1,7 @@
 ---
 import MainPageLayout from "@layouts/MainPageLayout.astro";
-import PageHero from "@components/ui/PageHero.astro";
+import CinematicHero from "@components/ui/CinematicHero.astro";
+import FloatingPanel from "@components/ui/FloatingPanel.astro";
 import FabMenu from "@components/control/FabMenu.astro";
 
 interface Props {
@@ -15,13 +16,15 @@ const { title, pageTitle, description, eyebrow, lang } = Astro.props;
 ---
 
 <MainPageLayout title={pageTitle} description={description} lang={lang}>
-  <PageHero title={title} description={description} eyebrow={eyebrow} align="left" />
-  <div class="collection-shell stage-shell">
+  <CinematicHero title={title} description={description} />
+  <FloatingPanel id="page-content" class="collection-shell">
+    {eyebrow && <p class="collection-shell__context">{eyebrow}</p>}
     <slot />
-  </div>
+  </FloatingPanel>
   <FabMenu showBackBottom={true} />
 </MainPageLayout>
 
 <style>
-  .collection-shell { padding-bottom: var(--space-8); }
+  :global(.collection-shell) { padding-bottom: var(--space-8); }
+  .collection-shell__context { margin: 0 0 1.5rem; color: var(--color-accent); font-size: .84rem; }
 </style>

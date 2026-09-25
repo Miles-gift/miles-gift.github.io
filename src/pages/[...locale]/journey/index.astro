@@ -1,155 +1,41 @@
 ---
 import MainPageLayout from "@layouts/MainPageLayout.astro";
+import CinematicHero from "@components/ui/CinematicHero.astro";
+import FloatingPanel from "@components/ui/FloatingPanel.astro";
+import UlboContentRow from "@components/content/UlboContentRow.astro";
 import { siteConfig } from "@/config";
 import { entryPath, getPublicEntries } from "@utils/content-utils";
 import { i18n } from "astro:config/client";
 
-export function getStaticPaths() {
-  return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } }));
-}
+export function getStaticPaths() { return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } })); }
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
 const all = await getPublicEntries("journey");
-const education = all.filter((item) => item.data.kind === "education").sort((a, b) => a.data.startDate.localeCompare(b.data.startDate));
-const services = all.filter((item) => item.data.kind === "service").sort((a, b) => b.data.startDate.localeCompare(a.data.startDate));
-const awards = all.filter((item) => item.data.kind === "award" || item.data.kind === "milestone").sort((a, b) => b.data.startDate.localeCompare(a.data.startDate));
+const sections = [
+  { id: "education", title: "教育经历", description: "学校、专业与学习阶段。", entries: all.filter((item) => item.data.kind === "education").sort((a, b) => a.data.startDate.localeCompare(b.data.startDate)) },
+  { id: "service", title: "校园服务", description: "参与班级与学生资助服务的日常。", entries: all.filter((item) => item.data.kind === "service").sort((a, b) => b.data.startDate.localeCompare(a.data.startDate)) },
+  { id: "awards", title: "获奖与里程碑", description: "已经核验的成果与重要节点。", entries: all.filter((item) => item.data.kind === "award" || item.data.kind === "milestone").sort((a, b) => b.data.startDate.localeCompare(a.data.startDate)) },
+];
 ---
 
-<MainPageLayout title={`旅程 - ${siteConfig.title}`} description="从靖江到武汉：教育经历、校园服务、获奖与里程碑分别记录。" lang={currentLang}>
-  <div class="journey stage-shell">
-    <header class="journey__hero">
-      <div>
-        <p>04 / THE JOURNEY SO FAR</p>
-        <h1>生命不是履历，<br /><em>却值得留下坐标</em></h1>
-      </div>
-      <svg viewBox="0 0 420 230" aria-hidden="true">
-        <path d="M14 181c50-72 99-73 135-16s61 46 87-22S294 30 340 56s36 82 66 102" />
-        <circle cx="14" cy="181" r="7" /><circle cx="149" cy="165" r="7" /><circle cx="236" cy="143" r="7" /><circle cx="406" cy="158" r="7" />
-      </svg>
-      <blockquote>Jingjiang → Wuhan → next stop?</blockquote>
-    </header>
-
-    <nav class="journey__nav" aria-label="旅程分区">
-      <a href="#education">教育经历 <b>{education.length}</b></a>
-      <a href="#service">校园服务 <b>{services.length}</b></a>
-      <a href="#awards">获奖与里程碑 <b>{awards.length}</b></a>
-    </nav>
-
-    <section id="education" class="chapter chapter--education" aria-labelledby="education-title">
-      <header class="chapter__title"><span>CHAPTER I</span><h2 id="education-title">教育经历</h2><p>从高中到大学，记录明确的学校、专业与时间。</p></header>
-      <ol class="education">
-        {education.map((item, index) => (
-          <li>
-            <a href={entryPath(item)}>
-              <div class="education__year">{item.data.dateLabel}</div>
-              <span class="education__dot" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-              <div>
-                <p>{item.data.location}</p>
-                <h3>{item.data.title}</h3>
-                <blockquote>{item.data.summary}</blockquote>
-                {item.data.highlights.length > 0 && <ul>{item.data.highlights.map((highlight) => <li>{highlight}</li>)}</ul>}
-              </div>
-            </a>
-          </li>
-        ))}
-      </ol>
-    </section>
-
-    <section id="service" class="chapter chapter--service" aria-labelledby="service-title">
-      <header class="chapter__title"><span>CHAPTER II</span><h2 id="service-title">校园服务</h2><p>学习之外，参与班级与学生资助服务的日常。</p></header>
-      <div class="service">
-        {services.map((item, index) => (
-          <a href={entryPath(item)} style={`--tilt: ${index % 2 ? ".65deg" : "-.7deg"}`}>
-            <span>{item.data.dateLabel}</span>
-            <h3>{item.data.title}</h3>
-            <p>{item.data.organization}</p>
-            <blockquote>{item.data.summary}</blockquote>
-          </a>
-        ))}
-      </div>
-    </section>
-
-    <section id="awards" class="chapter chapter--awards" aria-labelledby="awards-title">
-      <header class="chapter__title"><span>CHAPTER III</span><h2 id="awards-title">获奖与里程碑</h2><p>只写核验后的结果，不展示证书，不延伸未经确认的个人叙事。</p></header>
-      <ol class="awards">
-        {awards.map((item, index) => (
-          <li>
-            <a href={entryPath(item)}>
-              <span class="awards__number">{String(awards.length - index).padStart(2, "0")}</span>
-              <time>{item.data.dateLabel}</time>
-              <div>
-                <h3>{item.data.title}</h3>
-                <p>{item.data.summary}</p>
-                {item.data.projectTitle && <blockquote>项目：{item.data.projectTitle}</blockquote>}
-              </div>
-              <strong>{item.data.highlights[0]}</strong>
-            </a>
-          </li>
-        ))}
-      </ol>
-      <p class="awards__privacy">证书图片、证书编号、二维码、队友与指导教师信息均不在本站展示。</p>
-    </section>
-  </div>
+<MainPageLayout title={`旅程 - ${siteConfig.title}`} description="从靖江到武汉：教育经历、校园服务、获奖与里程碑。" lang={currentLang}>
+  <CinematicHero title="我的旅程" description="把已经走过的路留下坐标，也继续看向下一站。" />
+  <FloatingPanel id="page-content" class="journey-panel">
+    <nav class="journey-nav" aria-label="旅程分区">{sections.map((section) => <a href={`#${section.id}`}>{section.title} <span>{section.entries.length}</span></a>)}</nav>
+    {sections.map((section) => <section id={section.id} class="journey-section" aria-labelledby={`${section.id}-title`}><header><h2 id={`${section.id}-title`}>{section.title}</h2><p>{section.description}</p></header><div class="journey-list">{section.entries.map((entry) => <UlboContentRow href={entryPath(entry)} title={entry.data.title} description={entry.data.summary} kind={entry.data.kind === "education" ? "教育" : entry.data.kind === "service" ? "服务" : entry.data.kind === "award" ? "获奖" : "里程碑"} topic={entry.data.organization || entry.data.location} date={entry.data.dateLabel} tags={entry.data.skills} />)}</div></section>)}
+    <p class="journey-privacy">证书图片、证书编号、二维码、队友与指导教师信息均不在本站展示。</p>
+  </FloatingPanel>
 </MainPageLayout>
 
 <style>
-  .journey { padding-bottom: var(--space-9); }
-  .journey__hero { position: relative; display: grid; min-height: auto; align-content: center; overflow: hidden; padding-block: clamp(4rem, 10vw, 7rem); border-bottom: 1px solid var(--color-border); }
-  .journey__hero > div { position: relative; z-index: 1; }
-  .journey__hero > div > p { margin: 0 0 1rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
-  h1 { max-width: 14ch; margin: 0; font-size: clamp(2.7rem, 7vw, 5.2rem); font-weight: 650; letter-spacing: -.06em; line-height: 1.04; }
-  h1 em { color: var(--color-ink-secondary); font-style: normal; }
-  .journey__hero svg { position: absolute; right: -2rem; bottom: 2rem; width: min(34vw, 23rem); overflow: visible; opacity: .45; }
-  .journey__hero path { fill: none; stroke: var(--color-accent); stroke-width: 2; stroke-dasharray: 7 9; }
-  .journey__hero circle { fill: var(--color-annotation); stroke: var(--color-canvas); stroke-width: 5; }
-  .journey__hero blockquote { position: absolute; right: 1rem; bottom: 1rem; margin: 0; color: var(--color-ink-tertiary); font-size: .9rem; font-style: normal; }
-  .journey__nav { display: flex; justify-content: flex-start; gap: clamp(1rem, 5vw, 4rem); padding: 1rem 0; border-bottom: 1px solid var(--color-border); }
-  .journey__nav a { color: var(--color-ink-secondary); font-size: .82rem; font-weight: 650; text-decoration: none; }
-  .journey__nav a:hover { color: var(--color-annotation); }
-  .journey__nav b { margin-left: .25rem; color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-weight: 400; }
-  .chapter { padding-top: var(--section-space); scroll-margin-top: calc(var(--header-height) + 3rem); }
-  .chapter__title { display: grid; grid-template-columns: minmax(0, 1fr) minmax(15rem, .52fr); align-items: end; gap: 2rem; margin-bottom: 4rem; }
-  .chapter__title span { grid-column: 1 / -1; color: var(--color-accent); font-family: var(--font-editorial); font-size: .75rem; font-weight: 600; letter-spacing: .12em; }
-  .chapter__title h2 { margin: 0; font-family: var(--font-display); font-size: var(--text-display-md); font-weight: 500; line-height: 1; }
-  .chapter__title p { margin: 0; color: var(--color-ink-secondary); text-align: right; }
-  .education { position: relative; margin: 0; padding: 0; list-style: none; }
-  .education::before { position: absolute; top: 0; bottom: 0; left: calc(11rem + .85rem); width: 1px; background: var(--color-border); content: ""; }
-  .education > li > a { display: grid; grid-template-columns: 10rem 1.7rem 1fr; gap: 1rem; min-height: 15rem; padding-bottom: 3rem; color: var(--color-ink); text-decoration: none; }
-  .education__year { padding-top: .2rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: 1rem; text-align: right; }
-  .education__dot { position: relative; z-index: 1; display: grid; width: 1.7rem; height: 1.7rem; place-items: center; border: 1px solid var(--color-border-strong); border-radius: 50%; background: var(--color-canvas); color: var(--color-accent); font-size: .57rem; }
-  .education p { margin: 0; color: var(--color-ink-tertiary); font-size: .8rem; }
-  .education h3 { margin: .4rem 0 .8rem; font-family: var(--font-display); font-size: clamp(1.85rem, 3.5vw, 3.1rem); font-weight: 500; line-height: 1.12; }
-  .education blockquote { max-width: 40rem; margin: 0; color: var(--color-ink-secondary); font-family: var(--font-reading); }
-  .education ul { display: flex; flex-wrap: wrap; gap: .55rem; margin: 1rem 0 0; padding: 0; list-style: none; }
-  .education ul li { padding: .2rem .55rem; border-bottom: 1px solid var(--color-growth); color: var(--color-growth); font-size: .75rem; }
-  .chapter--service { margin-inline: calc((100vw - var(--stage-width)) / -2); padding-inline: calc((100vw - var(--stage-width)) / 2); padding-bottom: var(--section-space); background: var(--color-canvas-raised); }
-  .service { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
-  .service a { display: flex; min-height: 18rem; flex-direction: column; padding: 1.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-solid); color: var(--color-ink); text-decoration: none; transition: border-color var(--duration-fast), background var(--duration-fast); }
-  .service a:nth-child(even) { border-color: var(--color-border); background: var(--color-surface-solid); }
-  .service a:hover { border-color: var(--color-accent); background: var(--color-surface); }
-  .service span { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .8rem; }
-  .service h3 { margin: 2rem 0 .4rem; font-family: var(--font-display); font-size: 1.72rem; font-weight: 500; }
-  .service p { margin: 0; color: var(--color-ink-tertiary); font-size: .82rem; }
-  .service blockquote { margin: auto 0 0; color: var(--color-ink-secondary); font-family: var(--font-reading); }
-  .awards { margin: 0; padding: 0; border-top: 3px double var(--color-border-strong); list-style: none; }
-  .awards a { display: grid; grid-template-columns: 3rem 8rem minmax(0, 1fr) 10rem; align-items: center; gap: 1.3rem; min-height: 9rem; padding: 1.2rem 0; border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
-  .awards__number { color: var(--color-annotation); font-family: var(--font-editorial); }
-  .awards time { color: var(--color-accent); font-family: var(--font-editorial); font-size: .83rem; }
-  .awards h3 { margin: 0; font-family: var(--font-display); font-size: clamp(1.25rem, 2.5vw, 2rem); font-weight: 500; transition: color var(--duration-normal), transform var(--duration-normal); }
-  .awards a:hover h3 { color: var(--color-annotation); transform: translateX(.4rem); }
-  .awards p { margin: .3rem 0 0; color: var(--color-ink-secondary); font-size: .85rem; }
-  .awards blockquote { margin: .5rem 0 0; color: var(--color-ink-tertiary); font-size: .78rem; }
-  .awards strong { color: var(--color-growth); font-family: var(--font-editorial); font-size: .75rem; font-weight: 600; text-align: right; }
-  .awards__privacy { margin: 2rem 0 0; color: var(--color-ink-tertiary); font-size: .8rem; text-align: right; }
-  @media (max-width: 800px) {
-    .journey__hero { min-height: auto; }.journey__hero svg { opacity: .25; width: 60vw; }.journey__hero blockquote { right: 1rem; }
-    .service { grid-template-columns: 1fr 1fr; }.service a:last-child { grid-column: 1 / -1; min-height: 15rem; }
-    .awards a { grid-template-columns: 2rem 7rem 1fr; }.awards strong { grid-column: 3; text-align: left; }
-  }
-  @media (max-width: 600px) {
-    .journey__nav { justify-content: flex-start; overflow-x: auto; }.journey__nav a { flex: 0 0 auto; }
-    .chapter__title { grid-template-columns: 1fr; }.chapter__title span { grid-column: 1; }.chapter__title p { text-align: left; }
-    .education::before { left: .8rem; }.education > li > a { grid-template-columns: 1.6rem 1fr; }.education__year { grid-column: 1 / -1; text-align: left; }.education__dot { grid-column: 1; }.education > li > a > div:last-child { grid-column: 2; }
-    .service { grid-template-columns: 1fr; }.service a, .service a:last-child { grid-column: auto; min-height: 17rem; }
-    .awards a { grid-template-columns: 2rem 1fr; }.awards time { grid-column: 2; }.awards a > div, .awards strong { grid-column: 2; }
-  }
+  .journey-nav { display: flex; flex-wrap: wrap; gap: .5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--color-border); }
+  .journey-nav a { padding: .45rem .8rem; border: 1px solid var(--color-border); border-radius: 999px; color: var(--color-ink-secondary); font-size: .87rem; text-decoration: none; }
+  .journey-nav a:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .journey-nav span { margin-left: .3rem; color: var(--color-ink-tertiary); }
+  .journey-section { padding-top: 2.25rem; scroll-margin-top: 5rem; }
+  .journey-section header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+  .journey-section h2 { margin: 0; font-size: 1.5rem; }
+  .journey-section header p { margin: 0; color: var(--color-ink-secondary); font-size: .88rem; }
+  .journey-list { border-top: 1px solid var(--color-border); }
+  .journey-privacy { margin: 2.5rem 0 0; padding-top: 1rem; border-top: 1px solid var(--color-border); color: var(--color-ink-tertiary); font-size: .8rem; }
+  @media (max-width: 600px) { .journey-section header { align-items: flex-start; flex-direction: column; gap: .2rem; } }
 </style>

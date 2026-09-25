@@ -1,6 +1,6 @@
 ---
 import CollectionIndexLayout from "@components/content/CollectionIndexLayout.astro";
-import ContentListCard from "@components/content/ContentListCard.astro";
+import UlboContentRow from "@components/content/UlboContentRow.astro";
 import { siteConfig } from "@/config";
 
 interface Item {
@@ -31,8 +31,8 @@ const kinds = [...new Set(items.map((item) => item.eyebrow))].sort();
     <button type="reset">重置</button>
   </form>
   <p id="discovery-count" class="discovery-count" aria-live="polite">共 {items.length} 条公开内容</p>
-  <div class="discovery-grid" id="discovery-results">
-    {items.map((item) => <article data-discovery-item data-kind={item.eyebrow} data-search={`${item.title} ${item.description} ${item.tags.join(" ")}`.toLowerCase()}><ContentListCard {...item} /></article>)}
+  <div class="discovery-list" id="discovery-results">
+    {items.map((item) => <article data-discovery-item data-kind={item.eyebrow} data-search={`${item.title} ${item.description} ${item.tags.join(" ")}`.toLowerCase()}><UlboContentRow href={item.href} title={item.title} description={item.description} kind={item.eyebrow} date={item.meta} tags={item.tags} /></article>)}
   </div>
   <p id="discovery-empty" class="discovery-empty" hidden>没有符合条件的内容。调整关键词或重置筛选后再试。</p>
 </CollectionIndexLayout>
@@ -83,9 +83,8 @@ const kinds = [...new Set(items.map((item) => item.eyebrow))].sort();
   .discovery-filter input, .discovery-filter select { min-height: 2.75rem; padding-inline: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface-solid); color: var(--color-ink); }
   .discovery-filter button { min-height: 2.75rem; padding-inline: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: transparent; color: var(--color-ink); cursor: pointer; }
   .discovery-count { margin: 0 0 var(--space-4); color: var(--color-ink-tertiary); font-size: var(--text-small); }
-  .discovery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
-  .discovery-grid article[hidden] { display: none; }
-  .discovery-grid > article :global(.content-list-card) { height: 100%; }
+  .discovery-list { border-top: 1px solid var(--color-border); }
+  .discovery-list article[hidden] { display: none; }
   .discovery-empty { padding: var(--space-6); border-block: 1px solid var(--color-border); color: var(--color-ink-secondary); text-align: center; }
-  @media (max-width: 700px) { .discovery-grid { grid-template-columns: 1fr; } .discovery-filter { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) { .discovery-filter { grid-template-columns: 1fr; } }
 </style>

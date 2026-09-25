@@ -1,163 +1,72 @@
 ---
 import MainPageLayout from "@layouts/MainPageLayout.astro";
+import CinematicHero from "@components/ui/CinematicHero.astro";
+import FloatingPanel from "@components/ui/FloatingPanel.astro";
+import UlboContentRow from "@components/content/UlboContentRow.astro";
 import { siteConfig } from "@/config";
 import { entryPath, getPublicEntries } from "@utils/content-utils";
 import { i18n } from "astro:config/client";
 
-export function getStaticPaths() {
-  return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } }));
-}
+export function getStaticPaths() { return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } })); }
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
 const resources = (await getPublicEntries("resources")).sort((a, b) => b.data.lastReviewedAt.valueOf() - a.data.lastReviewedAt.valueOf());
-const categories = [
-  { name: "AI 与机器学习", code: "AI/ML", note: "模型、张量、训练与计算" },
-  { name: "编程与工程工具", code: "DEV", note: "版本控制、Python 环境与可复现工作流" },
-  { name: "macOS 与效率", code: "MAC", note: "系统快捷键与个人效率系统" },
-  { name: "语言学习", code: "LANG", note: "IELTS 听、说、读、写课堂原始笔记" },
-];
+const topics = [...new Set(resources.map((item) => item.data.topic))].sort();
 ---
 
-<MainPageLayout title={`资料库 - ${siteConfig.title}`} description="按主题整理的个人学习资料库，直接呈现原始 Markdown 笔记，不替正文总结或缩写。" lang={currentLang}>
-  <div class="library stage-shell">
-    <header class="library__hero">
-      <div>
-        <p>03 / PERSONAL LIBRARY</p>
-        <h1>资料<br /><em>原样留下</em></h1>
-      </div>
-      <div class="library__statement">
-        <span>EDITOR'S NOTE</span>
-        <p>这里展示的是我的 Markdown 原文。只修正公开展示所需的格式和失效本地图片路径，不把课堂笔记改写成摘要。</p>
-      </div>
-    </header>
-
-    <div class="library__tools">
-      <nav aria-label="资料分类">
-        <button type="button" data-topic="" class="is-active">全部 <b>{resources.length}</b></button>
-        {categories.map((category) => <button type="button" data-topic={category.name}>{category.name} <b>{resources.filter((item) => item.data.topic === category.name).length}</b></button>)}
-      </nav>
-      <label><span>SEARCH NOTES</span><input id="resource-query" type="search" placeholder="搜索标题、主题或标签…" /></label>
+<MainPageLayout title={`资料库 - ${siteConfig.title}`} description="按主题整理的个人学习资料库，保留原始 Markdown 笔记。" lang={currentLang}>
+  <CinematicHero title="资料库" description="课堂笔记、工程工具和语言学习资料，按原始记录持续整理。" />
+  <FloatingPanel id="page-content" class="resource-panel">
+    <p class="resource-intro">这些资料直接呈现原始 Markdown 笔记。只修正公开展示所需的格式和失效的本地图片路径。</p>
+    <div class="resource-tools">
+      <nav aria-label="资料分类"><button type="button" data-topic="" class="is-active">全部 <span>{resources.length}</span></button>{topics.map((topic) => <button type="button" data-topic={topic}>{topic} <span>{resources.filter((item) => item.data.topic === topic).length}</span></button>)}</nav>
+      <label for="resource-query">筛选资料 <input id="resource-query" type="search" placeholder="标题、主题或标签" /></label>
     </div>
-
-    <div class="library__catalogue">
-      {categories.map((category, categoryIndex) => {
-        const entries = resources.filter((item) => item.data.topic === category.name);
-        return (
-          <section data-resource-section data-section-topic={category.name} aria-labelledby={`resource-category-${categoryIndex}`}>
-            <header>
-              <span>0{categoryIndex + 1}</span>
-              <div><p>{category.code}</p><h2 id={`resource-category-${categoryIndex}`}>{category.name}</h2></div>
-              <p>{category.note}</p>
-            </header>
-            <div class="shelf">
-              {entries.map((resource, index) => (
-                <article
-                  data-resource
-                  data-topic={resource.data.topic}
-                  data-search={`${resource.data.title} ${resource.data.description} ${resource.data.topic} ${resource.data.tags.join(" ")}`.toLowerCase()}
-                >
-                  <a href={entryPath(resource)}>
-                    <span class="shelf__index">{String(index + 1).padStart(2, "0")}</span>
-                    <div>
-                      <h3>{resource.data.title}</h3>
-                      <p>{resource.data.description}</p>
-                      <ul>{resource.data.tags.map((tag) => <li>#{tag}</li>)}</ul>
-                    </div>
-                    <dl>
-                      <div><dt>FORMAT</dt><dd>Markdown</dd></div>
-                      <div><dt>REVIEWED</dt><dd>{resource.data.lastReviewedAt.toISOString().slice(0, 10)}</dd></div>
-                    </dl>
-                  </a>
-                </article>
-              ))}
-            </div>
-          </section>
-        );
-      })}
-    </div>
-    <p id="resource-empty" class="library__empty" hidden>没有匹配的原始笔记。可以换一个关键词，或选择“全部”。</p>
-  </div>
+    <div class="resource-groups">{topics.map((topic, index) => <section data-resource-section data-section-topic={topic} aria-labelledby={`resource-topic-${index}`}><header><h2 id={`resource-topic-${index}`}>{topic}</h2><span>{resources.filter((item) => item.data.topic === topic).length} 条资料</span></header><div class="resource-list">{resources.filter((item) => item.data.topic === topic).map((resource) => <article data-resource data-topic={resource.data.topic} data-search={`${resource.data.title} ${resource.data.description} ${resource.data.topic} ${resource.data.tags.join(" ")}`.toLowerCase()}><UlboContentRow href={entryPath(resource)} title={resource.data.title} description={resource.data.description} kind={resource.data.resourceType} topic={resource.data.topic} date={`复核 ${resource.data.lastReviewedAt.toISOString().slice(0, 10)}`} tags={resource.data.tags} /></article>)}</div></section>)}</div>
+    <p id="resource-empty" class="resource-empty" hidden>没有匹配的资料。试试更短的关键词，或选择“全部”。</p>
+  </FloatingPanel>
 </MainPageLayout>
 
 <style>
-  .library { padding-bottom: var(--space-9); }
-  .library__hero { display: grid; min-height: auto; grid-template-columns: 1.1fr .9fr; align-items: end; gap: clamp(2rem, 7vw, 6rem); padding-block: clamp(4rem, 10vw, 7rem); border-bottom: 1px solid var(--color-border); }
-  .library__hero > div:first-child > p { margin: 0 0 1rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
-  h1 { margin: 0; font-size: clamp(2.7rem, 7vw, 5.3rem); font-weight: 650; letter-spacing: -.06em; line-height: 1; }
-  h1 em { color: var(--color-ink-secondary); font-style: normal; }
-  .library__statement { position: relative; padding: 1.4rem 0 0; border: 0; border-top: 2px solid var(--color-accent); background: transparent; box-shadow: none; }
-  .library__statement::before { display: none; }
-  .library__statement span { color: var(--color-annotation); font-family: var(--font-editorial); font-size: .72rem; font-weight: 600; letter-spacing: .12em; }
-  .library__statement p { margin: 1rem 0 0; font-family: var(--font-reading); font-size: 1.05rem; line-height: 1.85; }
-  .library__tools { display: grid; grid-template-columns: 1fr minmax(15rem, .42fr); gap: 2rem; align-items: center; margin-top: 1.5rem; padding: 1rem 0; border-bottom: 1px solid var(--color-border); background: transparent; }
-  .library__tools nav { display: flex; flex-wrap: wrap; gap: .5rem; }
-  .library__tools button { padding: .45rem .75rem; border: 1px solid var(--color-border); border-radius: .2rem .8rem .25rem .65rem; background: transparent; color: var(--color-ink-secondary); font-size: .78rem; cursor: pointer; }
-  .library__tools button:hover, .library__tools button.is-active { border-color: var(--color-annotation); background: var(--color-annotation-soft); color: var(--color-ink); }
-  .library__tools button b { margin-left: .25rem; font-family: var(--font-editorial); font-weight: 400; }
-  .library__tools label { display: grid; grid-template-columns: auto 1fr; gap: .7rem; align-items: center; padding-bottom: .35rem; border-bottom: 1px solid var(--color-ink); }
-  .library__tools label span { color: var(--color-accent); font-family: var(--font-editorial); font-size: .67rem; letter-spacing: .09em; }
-  .library__tools input { min-width: 0; border: 0; background: transparent; color: var(--color-ink); outline: 0; }
-  .library__catalogue { padding-top: clamp(4rem, 8vw, 6.5rem); }
-  .library__catalogue > section { margin-bottom: var(--section-space); scroll-margin-top: calc(var(--header-height) + 5rem); }
-  .library__catalogue > section[hidden], article[hidden] { display: none; }
-  .library__catalogue > section > header { display: grid; grid-template-columns: 3rem 1fr minmax(15rem, .55fr); align-items: end; gap: 1rem; margin-bottom: 1.5rem; }
-  .library__catalogue > section > header > span { color: var(--color-annotation); font-family: var(--font-editorial); font-size: 2rem; }
-  .library__catalogue header div p { margin: 0; color: var(--color-accent); font-family: var(--font-editorial); font-size: .72rem; letter-spacing: .12em; }
-  .library__catalogue h2 { margin: .2rem 0 0; font-family: var(--font-display); font-size: clamp(2rem, 3.7vw, 3.35rem); font-weight: 500; line-height: 1.05; }
-  .library__catalogue > section > header > p { margin: 0; color: var(--color-ink-secondary); font-size: .88rem; text-align: right; }
-  .shelf { border-top: 1px solid var(--color-border-strong); }
-  .shelf article > a { display: grid; grid-template-columns: 3rem minmax(0, 1fr) 12rem; gap: 1rem; align-items: center; min-height: 8rem; padding: 1.2rem 0; border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
-  .shelf__index { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: 1rem; }
-  .shelf h3 { margin: 0; font-family: var(--font-display); font-size: clamp(1.35rem, 2.2vw, 2rem); font-weight: 500; transition: color var(--duration-normal), transform var(--duration-normal); }
-  .shelf a:hover h3 { color: var(--color-annotation); transform: translateX(.45rem); }
-  .shelf p { max-width: 44rem; margin: .4rem 0 .7rem; color: var(--color-ink-secondary); font-size: .87rem; }
-  .shelf ul { display: flex; flex-wrap: wrap; gap: .7rem; margin: 0; padding: 0; color: var(--color-growth); font-family: var(--font-editorial); font-size: .74rem; list-style: none; }
-  .shelf dl { display: grid; gap: .75rem; margin: 0; }
-  .shelf dl div { display: grid; grid-template-columns: 4rem 1fr; gap: .5rem; }
-  .shelf dt { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .63rem; letter-spacing: .08em; }
-  .shelf dd { margin: 0; color: var(--color-ink-secondary); font-family: var(--font-editorial); font-size: .75rem; }
-  .library__empty { padding: 2rem 1rem; border-block: 1px solid var(--color-border); color: var(--color-ink-secondary); text-align: center; }
-  @media (max-width: 800px) {
-    .library__hero { grid-template-columns: 1fr; min-height: auto; padding-block: 5rem; }
-    .library__tools { grid-template-columns: 1fr; }.library__catalogue > section > header { grid-template-columns: 3rem 1fr; }.library__catalogue > section > header > p { grid-column: 2; text-align: left; }
-    .shelf article > a { grid-template-columns: 2rem minmax(0, 1fr); }.shelf dl { grid-column: 2; grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 520px) { .library__tools nav { flex-wrap: nowrap; overflow-x: auto; padding-bottom: .3rem; }.library__tools button { flex: 0 0 auto; }.library__catalogue > section > header { grid-template-columns: 1fr; }.library__catalogue > section > header > span { font-size: 1rem; }.library__catalogue > section > header > p { grid-column: 1; }.shelf dl { grid-template-columns: 1fr; } }
+  .resource-intro { max-width: 48rem; margin: 0 0 1.5rem; color: var(--color-ink-secondary); }
+  .resource-tools { display: grid; gap: 1rem; padding: 1rem 0 1.4rem; border-block: 1px solid var(--color-border); }
+  .resource-tools nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .resource-tools button { padding: .42rem .8rem; border: 1px solid var(--color-border); border-radius: 999px; background: transparent; color: var(--color-ink-secondary); font-size: .85rem; cursor: pointer; }
+  .resource-tools button:hover, .resource-tools button.is-active { border-color: var(--color-accent); background: var(--color-accent-soft); color: var(--color-accent); }
+  .resource-tools button span { margin-left: .25rem; opacity: .75; }
+  .resource-tools label { display: flex; align-items: center; gap: 1rem; color: var(--color-ink-secondary); font-size: .85rem; }
+  .resource-tools input { width: min(100%, 28rem); min-height: 2.5rem; padding: .4rem .7rem; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface-subtle); color: var(--color-ink); }
+  .resource-groups section { padding-top: 2rem; }
+  .resource-groups section[hidden], article[hidden] { display: none; }
+  .resource-groups header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .8rem; }
+  .resource-groups h2 { margin: 0; font-size: 1.5rem; }
+  .resource-groups header span { color: var(--color-ink-tertiary); font-size: .8rem; }
+  .resource-list { border-top: 1px solid var(--color-border); }
+  .resource-empty { padding: 2rem 0; color: var(--color-ink-secondary); text-align: center; }
+  @media (max-width: 600px) { .resource-tools label { align-items: stretch; flex-direction: column; gap: .3rem; }.resource-tools input { width: 100%; } }
 </style>
 
 <script>
-  function initLibraryFilter() {
-    const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-topic]")];
+  function initResourceFilter() {
     const input = document.getElementById("resource-query") as HTMLInputElement | null;
-    const sections = [...document.querySelectorAll<HTMLElement>("[data-resource-section]")];
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>(".resource-tools [data-topic]")];
+    const groups = [...document.querySelectorAll<HTMLElement>("[data-resource-section]")];
     const empty = document.getElementById("resource-empty");
     if (!input || input.dataset.bound === "true") return;
     input.dataset.bound = "true";
-    let activeTopic = new URLSearchParams(location.search).get("topic") || "";
-    const apply = () => {
+    let topic = new URLSearchParams(location.search).get("topic") || "";
+    input.value = new URLSearchParams(location.search).get("q") || "";
+    const apply = (updateUrl = true) => {
       const query = input.value.trim().toLowerCase();
       let total = 0;
-      sections.forEach((section) => {
-        let sectionVisible = 0;
-        section.querySelectorAll<HTMLElement>("[data-resource]").forEach((item) => {
-          const show = (!activeTopic || item.dataset.topic === activeTopic) && (!query || item.dataset.search?.includes(query));
-          item.hidden = !show;
-          if (show) sectionVisible += 1;
-        });
-        section.hidden = sectionVisible === 0;
-        total += sectionVisible;
-      });
-      buttons.forEach((button) => button.classList.toggle("is-active", button.dataset.topic === activeTopic));
+      groups.forEach((group) => { let visible = 0; group.querySelectorAll<HTMLElement>("[data-resource]").forEach((item) => { const show = (!topic || item.dataset.topic === topic) && (!query || item.dataset.search?.includes(query)); item.hidden = !show; if (show) visible++; }); group.hidden = visible === 0; total += visible; });
+      buttons.forEach((button) => { const active = button.dataset.topic === topic; button.classList.toggle("is-active", active); button.setAttribute("aria-pressed", String(active)); });
       if (empty) empty.hidden = total > 0;
+      if (updateUrl) { const url = new URL(location.href); topic ? url.searchParams.set("topic", topic) : url.searchParams.delete("topic"); query ? url.searchParams.set("q", input.value.trim()) : url.searchParams.delete("q"); history.replaceState({}, "", url); }
     };
-    buttons.forEach((button) => button.addEventListener("click", () => {
-      activeTopic = button.dataset.topic || "";
-      const params = new URLSearchParams();
-      if (activeTopic) params.set("topic", activeTopic);
-      history.replaceState({}, "", `${location.pathname}${params.size ? `?${params}` : ""}`);
-      apply();
-    }));
-    input.addEventListener("input", apply);
-    apply();
+    buttons.forEach((button) => button.addEventListener("click", () => { topic = button.dataset.topic || ""; apply(); }));
+    input.addEventListener("input", () => apply());
+    window.addEventListener("popstate", () => { if (!input.isConnected) return; const params = new URLSearchParams(location.search); topic = params.get("topic") || ""; input.value = params.get("q") || ""; apply(false); });
+    apply(false);
   }
-  document.addEventListener("astro:page-load", initLibraryFilter);
+  document.addEventListener("astro:page-load", initResourceFilter);
 </script>

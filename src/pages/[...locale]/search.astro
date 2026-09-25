@@ -1,7 +1,8 @@
 ---
 import { Icon } from "astro-icon/components";
 import MainPageLayout from "@layouts/MainPageLayout.astro";
-import PageHero from "@components/ui/PageHero.astro";
+import CinematicHero from "@components/ui/CinematicHero.astro";
+import FloatingPanel from "@components/ui/FloatingPanel.astro";
 import { siteConfig } from "@/config";
 import { baseUrl } from "@utils/url-utils";
 import { i18n } from "astro:config/client";
@@ -15,8 +16,9 @@ const scriptUrl = baseUrl("/pagefind/pagefind.js");
 ---
 
 <MainPageLayout title={`搜索 - ${siteConfig.title}`} description="搜索 yoyo 的长篇札记、灵光便笺、学习原文与旅程坐标。" lang={currentLang} robots="noindex,follow">
-  <PageHero title="沿着线索搜索" description="搜索长篇札记、灵光便笺、学习原文与旅程坐标。索引在构建时生成，查询不会发送给远程搜索服务。" align="left" />
-  <section class="search-page stage-shell" aria-labelledby="search-page-label" data-pagefind-ignore>
+  <CinematicHero title="搜索" description="从文章、资料、想法与旅程中找到想看的内容。" />
+  <FloatingPanel id="page-content">
+  <section class="search-page" aria-labelledby="search-page-label" data-pagefind-ignore>
     <h2 id="search-page-label" class="sr-only">全站搜索</h2>
     <form id="site-search-form" role="search">
       <Icon name="fa6-solid:magnifying-glass" class="w-5 h-5" />
@@ -27,6 +29,7 @@ const scriptUrl = baseUrl("/pagefind/pagefind.js");
     <p id="site-search-status" class="search-page__status" aria-live="polite">输入关键词开始搜索</p>
     <div id="site-search-results" class="search-page__results"></div>
   </section>
+  </FloatingPanel>
 </MainPageLayout>
 
 <script is:inline define:vars={{ scriptUrl }}>

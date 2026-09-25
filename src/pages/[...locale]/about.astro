@@ -1,80 +1,40 @@
 ---
 import MainPageLayout from "@layouts/MainPageLayout.astro";
+import CinematicHero from "@components/ui/CinematicHero.astro";
+import FloatingPanel from "@components/ui/FloatingPanel.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import { getSpec } from "@utils/content-utils";
-import { siteConfig } from "@/config";
+import { siteConfig, profileConfig } from "@/config";
 import { render } from "astro:content";
 import { i18n } from "astro:config/client";
 
-export async function getStaticPaths() {
-  return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } }));
-}
+export async function getStaticPaths() { return i18n?.locales.map((locale) => ({ params: { locale: locale === i18n?.defaultLocale ? undefined : String(locale) } })); }
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
 const aboutPost = await getSpec(currentLang, "about");
 if (!aboutPost) throw new Error("No about post found");
 const { Content } = await render(aboutPost);
 ---
 
-<MainPageLayout title={`关于 - ${siteConfig.title}`} description="认识 yoyo：研究方向、关注领域、兴趣、学校、公开位置、联系方式与友联。" lang={currentLang}>
-  <div class="about stage-shell">
-    <header class="about__hero">
-      <p>05 / ABOUT THIS TRAVELLER</p>
-      <h1>关于<br /><em>yoyo</em></h1>
-      <p class="about__intro">个人简介、关注方向与联系方式。</p>
-    </header>
-
-    <div class="about__layout">
-      <aside class="dossier">
-        <div class="dossier__photo">
-          <span>YOYO</span>
-          <img src="/brand/yoyo-trail.svg" width="116" height="116" alt="yoyo 的轨迹标志" />
-        </div>
-        <dl>
-          <div><dt>BASE</dt><dd>Wuhan, China</dd></div>
-          <div><dt>SCHOOL</dt><dd>HUST · 集成电路学院</dd></div>
-          <div><dt>MAJOR</dt><dd>电子科学与技术</dd></div>
-          <div><dt>FOCUS</dt><dd>Power Architecture</dd></div>
-          <div><dt>GRAD.</dt><dd>2027 · expected</dd></div>
-        </dl>
-        <nav aria-label="个人入口">
-          <a href="https://github.com/Miles-gift" target="_blank" rel="noopener noreferrer">GitHub / Miles-gift</a>
-          <a href="/journey/">查看完整旅程</a>
-        </nav>
-      </aside>
-
-      <Markdown class="about__content">
-        <Content />
-      </Markdown>
+<MainPageLayout title={`关于 - ${siteConfig.title}`} description="认识 yoyo：研究方向、关注领域、兴趣与公开联系方式。" lang={currentLang}>
+  <CinematicHero title="关于 yoyo" description="学习、记录，也继续往前走。" />
+  <FloatingPanel id="page-content" class="about-panel">
+    <div class="profile-card">
+      <div class="profile-card__avatar"><img src="/brand/yoyo-trail.svg" width="180" height="180" alt="yoyo 的轨迹标志" /></div>
+      <div class="profile-card__intro"><h2>{profileConfig.name}</h2><p>{profileConfig.description}</p><div><a href="https://github.com/Miles-gift" target="_blank" rel="noopener noreferrer">GitHub</a><a href="/journey/">查看旅程</a></div></div>
     </div>
-  </div>
+    <Markdown class="about-content"><Content /></Markdown>
+  </FloatingPanel>
 </MainPageLayout>
 
 <style>
-  .about { padding-bottom: var(--space-9); }
-  .about__hero { position: relative; min-height: auto; padding-block: clamp(4rem, 10vw, 7rem) 2rem; border-bottom: 1px solid var(--color-border); }
-  .about__hero > p { margin: 0 0 1rem; color: var(--color-accent); font-family: var(--font-editorial); font-size: .78rem; font-weight: 600; letter-spacing: .12em; }
-  h1 { max-width: 8ch; margin: 0; font-size: clamp(2.7rem, 7vw, 5.3rem); font-weight: 650; letter-spacing: -.06em; line-height: 1; }
-  h1 em { color: var(--color-ink-secondary); font-style: normal; font-weight: 650; }
-  .about__intro { margin: 1.2rem 0 0; color: var(--color-ink-secondary); }
-  .about__layout { display: grid; grid-template-columns: minmax(16rem, .36fr) minmax(0, .64fr); gap: clamp(2rem, 7vw, 5rem); align-items: start; padding-top: clamp(2.5rem, 6vw, 4.5rem); }
-  .dossier { position: sticky; top: calc(var(--header-height) + 1.5rem); padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-solid); }
-  .dossier__photo { position: relative; display: grid; min-height: 11rem; place-items: center; overflow: hidden; border-radius: var(--radius-sm); background: var(--color-surface); }
-  .dossier__photo::before { position: absolute; width: 18rem; height: 18rem; border: 1px dashed var(--color-accent); border-radius: 50%; content: ""; }
-  .dossier__photo span { position: absolute; right: .8rem; bottom: .3rem; color: var(--color-ink-tertiary); font-size: 2rem; font-weight: 650; }
-  .dossier__photo img { position: relative; z-index: 1; border-radius: 1rem; }
-  dl { margin: 1.1rem 0; }
-  dl div { display: grid; grid-template-columns: 4.5rem 1fr; gap: .8rem; padding: .6rem 0; border-bottom: 1px dashed var(--color-border); }
-  dt { color: var(--color-ink-tertiary); font-size: .68rem; font-weight: 600; letter-spacing: .08em; }
-  dd { margin: 0; color: var(--color-ink-secondary); font-size: .82rem; }
-  nav { display: grid; gap: .5rem; }
-  nav a { padding: .65rem .7rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); color: var(--color-ink); font-size: .82rem; font-weight: 600; text-decoration: none; }
-  nav a:hover { border-color: var(--color-accent); color: var(--color-accent); }
-  .about__content { margin-top: 0; }
-  .about__content :global(h2) { margin-top: 4rem; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 500; }
-  .about__content :global(h2:first-child) { margin-top: 0; }
-  .about__content :global(p), .about__content :global(li) { font-family: var(--font-reading); }
-  @media (max-width: 800px) {
-    .about__hero { min-height: auto; padding-block: 4.5rem; }
-    .about__layout { grid-template-columns: 1fr; }.dossier { position: static; }
-  }
+  .profile-card { display: grid; grid-template-columns: 180px minmax(0, 1fr); align-items: center; gap: clamp(1.5rem, 4vw, 3rem); padding: clamp(1.25rem, 3vw, 2rem); border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface-subtle); }
+  .profile-card__avatar { display: grid; width: 180px; height: 180px; place-items: center; overflow: hidden; border-radius: 50%; background: var(--color-surface-solid); box-shadow: var(--shadow-sm); }
+  .profile-card__avatar img { width: 70%; height: 70%; object-fit: contain; }
+  .profile-card__intro h2 { margin: 0; font-size: 2rem; }
+  .profile-card__intro p { margin: .5rem 0 1.2rem; color: var(--color-ink-secondary); }
+  .profile-card__intro div { display: flex; flex-wrap: wrap; gap: .6rem; }
+  .profile-card__intro a { padding: .35rem .75rem; border: 1px solid var(--color-border); border-radius: 999px; color: var(--color-ink); font-size: .85rem; text-decoration: none; }
+  .profile-card__intro a:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .about-content { display: block; max-width: 800px; margin: 2rem auto 0; }
+  @media (max-width: 620px) { .profile-card { grid-template-columns: 1fr; }.profile-card__avatar { width: 120px; height: 120px; } }
 </style>
