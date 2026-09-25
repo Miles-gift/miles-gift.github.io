@@ -92,9 +92,29 @@ if ((sitemap.match(/<url>/g) || []).length < 40) errors.push("sitemap.xml URL �
 for (const route of forbiddenRoutes) {
   if (sitemap.includes(route)) errors.push(`sitemap.xml 包含已移除路径 ${route}`);
 }
-for (const removed of ["rss.xml", "privacy/index.html", "copyright/index.html", "friends/index.html", "blog/index.html", "design-system/index.html", "archive/index.html"]) {
+for (const removed of ["rss.xml", "privacy/index.html", "copyright/index.html", "friends/index.html", "blog/index.html", "design-system/index.html"]) {
   if (await stat(join(distRoot, removed)).then(() => true).catch(() => false)) errors.push(`生成产物仍包含已移除页面 ${removed}`);
 }
+
+async function assertRedirect(file, target) {
+  const html = await readFile(file, "utf8").catch(() => "");
+  if (!html) {
+    errors.push(`缺少兼容迁移页 ${relative(distRoot, file)}`);
+    return;
+  }
+  if (!/name=["']robots["'][^>]+noindex/i.test(html)) errors.push(`${relative(distRoot, file)}: 迁移页应 noindex`);
+  if (!html.includes(`rel="canonical" href="https://miles-gift.github.io${target}"`)) errors.push(`${relative(distRoot, file)}: canonical 未指向 ${target}`);
+  if (!html.includes(`content="0;url=${target}"`)) {
+    errors.push(`${relative(distRoot, file)}: 缺少立即跳转到 ${target} 的规则`);
+  }
+}
+
+for (const file of htmlFiles.filter((item) => item.startsWith(join(distRoot, "articles") + sep) && item !== join(distRoot, "articles", "index.html"))) {
+  const slugPath = relative(join(distRoot, "articles"), file).replace(/\\/g, "/").replace(/\/index\.html$/, "");
+  const target = `/articles/${slugPath}/`;
+  await assertRedirect(join(distRoot, "blog", slugPath, "index.html"), target);
+}
+await assertRedirect(join(distRoot, "archive", "index.html"), "/archives/");
 if (!await stat(join(distRoot, "brand", "yoyo-social-card.png")).then((item) => item.isFile()).catch(() => false)) errors.push("缺少 PNG 分享图");
 
 const displayFontFiles = files.filter((file) => file.includes(`${join("fonts", "lxgw-bright")}${sep}`) && file.endsWith(".woff2"));

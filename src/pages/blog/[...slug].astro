@@ -1,0 +1,16 @@
+---
+import LegacyRedirect from "@components/content/LegacyRedirect.astro";
+import { getArticleEntrySort } from "@utils/content-utils";
+
+export async function getStaticPaths() {
+  const articles = await getArticleEntrySort("zh-cn");
+  return articles.map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: { target: `/articles/${entry.data.slug}/`, title: entry.data.title },
+  }));
+}
+
+const { target, title } = Astro.props;
+---
+
+<LegacyRedirect target={target} title={title} />

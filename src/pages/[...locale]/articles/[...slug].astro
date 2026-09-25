@@ -62,7 +62,7 @@ const related = allArticles
   .map((item) => item.entry);
 ---
 
-<MainPageLayout title={pageTitle} lang={currentLang} description={entry.data.description} image={image || undefined} type="article" publishedTime={entry.data.pubDate} updatedTime={entry.data.updatedDate}>
+<MainPageLayout title={pageTitle} lang={currentLang} description={entry.data.description} image={image || undefined} type="article" canonical={entry.data.canonical || undefined} publishedTime={entry.data.pubDate} updatedTime={entry.data.updatedDate}>
   <article class="article-page reading-shell">
     <span class="sr-only" data-pagefind-meta="kind:文章"></span>
     <span class="sr-only" data-pagefind-meta={`topic:${entry.data.topic}`}></span>

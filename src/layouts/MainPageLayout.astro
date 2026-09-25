@@ -12,14 +12,16 @@ interface Props {
   image?: string;
   type?: "website" | "article";
   robots?: string;
+  canonical?: string;
+  redirectTo?: string;
   publishedTime?: Date;
   updatedTime?: Date;
 }
-const { title, lang, description, image, type, robots, publishedTime, updatedTime } = Astro.props;
+const { title, lang, description, image, type, robots, canonical, redirectTo, publishedTime, updatedTime } = Astro.props;
 
 ---
 
-<Layout title={title} lang={lang} description={description} image={image} type={type} robots={robots} publishedTime={publishedTime} updatedTime={updatedTime}>
+<Layout title={title} lang={lang} description={description} image={image} type={type} robots={robots} canonical={canonical} redirectTo={redirectTo} publishedTime={publishedTime} updatedTime={updatedTime}>
   <div class="site-frame flex flex-col min-h-screen">
     <div>
       <Header />

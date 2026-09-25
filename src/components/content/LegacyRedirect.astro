@@ -1,0 +1,35 @@
+---
+import MainPageLayout from "@layouts/MainPageLayout.astro";
+import { siteConfig } from "@/config";
+
+interface Props {
+  target: string;
+  title?: string;
+}
+
+const { target, title = "页面地址已更新" } = Astro.props;
+---
+
+<MainPageLayout
+  title={`${title} - ${siteConfig.title}`}
+  description={`此页面已迁移到 ${target}。`}
+  lang="zh-cn"
+  robots="noindex,follow"
+  canonical={target}
+  redirectTo={target}
+>
+  <main class="legacy-redirect stage-shell">
+    <p>地址已更新</p>
+    <h1>此页面已迁移。</h1>
+    <p>正在前往新地址。如浏览器未自动跳转，请打开下面的链接。</p>
+    <a href={target}>{target}</a>
+  </main>
+</MainPageLayout>
+
+<style>
+  .legacy-redirect { display: grid; min-height: 55svh; align-content: center; justify-items: start; gap: var(--space-3); }
+  .legacy-redirect p { margin: 0; color: var(--color-ink-secondary); }
+  .legacy-redirect p:first-child { color: var(--color-accent); font-size: var(--text-small); font-weight: 650; }
+  h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -.05em; }
+  a { color: var(--color-accent); }
+</style>

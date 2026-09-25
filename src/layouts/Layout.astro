@@ -18,6 +18,8 @@ interface Props {
   image?: string;
   type?: "website" | "article";
   robots?: string;
+  canonical?: string;
+  redirectTo?: string;
   publishedTime?: Date;
   updatedTime?: Date;
 }
@@ -28,6 +30,8 @@ const {
   image = "/brand/yoyo-social-card.png",
   type = "website",
   robots = "index,follow,max-image-preview:large",
+  canonical,
+  redirectTo,
   publishedTime,
   updatedTime,
 } = Astro.props;
@@ -36,7 +40,7 @@ const pageTitle = title;
 const pageLang = lang || i18n?.defaultLocale || "zh-cn";
 const pageDescription = description?.trim() || profileConfig.description;
 const siteOrigin = Astro.site || new URL("https://miles-gift.github.io");
-const canonicalUrl = new URL(Astro.url.pathname, siteOrigin);
+const canonicalUrl = new URL(canonical || Astro.url.pathname, siteOrigin);
 const shareImageUrl = new URL(image, siteOrigin);
 const ogLocale = pageLang.toLowerCase() === "zh-cn" ? "zh_CN" : pageLang.replace("-", "_");
 const structuredData = type === "article" ? {
@@ -92,6 +96,7 @@ const structuredDataJson = JSON.stringify(structuredData).replace(/</g, "\\u003c
     <meta name="theme-color" content="#f4f5f6" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0f1117" media="(prefers-color-scheme: dark)">
     <link rel="canonical" href={canonicalUrl}>
+    {redirectTo && <meta http-equiv="refresh" content={`0;url=${redirectTo}`} />}
     <link rel="icon" href={siteConfig.favicon} type="image/svg+xml">
     <meta property="og:site_name" content={siteConfig.title}>
     <meta property="og:locale" content={ogLocale}>
