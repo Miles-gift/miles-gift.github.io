@@ -2,13 +2,14 @@
 import "@styles/global.css";
 import { siteConfig, licenseConfig } from "@/config";
 import MainPageLayout from "@layouts/MainPageLayout.astro";
+import CinematicHero from "@components/ui/CinematicHero.astro";
+import FloatingPanel from "@components/ui/FloatingPanel.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import ImageModule from "@components/misc/ImageModule.astro";
 import FabMenu from "@components/control/FabMenu.astro";
 import TOC from "@components/TOC.svelte";
 import LicenseCard from "@components/misc/LicenseCard.astro";
 import BlogNavi from "@components/control/BlogNavi.astro";
-import Chip from "@components/ui/Chip.astro";
 import { render } from "astro:content";
 import { i18n } from "astro:config/client";
 import { articleCoverUrl } from "@/utils/url-utils";
@@ -22,22 +23,11 @@ export async function getStaticPaths() {
     const entries = await getArticleEntrySort(localeCode);
     for (let index = 0; index < entries.length; index += 1) {
       const current = entries[index];
-      const seriesEntries = current.data.series
-        ? entries
-            .filter((item) => item.data.series === current.data.series)
-            .sort((a, b) => (a.data.seriesOrder || 0) - (b.data.seriesOrder || 0))
-        : [];
+      const seriesEntries = current.data.series ? entries.filter((item) => item.data.series === current.data.series).sort((a, b) => (a.data.seriesOrder || 0) - (b.data.seriesOrder || 0)) : [];
       const seriesIndex = seriesEntries.findIndex((item) => item.id === current.id);
-      const prev = seriesEntries.length > 1
-        ? (seriesIndex > 0 ? seriesEntries[seriesIndex - 1] : null)
-        : (index < entries.length - 1 ? entries[index + 1] : null);
-      const next = seriesEntries.length > 1
-        ? (seriesIndex < seriesEntries.length - 1 ? seriesEntries[seriesIndex + 1] : null)
-        : (index > 0 ? entries[index - 1] : null);
-      paths.push({
-        params: { locale: localeCode === i18n?.defaultLocale ? undefined : localeCode, slug: current.id },
-        props: { entry: current, prev, next },
-      });
+      const prev = seriesEntries.length > 1 ? (seriesIndex > 0 ? seriesEntries[seriesIndex - 1] : null) : (index < entries.length - 1 ? entries[index + 1] : null);
+      const next = seriesEntries.length > 1 ? (seriesIndex < seriesEntries.length - 1 ? seriesEntries[seriesIndex + 1] : null) : (index > 0 ? entries[index - 1] : null);
+      paths.push({ params: { locale: localeCode === i18n?.defaultLocale ? undefined : localeCode, slug: current.id }, props: { entry: current, prev, next } });
     }
   }
   return paths;
@@ -50,70 +40,47 @@ const pageTitle = `${entry.data.title} - ${siteConfig.title}`;
 const image = articleCoverUrl(entry.data.cover, entry.id);
 const maintenanceLabels = { active: "持续维护", stable: "内容稳定", archived: "停止维护" } as const;
 const allArticles = await getArticleEntrySort(currentLang);
-const related = allArticles
-  .filter((item) => item.id !== entry.id)
-  .map((item) => ({
-    entry: item,
-    score: Number(item.data.topic === entry.data.topic) * 3 + item.data.tags.filter((tag) => entry.data.tags.includes(tag)).length,
-  }))
-  .filter((item) => item.score > 0)
-  .sort((a, b) => b.score - a.score || b.entry.data.pubDate.valueOf() - a.entry.data.pubDate.valueOf())
-  .slice(0, 2)
-  .map((item) => item.entry);
+const related = allArticles.filter((item) => item.id !== entry.id).map((item) => ({ entry: item, score: Number(item.data.topic === entry.data.topic) * 3 + item.data.tags.filter((tag) => entry.data.tags.includes(tag)).length })).filter((item) => item.score > 0).sort((a, b) => b.score - a.score || b.entry.data.pubDate.valueOf() - a.entry.data.pubDate.valueOf()).slice(0, 2).map((item) => item.entry);
 ---
 
 <MainPageLayout title={pageTitle} lang={currentLang} description={entry.data.description} image={image || undefined} type="article" canonical={entry.data.canonical || undefined} publishedTime={entry.data.pubDate} updatedTime={entry.data.updatedDate}>
-  <article class="article-page reading-shell">
-    <span class="sr-only" data-pagefind-meta="kind:文章"></span>
-    <span class="sr-only" data-pagefind-meta={`topic:${entry.data.topic}`}></span>
-    <span class="sr-only" data-pagefind-meta={`date:${entry.data.pubDate.toISOString().slice(0, 10)}`}></span>
-    <header class="article-header">
-      <a class="article-header__back" href="/articles/">← 文章</a>
-      <p class="article-header__eyebrow">长篇札记</p>
-      <h1>{entry.data.title}</h1>
-      <p class="article-header__description">{entry.data.description}</p>
-      <div class="article-header__meta">
-        <time datetime={entry.data.pubDate.toISOString()}>{formatFullDate(entry.data.pubDate, currentLang)}</time>
-        {entry.data.updatedDate && <span>更新于 {formatFullDate(entry.data.updatedDate, currentLang)}</span>}
-        <span class:list={["article-header__status", `article-header__status--${entry.data.maintenance}`]}>{maintenanceLabels[entry.data.maintenance]}</span>
-        <span>{remarkPluginFrontmatter.words || 0} 字</span>
-        <span>{remarkPluginFrontmatter.minutes || 0} 分钟</span>
-        <Chip href={`/topics/${encodeURIComponent(entry.data.topic)}/`} tone="accent">{entry.data.topic}</Chip>
-        {entry.data.tags.map((tag) => <Chip href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</Chip>)}
-      </div>
-    </header>
-    {image && <ImageModule src={image} alt={entry.data.coverAlt} class="article-cover" />}
-    <Markdown class="article-body markdown-content onload-animation"><Content /></Markdown>
-    {licenseConfig.enable && <LicenseCard title={entry.data.title} pubDate={entry.data.pubDate} />}
-    {siteConfig.blogNavi.enable && <BlogNavi prev={prev} next={next} />}
-    {related.length > 0 && <aside class="article-related" aria-labelledby="related-title">
-      <h2 id="related-title">相关推荐</h2>
-      <div>{related.map((item) => <a href={`/articles/${item.data.slug}/`}><span>{item.data.topic}</span><strong>{item.data.title}</strong><p>{item.data.description}</p></a>)}</div>
-    </aside>}
-  </article>
+  <CinematicHero title={entry.data.title} description={entry.data.description}>
+    <Fragment slot="meta"><time datetime={entry.data.pubDate.toISOString()}>{formatFullDate(entry.data.pubDate, currentLang)}</time><span>{remarkPluginFrontmatter.words || 0} 字</span><span>约 {remarkPluginFrontmatter.minutes || 0} 分钟</span><span>{entry.data.topic}</span></Fragment>
+  </CinematicHero>
+  <FloatingPanel id="page-content" class="article-panel">
+    <article class="article-page">
+      <span class="sr-only" data-pagefind-meta="kind:文章"></span><span class="sr-only" data-pagefind-meta={`topic:${entry.data.topic}`}></span><span class="sr-only" data-pagefind-meta={`date:${entry.data.pubDate.toISOString().slice(0, 10)}`}></span>
+      <div class="article-top"><a href="/articles/">← 返回文章</a><div><span>{maintenanceLabels[entry.data.maintenance]}</span>{entry.data.updatedDate && <span>更新于 {formatFullDate(entry.data.updatedDate, currentLang)}</span>}</div></div>
+      <div class="article-tags"><a href={`/topics/${encodeURIComponent(entry.data.topic)}/`}>{entry.data.topic}</a>{entry.data.tags.map((tag) => <a href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a>)}</div>
+      {image && <ImageModule src={image} alt={entry.data.coverAlt} class="article-cover" />}
+      <Markdown class="article-body markdown-content onload-animation"><Content /></Markdown>
+      {licenseConfig.enable && <LicenseCard title={entry.data.title} pubDate={entry.data.pubDate} />}
+      {siteConfig.blogNavi.enable && <BlogNavi prev={prev} next={next} />}
+      {related.length > 0 && <aside class="article-related" aria-labelledby="related-title"><h2 id="related-title">继续阅读</h2><div>{related.map((item) => <a href={`/articles/${item.data.slug}/`}><span>{item.data.topic}</span><strong>{item.data.title}</strong><p>{item.data.description}</p></a>)}</div></aside>}
+    </article>
+  </FloatingPanel>
   {siteConfig.toc.enable && <TOC headings={headings} language={currentLang} client:load />}
   <FabMenu headings={headings} showComment={false} showBackBottom={true} />
 </MainPageLayout>
 
 <style>
-  .article-page { padding-top: clamp(5rem, 10vw, 8rem); }
-  .article-header { padding-bottom: clamp(2.5rem, 6vw, 4.5rem); border-bottom: 1px solid var(--color-border); }
-  .article-header__back { display: inline-flex; margin-bottom: var(--space-6); color: var(--color-ink-tertiary); font-size: var(--text-small); text-decoration: none; }
-  .article-header__back:hover { color: var(--color-accent); }
-  .article-header__eyebrow { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-small); font-weight: 700; letter-spacing: 0.02em; }
-  h1 { margin: 0; font-family: var(--font-display); font-size: var(--text-display-md); line-height: var(--leading-heading); letter-spacing: var(--tracking-tight); }
-  .article-header__description { margin: var(--space-5) 0 0; color: var(--color-ink-secondary); font-size: clamp(1rem, 1.5vw, 1.2rem); }
-  .article-header__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-5); color: var(--color-ink-tertiary); font-size: var(--text-small); }
-  .article-header__status { padding: 0.15rem 0.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-pill); }
-  .article-header__status--active { border-color: color-mix(in srgb, var(--color-success) 35%, var(--color-border)); color: var(--color-success); }
-  .article-header__status--archived { color: var(--color-warning); }
-  :global(.article-cover) { height: min(52vw, 28rem); margin-top: var(--space-7); border-radius: var(--radius-xl); }
-  .article-body { margin-top: clamp(2.5rem, 6vw, 4.5rem); }
-  .article-related { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border); }
-  .article-related h2 { margin: 0 0 var(--space-4); font-size: var(--text-title); }
-  .article-related > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
-  .article-related a { display: grid; gap: var(--space-2); padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-solid); color: var(--color-ink); text-decoration: none; }
-  .article-related span { color: var(--color-accent); font-size: var(--text-small); font-weight: 700; }
-  .article-related p { margin: 0; color: var(--color-ink-secondary); font-size: var(--text-small); }
-  @media (max-width: 640px) { .article-related > div { grid-template-columns: 1fr; } }
+  :global(.article-panel) { width: min(1120px, calc(100% - 2rem)); }
+  .article-page { width: min(790px, 100%); margin: 0 auto; }
+  .article-top { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border); color: var(--color-ink-secondary); font-size: .85rem; }
+  .article-top a { color: inherit; text-decoration: none; }
+  .article-top a:hover { color: var(--color-accent); }
+  .article-top div { display: flex; flex-wrap: wrap; gap: .7rem; }
+  .article-tags { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+  .article-tags a { padding: .2rem .55rem; border-radius: 999px; background: var(--color-accent-soft); color: var(--color-accent); font-size: .76rem; text-decoration: none; }
+  .article-tags a:hover { text-decoration: underline; }
+  :global(.article-cover) { width: 100%; max-height: 30rem; margin-top: 1.5rem; border-radius: 10px; object-fit: cover; }
+  .article-body { margin-top: 2rem; }
+  .article-related { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border); }
+  .article-related h2 { margin: 0 0 1rem; font-size: 1.3rem; }
+  .article-related > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+  .article-related a { display: grid; gap: .2rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: 10px; color: var(--color-ink); text-decoration: none; }
+  .article-related a:hover { border-color: var(--color-accent); }
+  .article-related span { color: var(--color-accent); font-size: .78rem; }
+  .article-related p { margin: 0; color: var(--color-ink-secondary); font-size: .82rem; }
+  @media (max-width: 720px) { :global(.article-panel) { width: calc(100% - 1.25rem); }.article-related > div { grid-template-columns: 1fr; } }
 </style>

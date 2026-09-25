@@ -1,7 +1,8 @@
 ---
 import MainPageLayout from "@layouts/MainPageLayout.astro";
+import CinematicHero from "@components/ui/CinematicHero.astro";
+import FloatingPanel from "@components/ui/FloatingPanel.astro";
 import Markdown from "@components/misc/Markdown.astro";
-import Chip from "@components/ui/Chip.astro";
 import FabMenu from "@components/control/FabMenu.astro";
 import { formatFullDate } from "@/utils/time";
 
@@ -20,295 +21,41 @@ interface Props {
   backLabel?: string;
   variant?: "default" | "resource";
 }
-
 const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLabel, topic, tags = [], staticTags = [], backHref, backLabel, variant = "default" } = Astro.props;
 ---
 
 <MainPageLayout title={pageTitle} lang={lang} description={description} type="article" publishedTime={pubDate}>
-  <article class:list={["content-entry reading-shell", variant === "resource" && "resource-entry"]}>
-    <span class="sr-only" data-pagefind-meta={`kind:${eyebrow}`}></span>
-    {topic && <span class="sr-only" data-pagefind-meta={`topic:${topic}`}></span>}
-    {pubDate && <span class="sr-only" data-pagefind-meta={`date:${pubDate.toISOString().slice(0, 10)}`}></span>}
-    <header class="content-entry__header">
-      {backHref && <a class="content-entry__back" href={backHref}>← {backLabel || "返回"}</a>}
-      <p class="content-entry__eyebrow">{eyebrow}</p>
-      <h1>{title}</h1>
-      <p class="content-entry__description">{description}</p>
-      <div class="content-entry__meta">
-        {dateLabel && <span>{dateLabel}</span>}
-        {!dateLabel && pubDate && <time datetime={pubDate.toISOString()}>{formatFullDate(pubDate, lang)}</time>}
-        {topic && <Chip href={`/topics/${encodeURIComponent(topic)}/`} tone="accent">{topic}</Chip>}
-        {tags.map((tag) => <Chip href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</Chip>)}
-        {staticTags.map((tag) => <Chip>{tag}</Chip>)}
+  <CinematicHero title={title} description={description}>
+    <Fragment slot="meta"><span>{eyebrow}</span>{dateLabel && <span>{dateLabel}</span>}{!dateLabel && pubDate && <time datetime={pubDate.toISOString()}>{formatFullDate(pubDate, lang)}</time>}{topic && <span>{topic}</span>}</Fragment>
+  </CinematicHero>
+  <FloatingPanel id="page-content" class="entry-panel">
+    <article class:list={["content-entry", variant === "resource" && "content-entry--resource"]}>
+      <span class="sr-only" data-pagefind-meta={`kind:${eyebrow}`}></span>
+      {topic && <span class="sr-only" data-pagefind-meta={`topic:${topic}`}></span>}
+      {pubDate && <span class="sr-only" data-pagefind-meta={`date:${pubDate.toISOString().slice(0, 10)}`}></span>}
+      <div class="content-entry__top">
+        {backHref && <a class="content-entry__back" href={backHref}>← {backLabel || "返回"}</a>}
+        <div class="content-entry__tags">{tags.map((tag) => <a href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a>)}{staticTags.map((tag) => <span>{tag}</span>)}</div>
       </div>
-      {Astro.slots.has("aside") && <div class="content-entry__aside"><slot name="aside" /></div>}
-    </header>
-    <Markdown class="content-entry__body onload-animation"><slot /></Markdown>
-    {Astro.slots.has("after") && <div class="content-entry__after"><slot name="after" /></div>}
-  </article>
+      {Astro.slots.has("aside") && <aside class="content-entry__aside"><slot name="aside" /></aside>}
+      <Markdown class="content-entry__body markdown-content onload-animation"><slot /></Markdown>
+      {Astro.slots.has("after") && <div class="content-entry__after"><slot name="after" /></div>}
+    </article>
+  </FloatingPanel>
   <FabMenu showBackBottom={true} />
 </MainPageLayout>
 
 <style>
-  .content-entry { padding-top: clamp(3.5rem, 8vw, 6rem); padding-bottom: var(--space-9); }
-  .content-entry__header { padding-bottom: clamp(2rem, 5vw, 3.5rem); border-bottom: 1px solid var(--color-border); }
-  .content-entry__back { display: inline-flex; margin-bottom: var(--space-6); color: var(--color-ink-tertiary); font-size: var(--text-small); text-decoration: none; }
+  :global(.entry-panel) { width: min(1120px, calc(100% - 2rem)); }
+  .content-entry { width: min(790px, 100%); margin: 0 auto; }
+  .content-entry__top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--color-border); }
+  .content-entry__back { color: var(--color-ink-secondary); font-size: .87rem; text-decoration: none; }
   .content-entry__back:hover { color: var(--color-accent); }
-  .content-entry__eyebrow { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-small); font-weight: 700; letter-spacing: 0.02em; }
-  h1 { max-width: 17ch; margin: 0; font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 650; line-height: 1.12; letter-spacing: -.055em; }
-  .content-entry__description { max-width: 42rem; margin: var(--space-5) 0 0; color: var(--color-ink-secondary); font-size: clamp(1rem, 1.5vw, 1.2rem); }
-  .content-entry__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-5); color: var(--color-ink-tertiary); font-size: var(--text-small); }
-  .content-entry__aside { margin-top: var(--space-5); }
-  .content-entry__body { margin-top: clamp(2rem, 5vw, 3.75rem); }
-  .content-entry__after { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border); }
-  .resource-entry .content-entry__body { border-radius: var(--radius-md); background: var(--color-surface-solid); box-shadow: none; }
-  .resource-entry .content-entry__body::before { background: var(--color-border); }
-  .resource-entry .content-entry__body::after { background: var(--color-accent); box-shadow: 0 0 0 4px var(--color-accent-soft); }
-  .resource-entry .content-entry__body h2 { border-left-color: var(--color-accent); }
-  .resource-entry .content-entry__body h3 { color: var(--color-ink); }
-  .resource-entry .content-entry__body h4 { color: var(--color-ink-secondary); }
-  .resource-entry .content-entry__body blockquote { background: var(--color-surface); }
-  .resource-entry .content-entry__body li::marker { color: var(--color-accent); }
-  .resource-entry .content-entry__body hr { border-top-style: solid; border-top-color: var(--color-border); }
-</style>
-
-<style is:global>
-  /*
-   * Resource pages are rendered as study sheets rather than generic article pages.
-   * The class is attached by the resource route, so every future CMS-uploaded note
-   * receives the same treatment without changing its original Markdown.
-   */
-  .resource-entry {
-    --resource-sheet-padding: clamp(1.25rem, 3.2vw, 3rem);
-    width: min(1040px, calc(100vw - 3rem));
-  }
-
-  .resource-entry .content-entry__header {
-    padding-bottom: clamp(2rem, 4.5vw, 3.5rem);
-  }
-
-  .resource-entry .content-entry__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  .resource-entry .content-entry__eyebrow::before {
-    width: 1.35rem;
-    height: 2px;
-    background: var(--color-annotation);
-    content: "";
-  }
-
-  .resource-entry .content-entry__body {
-    position: relative;
-    margin-top: clamp(2rem, 4.5vw, 3.5rem);
-    padding: var(--resource-sheet-padding) clamp(var(--resource-sheet-padding), 5vw, 4rem) clamp(2.5rem, 5vw, 4.5rem) calc(var(--resource-sheet-padding) + clamp(0.85rem, 2vw, 1.35rem));
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-solid);
-    box-shadow: none;
-  }
-
-  .resource-entry .content-entry__body::before {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: clamp(0.75rem, 1.8vw, 1.35rem);
-    width: 1px;
-    background: var(--color-border);
-    content: "";
-  }
-
-  .resource-entry .content-entry__body::after {
-    position: absolute;
-    top: 1.35rem;
-    left: calc(clamp(0.75rem, 1.8vw, 1.35rem) - 3px);
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    box-shadow: 0 0 0 4px var(--color-accent-soft);
-    content: "";
-  }
-
-  .resource-entry .content-entry__body > :first-child {
-    margin-top: 0;
-  }
-
-  .resource-entry .content-entry__body h1,
-  .resource-entry .content-entry__body h2,
-  .resource-entry .content-entry__body h3,
-  .resource-entry .content-entry__body h4 {
-    position: relative;
-    text-wrap: balance;
-  }
-
-  .resource-entry .content-entry__body h1 {
-    margin-top: 0;
-    padding-bottom: 0.8rem;
-    border-bottom: 1px solid var(--color-border-strong);
-    font-size: clamp(1.7rem, 3.2vw, 2.45rem);
-  }
-
-  .resource-entry .content-entry__body h2 {
-    margin-top: clamp(2.75rem, 6vw, 4.25rem);
-    padding: 0.35rem 0 0.55rem 0.9rem;
-    border: 0;
-    border-left: 2px solid var(--color-accent);
-    font-size: clamp(1.45rem, 2.5vw, 2rem);
-    line-height: 1.25;
-  }
-
-  .resource-entry .content-entry__body h3 {
-    margin-top: clamp(2rem, 4vw, 3rem);
-    color: var(--color-accent);
-    font-size: clamp(1.15rem, 2vw, 1.45rem);
-    line-height: 1.35;
-  }
-
-  .resource-entry .content-entry__body h4 {
-    margin-top: 1.8rem;
-    color: var(--color-ink-secondary);
-    font-size: 1.08rem;
-  }
-
-  .resource-entry .content-entry__body p {
-    max-width: 76ch;
-    text-align: left;
-  }
-
-  .resource-entry .content-entry__body > p:first-of-type {
-    font-size: 1.04em;
-  }
-
-  .resource-entry .content-entry__body ul,
-  .resource-entry .content-entry__body ol {
-    max-width: 76ch;
-    padding-left: 1.45rem;
-  }
-
-  .resource-entry .content-entry__body li::marker {
-    color: var(--color-annotation);
-  }
-
-  .resource-entry .content-entry__body blockquote {
-    max-width: 76ch;
-    margin-block: 1.75rem;
-    padding: 0.9rem 1.2rem;
-    border: 0;
-    border-left: 3px solid var(--color-accent);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    background: var(--color-surface);
-  }
-
-  .resource-entry .content-entry__body .code-block-wrapper,
-  .resource-entry .content-entry__body pre {
-    border-radius: var(--radius-sm);
-  }
-
-  .resource-entry .content-entry__body pre {
-    border: 1px solid color-mix(in srgb, var(--color-accent) 22%, var(--color-border));
-    background: color-mix(in srgb, var(--color-ink) 93%, var(--color-accent));
-    color: var(--color-canvas-raised);
-  }
-
-  .resource-entry .content-entry__body table {
-    display: block;
-    max-width: 100%;
-    overflow-x: auto;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: color-mix(in srgb, var(--color-canvas-raised) 82%, var(--color-accent-soft));
-  }
-
-  .resource-entry .content-entry__body th {
-    background: var(--color-accent-soft);
-    color: var(--color-ink);
-    font-family: var(--font-display);
-    font-weight: 600;
-  }
-
-  .resource-entry .content-entry__body td,
-  .resource-entry .content-entry__body th {
-    min-width: 7rem;
-    border-color: var(--color-border);
-  }
-
-  .resource-entry .content-entry__body tr:nth-child(even) {
-    background: color-mix(in srgb, var(--color-surface-subtle) 45%, transparent);
-  }
-
-  .resource-entry .content-entry__body hr {
-    margin-block: clamp(2rem, 4vw, 3rem);
-    border-top: 1px solid var(--color-border);
-    background: transparent;
-  }
-
-  .resource-entry .content-entry__body figure {
-    margin: 2rem 0;
-    padding: 0.7rem;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-subtle);
-  }
-
-  .resource-entry .content-entry__body img {
-    margin: 0 auto;
-    border-radius: calc(var(--radius-sm) - 0.1rem);
-  }
-
-  .resource-entry .content-entry__body figcaption {
-    padding: 0.6rem 0.35rem 0.1rem;
-    color: var(--color-ink-tertiary);
-    font-size: var(--text-small);
-    text-align: center;
-  }
-
-  .resource-entry .content-entry__body .note,
-  .resource-entry .content-entry__body .tip,
-  .resource-entry .content-entry__body .important,
-  .resource-entry .content-entry__body .warning,
-  .resource-entry .content-entry__body .caution {
-    margin-block: 1.75rem;
-    border: 1px solid var(--color-border);
-    border-left: 3px solid var(--color-accent);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    background: color-mix(in srgb, var(--color-accent-soft) 70%, var(--color-canvas-raised));
-  }
-
-  .resource-entry .content-entry__body .admonition-title {
-    font-family: var(--font-display);
-    font-size: 1rem;
-  }
-
-  .resource-entry .content-entry__body section[data-footnotes] {
-    margin-top: 3.5rem;
-    padding-top: 1.25rem;
-    border-top: 1px dashed var(--color-border-strong);
-  }
-
-  @media (max-width: 640px) {
-    .resource-entry {
-      width: min(100% - 1.5rem, 1040px);
-    }
-
-    .resource-entry .content-entry__body {
-      padding-right: 1.15rem;
-      padding-left: 2.25rem;
-    }
-
-    .resource-entry .content-entry__body::before {
-      left: 0.95rem;
-    }
-
-    .resource-entry .content-entry__body::after {
-      left: calc(0.95rem - 3px);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .resource-entry .content-entry__body * {
-      transition: none !important;
-    }
-  }
+  .content-entry__tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; }
+  .content-entry__tags a, .content-entry__tags span { padding: .2rem .55rem; border-radius: 999px; background: var(--color-accent-soft); color: var(--color-accent); font-size: .75rem; text-decoration: none; }
+  .content-entry__tags a:hover { text-decoration: underline; }
+  .content-entry__aside { margin-top: 1.5rem; }
+  .content-entry__body { margin-top: 2rem; }
+  .content-entry__after { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border); }
+  @media (max-width: 720px) { :global(.entry-panel) { width: calc(100% - 1.25rem); }.content-entry__tags { justify-content: flex-start; } }
 </style>
