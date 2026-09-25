@@ -100,7 +100,7 @@ const years = [...new Set(articles.map((item) => String(item.data.pubDate.getFul
     form.addEventListener("input", apply);
     form.addEventListener("change", apply);
     form.addEventListener("reset", () => requestAnimationFrame(apply));
-    window.addEventListener("popstate", () => { fromUrl(); apply(); });
+    window.addEventListener("popstate", () => { if (!form.isConnected) return; fromUrl(); apply(); });
   }
 
   document.addEventListener("astro:page-load", setupArticleFilter);

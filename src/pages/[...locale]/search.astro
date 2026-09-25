@@ -37,6 +37,7 @@ const scriptUrl = baseUrl("/pagefind/pagefind.js");
     const results = document.getElementById("site-search-results");
     if (!form || !input || !status || !results || form.dataset.bound === "true") return;
     form.dataset.bound = "true";
+    let activeRequest = 0;
 
     const renderResults = (items) => {
       results.replaceChildren();
@@ -58,11 +59,13 @@ const scriptUrl = baseUrl("/pagefind/pagefind.js");
 
     const run = async () => {
       const query = input.value.trim();
+      const requestId = ++activeRequest;
       const url = new URL(location.href);
       query ? url.searchParams.set("q", query) : url.searchParams.delete("q");
       history.replaceState({}, "", url);
-      if (!query) { results.replaceChildren(); status.textContent = "输入关键词开始搜索"; return; }
+      if (!query) { results.replaceChildren(); status.textContent = "输入关键词开始搜索"; form.setAttribute("aria-busy", "false"); return; }
       status.textContent = "正在搜索…";
+      form.setAttribute("aria-busy", "true");
       try {
         if (!window.pagefind) {
           const pagefind = await import(scriptUrl);
@@ -71,30 +74,39 @@ const scriptUrl = baseUrl("/pagefind/pagefind.js");
         }
         const response = await window.pagefind.search(query);
         const items = await Promise.all(response.results.map((result) => result.data()));
+        if (requestId !== activeRequest) return;
         renderResults(items);
         status.textContent = items.length ? `找到 ${items.length} 条结果` : "没有找到结果，可以尝试更短的关键词";
       } catch (error) {
+        if (requestId !== activeRequest) return;
         console.error("独立搜索加载失败:", error);
         status.textContent = "搜索索引暂时不可用，请使用生产构建预览后重试";
+      } finally {
+        if (requestId === activeRequest) form.setAttribute("aria-busy", "false");
       }
     };
 
     form.addEventListener("submit", (event) => { event.preventDefault(); run(); });
     const initial = new URLSearchParams(location.search).get("q");
     if (initial) { input.value = initial; run(); }
+    window.addEventListener("popstate", () => {
+      if (!form.isConnected) return;
+      input.value = new URLSearchParams(location.search).get("q") || "";
+      run();
+    });
   }
   document.addEventListener("astro:page-load", setupSearchPage);
 </script>
 
 <style>
   .search-page { padding-bottom: var(--section-space); }
-  form { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: var(--color-surface-solid); box-shadow: var(--shadow-sm); }
+  form { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-solid); }
   input { min-width: 0; border: 0; outline: 0; background: transparent; color: var(--color-ink); font-size: 1.05rem; }
-  button { min-height: 2.75rem; padding-inline: var(--space-5); border: 0; border-radius: var(--radius-pill); background: var(--color-accent); color: #fff; font-weight: 650; cursor: pointer; }
+  button { min-height: 2.75rem; padding-inline: var(--space-5); border: 0; border-radius: var(--radius-sm); background: var(--color-accent); color: #fff; font-weight: 650; cursor: pointer; }
   .search-page__status { margin: var(--space-5) 0; color: var(--color-ink-tertiary); }
   .search-page__results { display: grid; gap: var(--space-3); }
-  .search-page__results :global(a) { display: grid; gap: var(--space-2); padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-solid); color: var(--color-ink); text-decoration: none; }
-  .search-page__results :global(a:hover) { border-color: var(--color-border-strong); }
+  .search-page__results :global(a) { display: grid; gap: var(--space-2); padding: var(--space-5) 0; border-bottom: 1px solid var(--color-border); color: var(--color-ink); text-decoration: none; }
+  .search-page__results :global(a:hover) :global(span) { color: var(--color-accent); }
   .search-page__results :global(span) { font-size: 1.12rem; font-weight: 700; }
   .search-page__results :global(small) { color: var(--color-accent); font-size: var(--text-small); font-weight: 650; }
   .search-page__results :global(p) { margin: 0; color: var(--color-ink-secondary); }

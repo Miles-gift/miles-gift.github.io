@@ -99,7 +99,7 @@ const topics = [...new Set(resources.map((item) => item.data.topic))].sort();
     form.addEventListener("input", apply);
     form.addEventListener("change", apply);
     form.addEventListener("reset", () => requestAnimationFrame(apply));
-    window.addEventListener("popstate", () => { fromUrl(); apply(); });
+    window.addEventListener("popstate", () => { if (!form.isConnected) return; fromUrl(); apply(); });
   }
 
   document.addEventListener("astro:page-load", setupResourceFilter);

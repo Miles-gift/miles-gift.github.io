@@ -32,7 +32,7 @@ const tocHeadings = headings.filter(h => h.depth > 1 && h.depth < 5);
   class="fixed bottom-[5vh] lg:bottom-[13.5vh] right-[7vw] lg:left-[var(--toc-offset-left)] w-10 h-10 z-[1000] transition-opacity duration-300 opacity-0 pointer-events-none"
   data-scroll-distance={scrollToTopDistance}
 >
-  <div id="menuItems" class="absolute bottom-full left-0 mb-3 flex flex-col items-center gap-3 transition-all duration-300 ease-out translate-y-10 opacity-0 pointer-events-none [.is-active_&]:translate-y-0 [.is-active_&]:opacity-100 [.is-active_&]:pointer-events-auto">
+  <div id="menuItems" aria-hidden="true" class="absolute bottom-full left-0 mb-3 flex flex-col items-center gap-3 transition-all duration-300 ease-out translate-y-10 opacity-0 pointer-events-none [.is-active_&]:translate-y-0 [.is-active_&]:opacity-100 [.is-active_&]:pointer-events-auto">
     
     {showBackTop && (
       <button id="backTop" title={t("button.backToTop")} class="relative w-10 h-10 rounded-full border border-[var(--text-color)]/20 cursor-pointer flex items-center justify-center transition-transform duration-200 active:scale-90 shadow-none backdrop-blur bg-[var(--bg-color)]/20 hover:bg-[var(--button-hover-color)]">
@@ -52,7 +52,7 @@ const tocHeadings = headings.filter(h => h.depth > 1 && h.depth < 5);
     )}
 
     {tocHeadings.length > 0 && (
-      <button id="tocTrigger" title={t("button.toc") || "目录"} class="lg:hidden w-10 h-10 rounded-full border border-[var(--text-color)]/20 cursor-pointer flex items-center justify-center transition-transform duration-200 active:scale-90 shadow-none backdrop-blur bg-[var(--bg-color)]/20 hover:bg-[var(--button-hover-color)]">
+      <button id="tocTrigger" title={t("button.toc") || "目录"} aria-label={t("button.toc") || "目录"} aria-controls="tocPanel" aria-expanded="false" class="lg:hidden w-10 h-10 rounded-full border border-[var(--text-color)]/20 cursor-pointer flex items-center justify-center transition-transform duration-200 active:scale-90 shadow-none backdrop-blur bg-[var(--bg-color)]/20 hover:bg-[var(--button-hover-color)]">
         <Icon name="fa6-solid:list-ul" class="text-lg text-[var(--text-color)]" />
       </button>
     )}
@@ -70,7 +70,7 @@ const tocHeadings = headings.filter(h => h.depth > 1 && h.depth < 5);
     )}
   </div>
 
-  <button id="menuTrigger" title={t("button.meun")} class="w-full h-full rounded-full border border-[var(--text-color)]/20 cursor-pointer flex items-center justify-center transition-all duration-300 shadow-none backdrop-blur bg-[var(--bg-color)]/20 active:scale-95 hover:bg-[var(--button-hover-color)]">
+  <button id="menuTrigger" title={t("button.meun")} aria-label={t("button.meun")} aria-controls="menuItems" aria-expanded="false" class="w-full h-full rounded-full border border-[var(--text-color)]/20 cursor-pointer flex items-center justify-center transition-all duration-300 shadow-none backdrop-blur bg-[var(--bg-color)]/20 active:scale-95 hover:bg-[var(--button-hover-color)]">
     <Icon name="fa6-solid:ellipsis" class="absolute text-lg text-[var(--text-color)] transition-all duration-300 opacity-100 rotate-0 [.is-active_&]:opacity-0 [.is-active_&]:rotate-90" />
     <Icon name="fa6-solid:xmark" class="absolute text-lg text-[var(--text-color)] transition-all duration-300 opacity-0 -rotate-90 [.is-active_&]:opacity-100 [.is-active_&]:rotate-0" />
   </button>
@@ -78,6 +78,7 @@ const tocHeadings = headings.filter(h => h.depth > 1 && h.depth < 5);
   {tocHeadings.length > 0 && (
     <div 
       id="tocPanel" 
+      aria-hidden="true"
       class="lg:hidden absolute bottom-25 right-0 lg:bottom-0 lg:left-14 w-60 lg:w-72 max-h-[60vh] flex flex-col bg-[var(--bg-color)]/95 backdrop-blur-lg border border-[var(--text-color)]/20 rounded-2xl shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] origin-bottom-right lg:origin-bottom-left scale-50 opacity-0 pointer-events-none translate-y-4 lg:translate-y-0 lg:-translate-x-4 [.toc-active_&]:scale-100 [.toc-active_&]:opacity-100 [.toc-active_&]:pointer-events-auto [.toc-active_&]:translate-y-0 [.toc-active_&]:translate-x-0 z-[1001]"
     >
       <div class="px-4 py-3 border-b border-[var(--text-color)]/10 font-bold text-sm text-[var(--text-color)] flex justify-between items-center bg-[var(--button-hover-color)] rounded-t-2xl">
@@ -107,6 +108,7 @@ const tocHeadings = headings.filter(h => h.depth > 1 && h.depth < 5);
 
 <script is:inline>
 function initFabMenu() {
+  window.__yoyoFabCleanup?.();
   const container = document.getElementById('fabMenu');
   const trigger = document.getElementById('menuTrigger');
   const backTop = document.getElementById('backTop');
@@ -118,10 +120,19 @@ function initFabMenu() {
   const tocLinks = document.querySelectorAll('.toc-link');
   
   if (!container || !trigger) return;
+  let tocObserver;
 
   const threshold = parseInt(container.dataset.scrollDistance) || 100;
   let isTocOpen = false;
   let scrollPosOnTocOpen = 0;
+  const closeMenus = () => {
+    container.classList.remove('is-active', 'toc-active');
+    trigger.setAttribute('aria-expanded', 'false');
+    document.getElementById('menuItems')?.setAttribute('aria-hidden', 'true');
+    tocTrigger?.setAttribute('aria-expanded', 'false');
+    document.getElementById('tocPanel')?.setAttribute('aria-hidden', 'true');
+    isTocOpen = false;
+  };
 
   const handleScroll = () => {
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
@@ -133,14 +144,16 @@ function initFabMenu() {
       container.classList.add('opacity-100', 'pointer-events-auto');
     } else {
       container.classList.add('opacity-0', 'pointer-events-none');
-      container.classList.remove('opacity-100', 'pointer-events-auto', 'is-active', 'toc-active');
-      isTocOpen = false; // 回到顶部时同时关闭目录状态
+      container.classList.remove('opacity-100', 'pointer-events-auto');
+      closeMenus();
     }
 
     // 滑动页面时平滑关闭目录 (设置 50px 的缓冲阈值，防止误触)
     if (isTocOpen && Math.abs(scrollTop - scrollPosOnTocOpen) > 50) {
       isTocOpen = false;
       container.classList.remove('toc-active');
+      tocTrigger?.setAttribute('aria-expanded', 'false');
+      document.getElementById('tocPanel')?.setAttribute('aria-hidden', 'true');
     }
 
     // 更新进度条
@@ -155,11 +168,12 @@ function initFabMenu() {
   // 主按钮切换
   trigger.onclick = (e) => {
     e.stopPropagation();
-    container.classList.toggle('is-active');
+    const expanded = container.classList.toggle('is-active');
+    trigger.setAttribute('aria-expanded', String(expanded));
+    document.getElementById('menuItems')?.setAttribute('aria-hidden', String(!expanded));
     // 如果关闭了主菜单，也一并关闭目录
     if (!container.classList.contains('is-active')) {
-      isTocOpen = false;
-      container.classList.remove('toc-active');
+      closeMenus();
     }
   };
 
@@ -169,6 +183,8 @@ function initFabMenu() {
       e.stopPropagation();
       isTocOpen = !isTocOpen;
       container.classList.toggle('toc-active', isTocOpen);
+      tocTrigger.setAttribute('aria-expanded', String(isTocOpen));
+      document.getElementById('tocPanel')?.setAttribute('aria-hidden', String(!isTocOpen));
       // 记录打开目录时的滚动位置
       if (isTocOpen) {
         scrollPosOnTocOpen = window.scrollY || document.documentElement.scrollTop;
@@ -182,6 +198,8 @@ function initFabMenu() {
       e.stopPropagation();
       isTocOpen = false;
       container.classList.remove('toc-active');
+      tocTrigger?.setAttribute('aria-expanded', 'false');
+      document.getElementById('tocPanel')?.setAttribute('aria-hidden', 'true');
     };
   }
 
@@ -210,8 +228,7 @@ tocLinks.forEach(link => {
         });
         
         // 缩起目录面板
-        isTocOpen = false;
-        container.classList.remove('toc-active');
+        closeMenus();
       }
     };
   });
@@ -229,7 +246,7 @@ tocLinks.forEach(link => {
       threshold: 0
     };
 
-    const tocObserver = new IntersectionObserver((entries) => {
+    tocObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           // 清除所有高亮
@@ -253,8 +270,7 @@ tocLinks.forEach(link => {
   if (backTop) {
     backTop.onclick = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      container.classList.remove('is-active', 'toc-active');
-      isTocOpen = false;
+      closeMenus();
     };
   }
 
@@ -262,8 +278,7 @@ tocLinks.forEach(link => {
   if (backBottom) {
     backBottom.onclick = () => {
       window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
-      container.classList.remove('is-active', 'toc-active');
-      isTocOpen = false;
+      closeMenus();
     };
   }
 
@@ -271,28 +286,44 @@ tocLinks.forEach(link => {
   if (backComment) {
     backComment.onclick = () => {
       const comments = document.getElementById('comments');
-      comments.scrollIntoView({ behavior: 'smooth' });
-      container.classList.remove('is-active', 'toc-active');
-      isTocOpen = false;
+      comments?.scrollIntoView({ behavior: 'smooth' });
+      closeMenus();
     };
   }
 
   // 点击外部关闭所有展开项
-  document.addEventListener('click', (e) => {
+  const closeOnOutsideClick = (e) => {
     if (!container.contains(e.target)) {
-      container.classList.remove('is-active', 'toc-active');
-      isTocOpen = false;
+      closeMenus();
     }
-  });
+  };
+  const closeOnEscape = (e) => {
+    if (e.key !== 'Escape' || !container.classList.contains('is-active')) return;
+    closeMenus();
+    trigger.focus();
+  };
+  document.addEventListener('click', closeOnOutsideClick);
+  document.addEventListener('keydown', closeOnEscape);
 
   window.addEventListener('scroll', handleScroll, { passive: true });
+  window.__yoyoFabCleanup = () => {
+    window.removeEventListener('scroll', handleScroll);
+    document.removeEventListener('click', closeOnOutsideClick);
+    document.removeEventListener('keydown', closeOnEscape);
+    tocObserver?.disconnect();
+  };
   handleScroll();
 }
 
-document.addEventListener('astro:page-load', initFabMenu);
+if (document.documentElement.dataset.fabMenuInitBound !== 'true') {
+  document.documentElement.dataset.fabMenuInitBound = 'true';
+  document.addEventListener('astro:page-load', initFabMenu);
+}
 </script>
 
 <style is:global>
+  #menuItems, #tocPanel { visibility: hidden; }
+  #fabMenu.is-active #menuItems, #fabMenu.toc-active #tocPanel { visibility: visible; }
   #progress-circle {
     stroke: var(--text-color);
     transition: stroke-dasharray 0.1s linear;

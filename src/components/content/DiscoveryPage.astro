@@ -21,17 +21,71 @@ interface Props {
 }
 
 const { eyebrow, title, description, lang, items } = Astro.props;
+const kinds = [...new Set(items.map((item) => item.eyebrow))].sort();
 ---
 
 <CollectionIndexLayout title={title} eyebrow={eyebrow} description={description} pageTitle={`${title} - ${siteConfig.title}`} lang={lang}>
-  <p class="discovery-count">共 {items.length} 条公开内容</p>
-  <div class="discovery-grid">
-    {items.map((item) => <ContentListCard {...item} />)}
+  <form class="discovery-filter" role="search" id="discovery-filter">
+    <label><span>关键词</span><input id="discovery-query" type="search" name="q" placeholder="搜索标题、描述或标签" /></label>
+    <label><span>内容类型</span><select id="discovery-kind" name="kind"><option value="">全部类型</option>{kinds.map((kind) => <option value={kind}>{kind}</option>)}</select></label>
+    <button type="reset">重置</button>
+  </form>
+  <p id="discovery-count" class="discovery-count" aria-live="polite">共 {items.length} 条公开内容</p>
+  <div class="discovery-grid" id="discovery-results">
+    {items.map((item) => <article data-discovery-item data-kind={item.eyebrow} data-search={`${item.title} ${item.description} ${item.tags.join(" ")}`.toLowerCase()}><ContentListCard {...item} /></article>)}
   </div>
+  <p id="discovery-empty" class="discovery-empty" hidden>没有符合条件的内容。调整关键词或重置筛选后再试。</p>
 </CollectionIndexLayout>
 
+<script>
+  function setupDiscoveryFilter() {
+    const form = document.getElementById("discovery-filter") as HTMLFormElement | null;
+    if (!form || form.dataset.bound === "true") return;
+    form.dataset.bound = "true";
+    const query = document.getElementById("discovery-query") as HTMLInputElement;
+    const kind = document.getElementById("discovery-kind") as HTMLSelectElement;
+    const count = document.getElementById("discovery-count");
+    const empty = document.getElementById("discovery-empty");
+    const cards = [...document.querySelectorAll<HTMLElement>("[data-discovery-item]")];
+    const fromUrl = () => {
+      const params = new URLSearchParams(location.search);
+      query.value = params.get("q") || "";
+      kind.value = params.get("kind") || "";
+    };
+    const apply = () => {
+      const needle = query.value.trim().toLowerCase();
+      let visible = 0;
+      cards.forEach((card) => {
+        const show = (!needle || card.dataset.search?.includes(needle)) && (!kind.value || card.dataset.kind === kind.value);
+        card.hidden = !show;
+        if (show) visible += 1;
+      });
+      if (count) count.textContent = `共 ${visible} 条公开内容`;
+      if (empty) empty.hidden = visible > 0;
+      const params = new URLSearchParams();
+      if (query.value.trim()) params.set("q", query.value.trim());
+      if (kind.value) params.set("kind", kind.value);
+      history.replaceState({}, "", `${location.pathname}${params.size ? `?${params}` : ""}`);
+    };
+    fromUrl();
+    apply();
+    form.addEventListener("input", apply);
+    form.addEventListener("change", apply);
+    form.addEventListener("reset", () => requestAnimationFrame(apply));
+    window.addEventListener("popstate", () => { if (form.isConnected) { fromUrl(); apply(); } });
+  }
+  document.addEventListener("astro:page-load", setupDiscoveryFilter);
+</script>
+
 <style>
-  .discovery-count { margin: 0 0 var(--space-5); color: var(--color-ink-tertiary); font-size: var(--text-small); }
-  .discovery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
-  @media (max-width: 700px) { .discovery-grid { grid-template-columns: 1fr; } }
+  .discovery-filter { display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(10rem, .4fr) auto; align-items: end; gap: var(--space-3); margin-bottom: var(--space-4); padding-block: var(--space-4); border-block: 1px solid var(--color-border); }
+  .discovery-filter label { display: grid; gap: var(--space-2); color: var(--color-ink-secondary); font-size: var(--text-small); }
+  .discovery-filter input, .discovery-filter select { min-height: 2.75rem; padding-inline: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface-solid); color: var(--color-ink); }
+  .discovery-filter button { min-height: 2.75rem; padding-inline: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: transparent; color: var(--color-ink); cursor: pointer; }
+  .discovery-count { margin: 0 0 var(--space-4); color: var(--color-ink-tertiary); font-size: var(--text-small); }
+  .discovery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+  .discovery-grid article[hidden] { display: none; }
+  .discovery-grid > article :global(.content-list-card) { height: 100%; }
+  .discovery-empty { padding: var(--space-6); border-block: 1px solid var(--color-border); color: var(--color-ink-secondary); text-align: center; }
+  @media (max-width: 700px) { .discovery-grid { grid-template-columns: 1fr; } .discovery-filter { grid-template-columns: 1fr; } }
 </style>

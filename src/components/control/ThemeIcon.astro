@@ -97,18 +97,21 @@ if (typeof window !== 'undefined') {
 
     // 系统主题变化监听器
     const handleSystemThemeChange = (e) => {
-      if (htmlRoot.classList.contains('system-theme')) {
+      const root = document.documentElement;
+      if (root.classList.contains('system-theme')) {
         if (e.matches) {
-          htmlRoot.setAttribute('data-theme', 'dark');
+          root.setAttribute('data-theme', 'dark');
         } else {
-          htmlRoot.removeAttribute('data-theme');
+          root.removeAttribute('data-theme');
         }
       }
     };
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    mediaQuery.removeEventListener?.('change', handleSystemThemeChange);
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
+    if (htmlRoot.dataset.systemThemeListenerBound !== 'true') {
+      htmlRoot.dataset.systemThemeListenerBound = 'true';
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+    }
 
     const handleToggleClick = () => {
       const currentTheme = localStorage.getItem('theme') || 'system';

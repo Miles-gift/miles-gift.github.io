@@ -4,7 +4,7 @@ import { Icon } from "astro-icon/components";
 import { siteConfig } from "@/config";
 import ThemeIcon from "./control/ThemeIcon.astro";
 import IconButton from "./ui/IconButton.astro";
-import { baseUrl, getRelativeLocaleUrl } from "@utils/url-utils";
+import { getRelativeLocaleUrl } from "@utils/url-utils";
 import { i18n } from "astro:config/client";
 
 const currentLang = Astro.currentLocale || i18n!.defaultLocale;
@@ -36,7 +36,7 @@ const isActive = (path: string) => path === indexPage ? currentPath === path : c
     </nav>
 
     <div class="site-header__tools">
-      <IconButton id="search-button" label="搜索"><Icon name="fa6-solid:magnifying-glass" class="w-4 h-4" /></IconButton>
+      <IconButton id="search-button" label="搜索" title="搜索（⌘K / Ctrl+K）" controls="search-modal" expanded={false}><Icon name="fa6-solid:magnifying-glass" class="w-4 h-4" /></IconButton>
       <ThemeIcon class="ui-icon-button" />
       <IconButton id="mobile-menu-button" label="打开菜单" controls="mobile-menu-container" expanded={false} class="mobile-menu-trigger">
         <Icon name="fa6-solid:bars" class="w-5 h-5" />
@@ -167,33 +167,5 @@ const isActive = (path: string) => path === indexPage ? currentPath === path : c
     }
   }
 
-  document.addEventListener("astro:page-load", initSiteHeader);
+document.addEventListener("astro:page-load", initSiteHeader);
 </script>
-
-{import.meta.env.PROD && (
-  <script is:inline define:vars={{ scriptUrl: baseUrl("/pagefind/pagefind.js") }}>
-    async function loadAndSearch() {
-      if (window.pagefind && typeof window.pagefind.search === "function") return;
-      if (window.pagefindLoading) return;
-      window.pagefindLoading = true;
-      try {
-        const pagefind = await import(scriptUrl);
-        await pagefind.options({ excerptLength: 20 });
-        window.pagefind = pagefind;
-        document.dispatchEvent(new CustomEvent("pagefind-ready"));
-      } catch (error) {
-        console.error("Pagefind 加载失败:", error);
-      } finally {
-        window.pagefindLoading = false;
-      }
-    }
-    function attachSearchListener() {
-      const button = document.getElementById("search-button");
-      if (button && button.dataset.searchBound !== "true") {
-        button.dataset.searchBound = "true";
-        button.addEventListener("click", loadAndSearch, { once: true });
-      }
-    }
-    document.addEventListener("astro:page-load", attachSearchListener);
-  </script>
-)}
