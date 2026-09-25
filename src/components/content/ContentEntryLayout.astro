@@ -50,17 +50,26 @@ const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLab
 </MainPageLayout>
 
 <style>
-  .content-entry { padding-top: clamp(5rem, 10vw, 8rem); }
-  .content-entry__header { padding-bottom: clamp(2.5rem, 6vw, 4.5rem); border-bottom: 1px solid var(--color-border); }
+  .content-entry { padding-top: clamp(3.5rem, 8vw, 6rem); padding-bottom: var(--space-9); }
+  .content-entry__header { padding-bottom: clamp(2rem, 5vw, 3.5rem); border-bottom: 1px solid var(--color-border); }
   .content-entry__back { display: inline-flex; margin-bottom: var(--space-6); color: var(--color-ink-tertiary); font-size: var(--text-small); text-decoration: none; }
   .content-entry__back:hover { color: var(--color-accent); }
   .content-entry__eyebrow { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-small); font-weight: 700; letter-spacing: 0.02em; }
-  h1 { max-width: 17ch; margin: 0; font-family: var(--font-display); font-size: var(--text-display-md); line-height: var(--leading-heading); letter-spacing: var(--tracking-tight); }
+  h1 { max-width: 17ch; margin: 0; font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 650; line-height: 1.12; letter-spacing: -.055em; }
   .content-entry__description { max-width: 42rem; margin: var(--space-5) 0 0; color: var(--color-ink-secondary); font-size: clamp(1rem, 1.5vw, 1.2rem); }
   .content-entry__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-5); color: var(--color-ink-tertiary); font-size: var(--text-small); }
   .content-entry__aside { margin-top: var(--space-5); }
-  .content-entry__body { margin-top: clamp(2.5rem, 6vw, 4.5rem); }
+  .content-entry__body { margin-top: clamp(2rem, 5vw, 3.75rem); }
   .content-entry__after { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border); }
+  .resource-entry .content-entry__body { border-radius: var(--radius-md); background: var(--color-surface-solid); box-shadow: none; }
+  .resource-entry .content-entry__body::before { background: var(--color-border); }
+  .resource-entry .content-entry__body::after { background: var(--color-accent); box-shadow: 0 0 0 4px var(--color-accent-soft); }
+  .resource-entry .content-entry__body h2 { border-left-color: var(--color-accent); }
+  .resource-entry .content-entry__body h3 { color: var(--color-ink); }
+  .resource-entry .content-entry__body h4 { color: var(--color-ink-secondary); }
+  .resource-entry .content-entry__body blockquote { background: var(--color-surface); }
+  .resource-entry .content-entry__body li::marker { color: var(--color-accent); }
+  .resource-entry .content-entry__body hr { border-top-style: solid; border-top-color: var(--color-border); }
 </style>
 
 <style is:global>
@@ -97,10 +106,8 @@ const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLab
     padding: var(--resource-sheet-padding) clamp(var(--resource-sheet-padding), 5vw, 4rem) clamp(2.5rem, 5vw, 4.5rem) calc(var(--resource-sheet-padding) + clamp(0.85rem, 2vw, 1.35rem));
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    background:
-      linear-gradient(90deg, color-mix(in srgb, var(--color-annotation) 5%, transparent), transparent 5.5rem),
-      var(--color-canvas-raised);
-    box-shadow: var(--shadow-sm);
+    background: var(--color-surface-solid);
+    box-shadow: none;
   }
 
   .resource-entry .content-entry__body::before {
@@ -109,7 +116,7 @@ const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLab
     bottom: 0;
     left: clamp(0.75rem, 1.8vw, 1.35rem);
     width: 1px;
-    background: color-mix(in srgb, var(--color-annotation) 34%, transparent);
+    background: var(--color-border);
     content: "";
   }
 
@@ -120,8 +127,8 @@ const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLab
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--color-annotation);
-    box-shadow: 0 0 0 4px var(--color-annotation-soft);
+    background: var(--color-accent);
+    box-shadow: 0 0 0 4px var(--color-accent-soft);
     content: "";
   }
 
@@ -148,7 +155,7 @@ const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLab
     margin-top: clamp(2.75rem, 6vw, 4.25rem);
     padding: 0.35rem 0 0.55rem 0.9rem;
     border: 0;
-    border-left: 2px solid var(--color-annotation);
+    border-left: 2px solid var(--color-accent);
     font-size: clamp(1.45rem, 2.5vw, 2rem);
     line-height: 1.25;
   }
@@ -162,7 +169,7 @@ const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLab
 
   .resource-entry .content-entry__body h4 {
     margin-top: 1.8rem;
-    color: var(--color-growth);
+    color: var(--color-ink-secondary);
     font-size: 1.08rem;
   }
 
@@ -190,9 +197,9 @@ const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLab
     margin-block: 1.75rem;
     padding: 0.9rem 1.2rem;
     border: 0;
-    border-left: 3px solid var(--color-growth);
+    border-left: 3px solid var(--color-accent);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    background: var(--color-growth-soft);
+    background: var(--color-surface);
   }
 
   .resource-entry .content-entry__body .code-block-wrapper,
@@ -234,7 +241,7 @@ const { pageTitle, title, description, eyebrow, lang = "zh-cn", pubDate, dateLab
 
   .resource-entry .content-entry__body hr {
     margin-block: clamp(2rem, 4vw, 3rem);
-    border-top: 1px dashed var(--color-annotation);
+    border-top: 1px solid var(--color-border);
     background: transparent;
   }
 

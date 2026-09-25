@@ -36,14 +36,14 @@ const { Content } = await render(entry);
 
 <style>
   .resource-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; margin-bottom: var(--space-5); }
-  .resource-facts div { display: grid; min-height: 4.25rem; gap: .35rem; padding: .75rem .85rem; border: 1px solid var(--color-border); border-radius: .35rem .7rem .35rem .55rem; background: color-mix(in srgb, var(--color-surface-subtle) 62%, transparent); }
-  .resource-facts span { color: var(--color-ink-tertiary); font-family: var(--font-editorial); font-size: .72rem; letter-spacing: .04em; }
-  .resource-facts strong { align-self: end; font-family: var(--font-reading); font-size: var(--text-small); font-weight: 600; }
-  .takeaways { position: relative; margin-bottom: var(--space-7); padding: 1.2rem 1.35rem 1.25rem; border: 1px solid color-mix(in srgb, var(--color-accent) 24%, var(--color-border)); border-left: 3px solid var(--color-accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: var(--color-accent-soft); }
-  .takeaways::before { position: absolute; top: -.45rem; right: 1rem; width: 3.2rem; height: .9rem; border: 1px solid color-mix(in srgb, var(--color-annotation) 45%, transparent); background: var(--color-annotation-soft); content: ""; transform: rotate(2deg); }
-  .takeaways h2 { margin: 0 0 .7rem; color: var(--color-accent); font-family: var(--font-display); font-size: 1.25rem; }
+  .resource-facts div { display: grid; min-height: 4.25rem; gap: .35rem; padding: .75rem .85rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface-solid); }
+  .resource-facts span { color: var(--color-ink-tertiary); font-size: .72rem; letter-spacing: .04em; }
+  .resource-facts strong { align-self: end; font-size: var(--text-small); font-weight: 600; }
+  .takeaways { position: relative; margin-bottom: var(--space-7); padding: 1.2rem 1.35rem 1.25rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface); }
+  .takeaways::before { display: none; }
+  .takeaways h2 { margin: 0 0 .7rem; color: var(--color-ink); font-size: 1.25rem; }
   .takeaways ul { margin: 0; }
-  .original-note { display: flex; align-items: baseline; gap: .6rem; margin: 0 0 var(--space-6); padding: .8rem 0; border-block: 1px dashed var(--color-annotation); color: var(--color-annotation); font-family: var(--font-display); font-size: 1rem; }
-  .original-note::before { content: "NOTE"; flex: 0 0 auto; color: var(--color-annotation); font-family: var(--font-editorial); font-size: .72rem; letter-spacing: .08em; }
+  .original-note { display: flex; align-items: baseline; gap: .6rem; margin: 0 0 var(--space-6); padding: .8rem 0; border-block: 1px solid var(--color-border); color: var(--color-ink-secondary); font-size: var(--text-small); }
+  .original-note::before { content: "NOTE"; flex: 0 0 auto; color: var(--color-accent); font-size: .72rem; font-weight: 650; letter-spacing: .08em; }
   @media (max-width: 640px) { .resource-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } .original-note { display: block; } .original-note::before { display: block; margin-bottom: .25rem; } }
 </style>

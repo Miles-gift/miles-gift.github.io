@@ -11,16 +11,18 @@
 }
 
 .markdown-content {
-  line-height: 1.75;
+  max-width: 72ch;
+  color: var(--color-ink);
+  line-height: 1.85;
   font-family: var(--font-reading);
 }
 
 .markdown-content h1 {
   padding: 0.5rem 0;
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 650;
   margin: 2rem 0 1rem;
-  border-bottom: 1px solid var(--text-color);
+  border-bottom: 1px solid var(--color-border);
   font-family: var(--font-display);
   letter-spacing: -0.025em;
 }
@@ -28,9 +30,9 @@
 .markdown-content h2 {
   padding: 0.4rem 0;
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 650;
   margin: 1.8rem 0 1rem;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 0;
   font-family: var(--font-display);
   letter-spacing: -0.02em;
 }
@@ -63,11 +65,11 @@
 
 .markdown-content p {
   margin: 0.8rem 0;
-  text-align: justify;
+  text-align: left;
 }
 
 .markdown-content {
-  color: var(--text-color);
+  color: var(--color-ink);
 }
 
 .markdown-content p a,
@@ -75,11 +77,9 @@
 .markdown-content h2 a,
 .markdown-content h3 a,
 .markdown-content table a {
-  color: inherit;
-  /* transition: color 0.3s ease; */
-  text-decoration: none;
-  position: relative;
-  display: inline-block;
+  color: var(--color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
 }
     
 .markdown-content p a::before,
@@ -87,7 +87,7 @@
 .markdown-content h2 a::before,
 .markdown-content h3 a::before,
 .markdown-content table a::before {
-  content: "";
+  content: none;
   position: absolute;
   bottom: 2px;
   left: 0;
@@ -105,7 +105,7 @@
 .markdown-content h2 a:hover,
 .markdown-content h3 a:hover,
 .markdown-content table a:hover {
-  color: var(--link-color);
+  color: var(--color-accent);
 }
 
 .markdown-content a[href^="http"]::after {
@@ -167,9 +167,9 @@
   font-family: var(--font-display);
   margin: 1.5rem 0;
   padding: 0.1rem 1.2rem;
-  border-left: 3px solid var(--color-annotation);
+  border-left: 3px solid var(--color-accent);
   border-radius: 0;
-  background-color: var(--color-annotation-soft);
+  background-color: var(--color-surface);
   color: var(--color-ink-secondary);
 }
 
@@ -275,8 +275,10 @@
   margin: 2rem 0;
   border: none;
   height: 1px;
-  background: var(--text-color);
+  background: var(--color-border);
 }
+
+.markdown-content table { display: block; max-width: 100%; overflow-x: auto; }
 
 .note, .tip, .warning, .important, .caution {
   padding: 0.5rem 1rem;
