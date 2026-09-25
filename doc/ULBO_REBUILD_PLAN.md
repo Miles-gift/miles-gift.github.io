@@ -199,4 +199,4 @@ Ulbo 演示站的[首页](https://template.ulna520.top/)、[标签页](https://t
 | 4. 详情与阅读 | 已完成（设备截图复核待解锁） | 统一文章/资料/想法/旅程详情的标题与正文阅读样式；资料页元信息卡和原文提示改用中性色；Markdown 正文优化层级、链接、表格窄屏滚动；目录去除弹簧动效并强化当前章节提示；`pnpm quality` 通过。 |
 | 5. 搜索与交互 | 已完成（实机交互复核待设备解锁） | 搜索层接入 Pagefind 真索引，移除开发假结果，加入 `⌘K/Ctrl+K`、请求竞态保护、焦点陷阱/返回和加载/错误/空结果状态；标签/主题页加入类型与关键词筛选、计数、URL 参数及重置；归档筛选样式和客户端切页监听已整理；FAB 目录支持 Escape、ARIA 状态并清理滚动监听。`pnpm quality` 通过；Pagefind 索引 38 页 / 3,907 词，产物约 836 KB。保留 Pagefind：已有构建时静态索引、无需远程服务，与当前静态部署相符；尚无证据表明 Fuse.js 能改善中文搜索，因此不增加第二套搜索依赖。 |
 | 6. CMS 与发布 | 已完成 | 内容 Collection、Studio 字段和 `public`/`unlisted`/`draft` 生产筛选规则核对一致；文章 `canonical` 字段接入 head canonical；为 4 篇公开文章及 `/archive/` 增加静态旧址迁移页，构建脚本核验 `noindex`、canonical 与目标；补充重定向和素材许可文档及两款字体 OFL 许可证副本。`CI=true pnpm quality`、`CI=true pnpm --dir cms build` 和 CMS 四类内容 API/UI/图片 WebP 冒烟测试通过。 |
-| 7. 全面验收 | 待开始 | — |
+| 7. 全面验收 | 自动化验收完成；设备视觉检查待完成 | `CI=true pnpm quality`、CMS build/smoke 均通过；新增 `doc/ULBO_REBUILD_ACCEPTANCE.md` 记录页面/链接/索引/字体数据和限制。手机/平板/桌面截图、浅深色及完整键盘实机检查因桌面设备锁屏尚未完成。 |
