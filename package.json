@@ -29,6 +29,8 @@
     "@astrojs/svelte": "^9.0.1",
     "@chinese-fonts/lxgwwenkaibright": "2.0.0",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@fontsource-variable/outfit": "^5.3.0",
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "@fontsource/eb-garamond": "^5.2.7",
     "@iconify/svelte": "^5.2.1",
     "@myriaddreamin/typst-ts-node-compiler": "0.7.0-rc2",

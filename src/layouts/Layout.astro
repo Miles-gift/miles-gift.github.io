@@ -3,6 +3,8 @@ import { siteConfig, profileConfig } from '@/config';
 import "@styles/lxgw-bright.generated.css";
 import "@styles/global.css"
 import 'katex/dist/katex.min.css';
+import '@fontsource-variable/outfit';
+import '@fontsource-variable/plus-jakarta-sans';
 import '@fontsource/eb-garamond/400.css';
 import '@fontsource/eb-garamond/600.css';
 import '@fontsource/eb-garamond/600-italic.css';
@@ -87,8 +89,8 @@ const structuredDataJson = JSON.stringify(structuredData).replace(/</g, "\\u003c
     <meta name="description" content={pageDescription}>
     <meta name="author" content={profileConfig.name}>
     <meta name="robots" content={robots}>
-    <meta name="theme-color" content="#edf4ef" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#10212a" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f4f5f6" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f1117" media="(prefers-color-scheme: dark)">
     <link rel="canonical" href={canonicalUrl}>
     <link rel="icon" href={siteConfig.favicon} type="image/svg+xml">
     <meta property="og:site_name" content={siteConfig.title}>
@@ -125,66 +127,9 @@ const structuredDataJson = JSON.stringify(structuredData).replace(/</g, "\\u003c
 </head>
 <body class="h-full bg-[var(--bg-color)]">
 
-    <div id="loading-overlay" aria-hidden="true"><span></span></div>
-
     <slot />
-
-    <script is:inline>
-        let loaderTimeout;
-
-        // 1. 开始准备跳转
-        document.addEventListener('astro:before-preparation', () => {
-            loaderTimeout = setTimeout(() => {
-            const overlay = document.getElementById('loading-overlay');
-            if (overlay) overlay.style.display = 'flex';
-            }, 420);
-        });
-
-        // 2. 页面内容交换完成（DOM 已更新）
-        document.addEventListener('astro:after-swap', () => {
-            clearTimeout(loaderTimeout);
-
-            const overlay = document.getElementById('loading-overlay');
-            if (overlay) overlay.style.display = 'none';
-        });
-
-        // 3. 兜底方案：页面完全加载完成（包括资源）
-        document.addEventListener('astro:page-load', () => {
-            clearTimeout(loaderTimeout);
-            const overlay = document.getElementById('loading-overlay');
-            if (overlay) overlay.style.display = 'none';
-        });
-        </script>
 </body>
 </html>
-
-<style is:global>
-  #loading-overlay {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: flex-start;
-    justify-content: flex-start;
-    background-color: color-mix(in srgb, var(--color-canvas) 72%, transparent);
-    z-index: var(--z-toast);
-    backdrop-filter: blur(3px);
-  }
-
-  [data-theme="dark"] #loading-overlay {
-    background-color: color-mix(in srgb, var(--color-canvas) 72%, transparent);
-  }
-
-  #loading-overlay span {
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, var(--color-growth), var(--color-accent), var(--color-annotation));
-    transform-origin: left;
-    animation: write-across 1.2s var(--ease-emphasized) infinite;
-  }
-
-  @keyframes write-across { 0% { transform: scaleX(0); } 70%, 100% { transform: scaleX(1); } }
-
-</style>
 
 { siteConfig.theme.AOS &&
 <script>

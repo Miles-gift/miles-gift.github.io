@@ -17,9 +17,7 @@
     min-height: 100%;
     margin: 0;
     overflow-y: scroll;
-    background:
-      radial-gradient(circle at 12% 4%, color-mix(in srgb, var(--color-growth) 9%, transparent), transparent 30rem),
-      var(--color-canvas);
+    background: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-ui);
     font-size: var(--text-body);
@@ -72,10 +70,10 @@
   }
 }
 
-::view-transition-old(root) { animation: 200ms var(--ease-standard) both page-out; }
-::view-transition-new(root) { animation: 480ms var(--ease-emphasized) both page-in; }
-@keyframes page-out { to { opacity: 0; transform: translateY(-0.35rem); } }
-@keyframes page-in { from { opacity: 0; transform: translateY(0.65rem); } }
+::view-transition-old(root) { animation: 160ms var(--ease-standard) both page-out; }
+::view-transition-new(root) { animation: 280ms var(--ease-emphasized) both page-in; }
+@keyframes page-out { to { opacity: 0; } }
+@keyframes page-in { from { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -85,4 +83,5 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 1ms !important; }
 }

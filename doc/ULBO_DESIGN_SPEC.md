@@ -95,3 +95,17 @@
 - 现站的旧色板包含蓝、莓红与绿色语义色；本次建议以 Ulbo 的单一靛蓝交互色为主，内容类别改由标签、图标和版式编码。
 - 站点已有中文字体切分脚本和长文样式。阶段 2 会复用这套能力，避免为了套模板而移除本站内容阅读优化。
 - Ulbo 上游仓库标注 MIT License。复制或改编代码时保留必要许可信息，具体纳入阶段 6 文档更新。
+
+## 9. 阶段 2 接入记录
+
+- `src/styles/variables.css` 已接入上述浅色／深色语义色板，并将长文列设为 760px；资料详情继续使用自己的宽度规则。
+- Outfit Variable 与 Plus Jakarta Sans Variable 已由 Fontsource 本地托管。构建产物中的拉丁字形文件合计约 84KB；字体包采用 SIL Open Font License，阶段 6 会补入许可记录。
+- `Header.astro` 改为无序号的轻量导航，当前页使用靛蓝表面提示；移动抽屉支持 Escape、Tab 焦点循环及焦点返回。
+- `Footer.astro` 改为本站品牌与辅助入口；移除通用英文占位语。
+- `Layout.astro` 移除页面交换时的遮罩进度条，保留轻量 View Transitions，并在减少动态效果设置下关闭过渡动画。
+- `PageHero.astro` 默认左对齐；`Section.astro` 使用语义深色表面令牌。
+- 设备处于锁定状态，当前无法保存现站截图或完成人工视觉检查。截图复核需在阶段 3 扩大首页与栏目改动前补齐。
+
+### 阶段 2 构建结果
+
+运行 `pnpm quality` 通过：TypeScript、内容健康、内容预检、Astro 生产构建、Pagefind 与公开产物检查均成功；生成 98 个 HTML 页面、38 个 Pagefind 页面和 3,026 条内部链接。Build 输出有既存 Node `module.register()` 弃用提示，不影响构建。

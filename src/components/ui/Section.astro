@@ -43,8 +43,8 @@ const {
   }
 
   .ui-section--dark {
-    background: #000;
-    color: #f5f5f7;
+    background: var(--color-contrast-surface);
+    color: var(--color-contrast-ink);
   }
 
   .ui-section__header {
@@ -78,6 +78,6 @@ const {
   }
 
   .ui-section--dark .ui-section__description {
-    color: #a1a1a6;
+    color: color-mix(in srgb, var(--color-contrast-ink) 68%, transparent);
   }
 </style>
