@@ -28,9 +28,9 @@
 			<main class="cms-main">
 				<section class="cms-heading-row">
 					<div>
-						<p class="cms-eyebrow">CONTENT STUDIO <span>·</span> LOCAL</p>
-						<h1>文章</h1>
-						<p class="cms-lede">查看博客内容与本地草稿。</p>
+					<p class="cms-eyebrow">本地写作空间</p>
+					<h1 id="page-title">文章</h1>
+					<p class="cms-lede" id="page-lede">查看博客内容与本地草稿。</p>
 					</div>
 					<div class="cms-heading-actions">
 						<div class="cms-project-status" id="project-status" aria-live="polite">
@@ -106,8 +106,8 @@
 						</div>
 					</div>
 					<div class="cms-card cms-editor-card">
-						<div class="cms-editor-heading">
-							<div><p class="cms-eyebrow">MARKDOWN ARTICLE</p><h2 id="editor-heading">新建文章</h2></div>
+					<div class="cms-editor-heading">
+						<div><p class="cms-eyebrow">文章编辑</p><h2 id="editor-heading">新建文章</h2></div>
 							<span class="cms-post-state is-local" id="editor-save-state">只保存到这台电脑</span>
 						</div>
 						<div class="cms-editor-fields">
@@ -140,12 +140,12 @@
 					<div><strong>本机有未发布的保存</strong><p id="workspace-summary"></p></div>
 				</aside>
 
-				<footer class="cms-footer"><span>Ulbo Content Studio</span><span id="runtime-status">本地仓库 · 读取中</span></footer>
+			<footer class="cms-footer"><span>Ulbo 本地博客管理</span><span id="runtime-status">本地仓库 · 读取中</span></footer>
 			</main>
 		</div>
 
 		<dialog class="cms-dialog" id="post-dialog">
-			<div class="cms-dialog-header"><div><p class="cms-eyebrow">MARKDOWN SOURCE</p><h2 id="dialog-title">文章源码</h2></div><button class="cms-icon-button" id="dialog-close" type="button" aria-label="关闭">×</button></div>
+			<div class="cms-dialog-header"><div><p class="cms-eyebrow">本地文章</p><h2 id="dialog-title">文章源码</h2></div><button class="cms-icon-button" id="dialog-close" type="button" aria-label="关闭">×</button></div>
 			<div class="cms-diff" id="dialog-content"></div>
 		</dialog>
 		<div class="cms-toast" id="toast" role="status" aria-live="polite"></div>

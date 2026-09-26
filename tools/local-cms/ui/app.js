@@ -148,6 +148,9 @@ function showEditor() {
 	publishView.hidden = true;
 	editorView.hidden = false;
 	tabs.hidden = true;
+	document.querySelector('#page-title').textContent = '文章编辑';
+	document.querySelector('#page-lede').textContent = '修改文章内容并保存到本机工作区。';
+	document.querySelector('#new-post').hidden = true;
 	document.querySelector('#workspace-notice').hidden = true;
 	window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -158,6 +161,9 @@ function showList() {
 	publishView.hidden = true;
 	editorView.hidden = true;
 	tabs.hidden = false;
+	document.querySelector('#page-title').textContent = '文章';
+	document.querySelector('#page-lede').textContent = '查看博客内容与本地草稿。';
+	document.querySelector('#new-post').hidden = false;
 	setActiveTab('articles');
 	if (workspaceSlugs.size > 0) document.querySelector('#workspace-notice').hidden = false;
 	window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -169,6 +175,9 @@ function showSettings() {
 	publishView.hidden = true;
 	settingsView.hidden = false;
 	tabs.hidden = false;
+	document.querySelector('#page-title').textContent = '博客设置';
+	document.querySelector('#page-lede').textContent = '编辑博客页面展示的标题、说明和图片。';
+	document.querySelector('#new-post').hidden = true;
 	setActiveTab('settings');
 	window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -179,6 +188,9 @@ function showPublish() {
 	settingsView.hidden = true;
 	publishView.hidden = false;
 	tabs.hidden = false;
+	document.querySelector('#page-title').textContent = '发布';
+	document.querySelector('#page-lede').textContent = '检查待发布改动，确认后推送到 GitHub。';
+	document.querySelector('#new-post').hidden = true;
 	setActiveTab('publish');
 	void loadPublishSummary();
 	window.scrollTo({ top: 0, behavior: 'smooth' });
