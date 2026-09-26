@@ -525,7 +525,7 @@ function renderPublishSummary(summary, { preserveResult = false } = {}) {
 	const migratedCount = summary.imageMigrations?.length || 0;
 	status.textContent = summary.canPublish
 		? `发现 ${summary.changeCount} 项待发布变更。${migratedCount ? `已自动归档并更新 ${migratedCount} 个图片引用。` : ''}`
-		: summary.changeCount ? '当前有阻塞项，处理后才能发布。' : '发布清单为空。';
+		: summary.blockers.length ? `检查发现 ${summary.blockers.length} 个阻塞项，请处理下方报告后再发布。` : '发布清单为空。';
 	status.classList.toggle('is-error', summary.blockers.length > 0);
 	const list = document.querySelector('#publish-changes');
 	list.replaceChildren();
@@ -544,7 +544,7 @@ function renderPublishSummary(summary, { preserveResult = false } = {}) {
 		for (const message of summary.blockers) items.append(element('li', '', message));
 		blockers.append(items);
 	}
-	document.querySelector('#publish-now').disabled = !summary.canPublish || Boolean(publishView.dataset.running === 'true');
+	document.querySelector('#publish-now').disabled = Boolean(publishView.dataset.running === 'true');
 	message.textContent = summary.canPublish
 		? migratedCount ? '原图片保留在原位置；统一媒体副本会随文章提交。私有草稿不会进入 GitHub。' : '私有草稿不会进入 GitHub；提交前会显示检查结果。'
 		: summary.branch !== 'main' ? '正式发布仅从 main 推送；合并 CMS 实施分支后可启用。' : '没有内容被发布。';
@@ -562,6 +562,7 @@ async function loadPublishSummary({ preserveResult = false } = {}) {
 	} catch (error) {
 		document.querySelector('#publish-status').textContent = error.message;
 		document.querySelector('#publish-status').classList.add('is-error');
+		document.querySelector('#publish-now').disabled = Boolean(publishView.dataset.running === 'true');
 	}
 }
 
@@ -602,6 +603,8 @@ async function pollPublishRun(id) {
 async function startPublish() {
 	const button = document.querySelector('#publish-now');
 	try {
+		document.querySelector('#publish-status').textContent = '正在重新检查发布清单…';
+		document.querySelector('#publish-status').classList.remove('is-error');
 		const summary = await api('/api/publish/summary');
 		if (!summary.canPublish) return renderPublishSummary(summary);
 		if (!window.confirm(`将 ${summary.changeCount} 项变更提交并推送到 origin/main？`)) return;
