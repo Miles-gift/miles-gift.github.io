@@ -3,7 +3,7 @@ import { promisify } from 'node:util';
 import { copyFile, lstat, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { hashContent, parsePostSource, serializePostSource } from './content.mjs';
+import { hashContent, normalizeMarkdownTrailingWhitespace, parsePostSource, serializePostSource } from './content.mjs';
 import { readSettingsDocument, hashSettings } from './settings.mjs';
 import { listWorkspaceDocuments, removeWorkspaceDocument, saveWorkspaceDocument } from './workspace.mjs';
 import { migrateSelectedPostImages } from './image-migration.mjs';
@@ -195,10 +195,10 @@ async function normalizeSelectedPostDocuments(workspaceRoot, selected) {
 	for (const item of selected) {
 		if (item.action !== 'write') continue;
 		const parsed = parsePostSource(item.document.content);
-		const normalized = serializePostSource(
+		const normalized = normalizeMarkdownTrailingWhitespace(serializePostSource(
 			{ ...parsed.data, lineEnding: parsed.lineEnding },
 			parsed.body,
-		).content;
+		).content);
 		if (normalized === item.document.content) continue;
 		item.document.content = normalized;
 		item.document.savedAt = new Date().toISOString();

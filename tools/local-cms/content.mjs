@@ -120,6 +120,31 @@ export function serializePostSource(input, body = '') {
 	return { content: `${lines.join(lineEnding)}${lineEnding}---${lineEnding}${lineEnding}${normalizedBody}`, data };
 }
 
+export function normalizeMarkdownTrailingWhitespace(source) {
+	const lineEnding = source.includes('\r\n') ? '\r\n' : '\n';
+	const lines = source.split(/\r?\n/);
+	let fence = null;
+	return lines.map((line) => {
+		const marker = line.match(/^ {0,3}(`{3,}|~{3,})/);
+		if (fence) {
+			if (marker && marker[1][0] === fence.character && marker[1].length >= fence.length && /^ {0,3}(?:`{3,}|~{3,})[ \t]*$/.test(line)) {
+				fence = null;
+				return line.replace(/[ \t]+$/, '');
+			}
+			return line;
+		}
+		if (marker) {
+			fence = { character: marker[1][0], length: marker[1].length };
+			return line.replace(/[ \t]+$/, '');
+		}
+		if (/^[ \t]+$/.test(line)) return '';
+		const trailing = line.match(/[ \t]+$/)?.[0];
+		if (!trailing) return line;
+		const content = line.slice(0, -trailing.length);
+		return trailing.length >= 2 ? `${content}\\` : content;
+	}).join(lineEnding);
+}
+
 export function summarizePost(source, slug, extension) {
 	const { data } = parsePostSource(source);
 	return { slug, extension, ...data };

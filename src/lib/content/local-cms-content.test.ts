@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parsePostSource, serializePostSource } from '../../../tools/local-cms/content.mjs';
+import { normalizeMarkdownTrailingWhitespace, parsePostSource, serializePostSource } from '../../../tools/local-cms/content.mjs';
 
 const source = [
 	'---',
@@ -53,6 +53,11 @@ describe('local CMS article serialization', () => {
 		expect(serialized.content).toContain('---\n\n## 正文');
 		expect(serialized.content).not.toContain('---\n\n\n## 正文');
 		expect(parsePostSource(serialized.content).body).toBe('## 正文');
+	});
+
+	it('removes Git-blocking whitespace while preserving Markdown hard breaks and fenced code', () => {
+		const source = '> Original author  \n    \n```text\nkeep trailing spaces  \n```\n';
+		expect(normalizeMarkdownTrailingWhitespace(source)).toBe('> Original author\\\n\n```text\nkeep trailing spaces  \n```\n');
 	});
 
 	it('rejects external cover paths', () => {
