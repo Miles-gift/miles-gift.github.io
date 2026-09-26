@@ -3,6 +3,7 @@ import { chmod } from 'node:fs/promises';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import sharp from 'sharp';
 import { afterEach, describe, expect, it } from 'vitest';
 import { hashContent, serializePostSource } from '../../../tools/local-cms/content.mjs';
 import { getDeploymentStatus, getPublishSummary, publishWorkspace } from '../../../tools/local-cms/publish.mjs';
@@ -76,6 +77,33 @@ describe('local CMS publish transaction', () => {
 		expect(status.state).toBe('success');
 		expect(status.workflowUrl).toBe(astroRun.html_url);
 		expect(status.siteCheck?.ok).toBe(true);
+	});
+
+	it('automatically archives referenced local images and rewrites selected Markdown before publishing', async () => {
+		const f = await fixture();
+		const image = await sharp({ create: { width: 4, height: 3, channels: 3, background: '#4488cc' } }).png().toBuffer();
+		const assetPath = path.join(f.postRoot, 'images/chart.png');
+		await mkdir(path.dirname(assetPath), { recursive: true });
+		await writeFile(assetPath, image);
+		f.run(['add', '--', 'src/content/blog/images/chart.png']);
+		f.run(['commit', '-m', 'add source image']);
+		f.run(['push', 'origin', 'main']);
+		f.run(['remote', 'set-url', 'origin', 'https://github.com/Miles-gift/miles-gift.github.io.git']);
+		const content = serializePostSource({
+			title: '带图片的文章', date: '2026-09-26T10:00', draft: false, categories: ['测试'], tags: ['image'],
+		}, '\n![图表](images/chart.png)').content;
+		await writeFile(path.join(f.workspaceRoot, 'drafts/existing.json'), JSON.stringify({ ...f.document, content }));
+
+		const summary = await getPublishSummary({
+			projectRoot: f.projectRoot, workspaceRoot: f.workspaceRoot, postRoot: f.postRoot, settingsPath: f.settingsPath,
+		});
+		const saved = JSON.parse(await readFile(path.join(f.workspaceRoot, 'drafts/existing.json'), 'utf8'));
+		expect(summary.canPublish, JSON.stringify(summary, null, 2)).toBe(true);
+		expect(summary.imageMigrations).toHaveLength(1);
+		expect(summary.changes.some((change) => change.type === '新增图片')).toBe(true);
+		const migration = summary.imageMigrations[0] as { to: string };
+		expect(saved.content).toContain(migration.to);
+		expect(await readFile(path.join(f.workspaceRoot, 'media', path.basename(migration.to)))).toEqual(image);
 	});
 
 	it('publishes only selected article and referenced image paths to main', async () => {

@@ -522,7 +522,10 @@ function renderPublishSummary(summary, { preserveResult = false } = {}) {
 	const previousMessage = message.textContent;
 	const target = document.querySelector('#publish-target');
 	target.textContent = `${summary.target} · ${summary.branch || '未知分支'}`;
-	status.textContent = summary.canPublish ? `发现 ${summary.changeCount} 项待发布变更。` : summary.changeCount ? '当前有阻塞项，处理后才能发布。' : '发布清单为空。';
+	const migratedCount = summary.imageMigrations?.length || 0;
+	status.textContent = summary.canPublish
+		? `发现 ${summary.changeCount} 项待发布变更。${migratedCount ? `已自动归档并更新 ${migratedCount} 个图片引用。` : ''}`
+		: summary.changeCount ? '当前有阻塞项，处理后才能发布。' : '发布清单为空。';
 	status.classList.toggle('is-error', summary.blockers.length > 0);
 	const list = document.querySelector('#publish-changes');
 	list.replaceChildren();
@@ -543,7 +546,7 @@ function renderPublishSummary(summary, { preserveResult = false } = {}) {
 	}
 	document.querySelector('#publish-now').disabled = !summary.canPublish || Boolean(publishView.dataset.running === 'true');
 	message.textContent = summary.canPublish
-		? '私有草稿不会进入 GitHub；提交前会显示检查结果。'
+		? migratedCount ? '原图片保留在原位置；统一媒体副本会随文章提交。私有草稿不会进入 GitHub。' : '私有草稿不会进入 GitHub；提交前会显示检查结果。'
 		: summary.branch !== 'main' ? '正式发布仅从 main 推送；合并 CMS 实施分支后可启用。' : '没有内容被发布。';
 	if (preserveResult) {
 		status.textContent = previousStatus;

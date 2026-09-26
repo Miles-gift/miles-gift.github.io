@@ -8,12 +8,15 @@ export const blogFrontmatterSchema = z
 		date: z.coerce.date(),
 		updated: z.coerce.date().optional(),
 		description: nonEmptyText.optional(),
+		// Legacy paths are accepted while reading so the local CMS can locate and
+		// migrate them. Publishing validates that the final reference is managed.
 		cover: z
 			.string()
 			.trim()
+			.min(1, '封面路径不能是空字符串')
 			.refine(
-				(value) => value.startsWith('/uploads/blog/') && !value.startsWith('//') && !value.split('/').includes('..'),
-				'封面必须是 /uploads/blog/ 下的本地图片路径',
+				(value) => !/^[a-z][a-z\d+.-]*:/i.test(value) && !value.startsWith('//') && !value.split(/[\\/]/).includes('..'),
+				'封面必须是本地图片路径，且不能越出项目目录',
 			)
 			.optional(),
 		draft: z.boolean().optional().default(false),

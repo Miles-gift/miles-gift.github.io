@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { hashContent, parsePostSource } from './content.mjs';
 import { readSettingsDocument, hashSettings } from './settings.mjs';
 import { listWorkspaceDocuments, removeWorkspaceDocument } from './workspace.mjs';
+import { migrateSelectedPostImages } from './image-migration.mjs';
 
 const defaultRemote = 'https://github.com/Miles-gift/miles-gift.github.io.git';
 const trackedBranch = 'main';
@@ -86,7 +87,7 @@ async function sourceFiles(postRoot, slug) {
 function collectMediaPaths(content) {
 	const paths = new Set();
 	for (const match of content.matchAll(/\/uploads\/blog\/([^\s)"'?#<>]+)/g)) {
-		if (!/^[a-f0-9]{20}\.webp$/.test(match[1])) throw new Error(`发现无效的本机上传图片路径：${match[0]}`);
+		if (!/^[a-f0-9]{20}\.(?:webp|png|jpe?g|gif|svg|avif)$/i.test(match[1])) throw new Error(`发现无效的本机上传图片路径：${match[0]}`);
 		paths.add(match[1]);
 	}
 	return [...paths];
@@ -190,14 +191,21 @@ async function inspectWorkspace({ projectRoot, workspaceRoot, postRoot, settings
 }
 
 export async function getPublishSummary(options) {
-	const inspection = await inspectWorkspace(options);
+	let inspection = await inspectWorkspace(options);
+	let imageMigration = { blockers: [], migrations: [] };
+	if (inspection.blockers.length === 0) {
+		imageMigration = await migrateSelectedPostImages(options, inspection.selected);
+		if (imageMigration.migrations.length > 0) inspection = await inspectWorkspace(options);
+	}
+	const blockers = [...inspection.blockers, ...imageMigration.blockers];
 	return {
 		branch: inspection.branch,
 		target: 'origin/main',
-		canPublish: inspection.blockers.length === 0 && inspection.changes.length > 0,
-		blockers: inspection.blockers,
+		canPublish: blockers.length === 0 && inspection.changes.length > 0,
+		blockers,
 		changes: inspection.changes,
 		changeCount: inspection.changes.length,
+		imageMigrations: imageMigration.migrations,
 	};
 }
 
@@ -372,7 +380,12 @@ export async function publishWorkspace(options) {
 	if (await statusOutput(projectRoot)) throw new Error('同步 origin/main 后发现工作区改动；已停止发布。');
 
 	report('planning', '核对文章基线、博客设置和图片引用…');
-	const inspection = await inspectWorkspace(options);
+	let inspection = await inspectWorkspace(options);
+	if (inspection.blockers.length) throw new Error(inspection.blockers.join('\n'));
+	const imageMigration = await migrateSelectedPostImages(options, inspection.selected);
+	if (imageMigration.blockers.length) throw new Error(imageMigration.blockers.join('\n'));
+	if (imageMigration.migrations.length) report('planning', `已将 ${imageMigration.migrations.length} 个图片引用迁移到本地统一媒体库…`);
+	if (imageMigration.migrations.length) inspection = await inspectWorkspace(options);
 	if (inspection.blockers.length) throw new Error(inspection.blockers.join('\n'));
 	if (inspection.changes.length === 0) throw new Error('没有加入发布清单的改动。');
 	selected = inspection.selected;
