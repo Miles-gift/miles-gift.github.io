@@ -1,19 +1,65 @@
 ---
-import { profileConfig, siteConfig } from "../config";
-const currentYear = new Date().getFullYear();
+import { headerGithubRepoUrl, profileConfig, siteTitle } from '../config';
+import { getRenderableSocials, resolveSocialUrl } from '../lib/profile/social';
+
+const today = new Date();
+
+const socials = getRenderableSocials(profileConfig.socials);
 ---
 
-<footer class="site-footer">
-  <p>© {profileConfig.startYear}–{currentYear} {profileConfig.name} · {siteConfig.title}</p>
-  <nav aria-label="页脚导航">
-    <a href="/articles/">文章</a><a href="/resources/">资料库</a><a href="/journey/">旅程</a><a href="/archives/">归档</a><a href="/about/">关于</a>
-  </nav>
+<footer transition:animate="none">
+	<p class="copyright">&copy; {today.getFullYear()} {profileConfig.name}. Powered by {siteTitle}.</p>
+	<div class="social-links">
+		{socials.map((social) => (
+			<a
+				href={resolveSocialUrl(social.key, social.url)}
+				target={social.key === 'email' ? undefined : '_blank'}
+				rel={social.key === 'email' ? undefined : 'noreferrer'}
+			>
+				{social.label}
+			</a>
+		))}
+		{headerGithubRepoUrl && (
+			<a href={headerGithubRepoUrl} target="_blank" rel="noreferrer">Repository</a>
+		)}
+	</div>
 </footer>
 
 <style>
-  .site-footer { display: grid; justify-items: center; gap: .75rem; margin-top: 4rem; padding: 2rem 1rem 5rem; border-top: 1px solid var(--color-border); background: var(--color-canvas); color: var(--color-ink-secondary); text-align: center; }
-  p { margin: 0; font-size: .9rem; }
-  nav { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
-  a { padding: .2rem .55rem; border: 1px solid var(--color-border); border-radius: 999px; color: inherit; font-size: .85rem; text-decoration: none; }
-  a:hover { color: var(--color-accent); background: var(--color-surface-solid); }
+	footer {
+		padding: 2em 1em 6em 1em;
+		background-color: var(--color-bg);
+		border-top: 1px solid var(--color-border-subtle);
+		color: var(--color-text-secondary);
+		text-align: center;
+	}
+
+	.copyright {
+		margin: 0;
+		font-size: 0.95em;
+	}
+
+	.social-links {
+		display: flex;
+		justify-content: center;
+		gap: 0.85em;
+		flex-wrap: wrap;
+		margin-top: 0.85em;
+	}
+
+	.social-links a {
+		text-decoration: none;
+		color: var(--color-text-secondary);
+		font-size: 0.92em;
+		padding: 0.25em 0.55em;
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+	}
+
+	.social-links a:hover {
+		color: var(--color-text);
+		border-color: var(--color-border-strong);
+		background-color: var(--color-surface-elevated);
+	}
 </style>

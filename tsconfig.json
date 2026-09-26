@@ -1,22 +1,8 @@
 {
   "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"],
   "compilerOptions": {
-    "baseUrl": ".",
-    "strictNullChecks": true,
-    "allowJs": false,
-    "declaration": true,
-    "paths": {
-      "@components/*": ["src/components/*"],
-      "@assets/*": ["src/assets/*"],
-      "@constants/*": ["src/constants/*"],
-      "@utils/*": ["src/utils/*"],
-      "@i18n/*": ["src/i18n/*"],
-      "@layouts/*": ["src/layouts/*"],
-      "@plugins/*": ["src/plugins/*"],
-      "@styles/*": ["src/styles/*"],
-      "@/*": ["src/*"]
-    }
-  },
-  "include": [".astro/types.d.ts", "src/**/*"],
-  "exclude": ["dist"]
+    "strictNullChecks": true
+  }
 }

@@ -1,87 +1,89 @@
 // @ts-check
+
+import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
-import { unified } from '@astrojs/markdown-remark';
-import tailwindcss from "@tailwindcss/vite";
-import icon from 'astro-icon';
+import remarkBlockquoteLineBreaks from './src/plugins/remark-blockquote-line-breaks.mjs';
+import remarkHexoImages from './src/plugins/remark-hexo-images.mjs';
+import remarkSearchBlocks from './src/plugins/remark-search-blocks';
 import remarkMath from 'remark-math';
+import rehypeImageCaptions from './src/plugins/rehype-image-captions.mjs';
 import rehypeKatex from 'rehype-katex';
-import remarkDirective from 'remark-directive';
-import rehypeComponents from "rehype-components";
+import rehypeLazyImages from './src/plugins/rehype-lazy-images.mjs';
+import rehypeResponsiveTables from './src/plugins/rehype-responsive-tables.mjs';
+import { siteUrl } from './src/config/site';
 
-import { admonition } from "./src/plugins/rehype-component-admonition.mjs";
-import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
-import { MusicCardComponent } from "./src/plugins/rehype-component-music-card.mjs";
-import { GithubCardComponent } from './src/plugins/rehype-component-github-card.mjs';
-import { QuoteComponent } from "./src/plugins/rehype-component-quote.mjs"
-import { customFigurePlugin } from "./src/plugins/rehype-figure-plugin.mjs";
-import { remarkCombined } from './src/plugins/remark-combined.mjs';
-import { remarkTypst } from './src/plugins/remark-typst.mjs';
-import { remarkReadingTime } from './src/plugins/remark-reading-time.mjs';
-import { remarkLqip } from './src/plugins/remark-lqip.js';
+/** @returns {import('vite').Plugin} */
+function patchKatexFontDisplayPlugin() {
+	return {
+		name: 'patch-katex-font-display',
+		apply: 'build',
+		/** @param {import('rollup').NormalizedOutputOptions} _options @param {Record<string, import('rollup').OutputAsset | import('rollup').OutputChunk>} bundle */
+		generateBundle(_options, bundle) {
+			let foundKatexCss = false;
+			let replacedOccurrences = 0;
 
-import svelte from "@astrojs/svelte";
+			for (const [fileName, output] of Object.entries(bundle)) {
+				if (output.type !== 'asset' || !fileName.endsWith('.css')) continue;
 
-import { siteConfig } from './src/config';
+				const css =
+					typeof output.source === 'string'
+						? output.source
+						: new TextDecoder().decode(output.source);
+
+				if (!css.includes('font-family:KaTeX_Main')) continue;
+				foundKatexCss = true;
+
+				const matches = css.match(/font-display:block/g);
+				if (!matches) continue;
+
+				replacedOccurrences += matches.length;
+				output.source = css.replaceAll('font-display:block', 'font-display:swap');
+			}
+
+			if (foundKatexCss && replacedOccurrences === 0) {
+				this.warn(
+					'[patch-katex-font-display] Found KaTeX CSS, but no `font-display:block` was replaced. KaTeX upstream CSS format may have changed.',
+				);
+			}
+		},
+	};
+}
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://miles-gift.github.io', // Root URL of site
-  i18n: {
-    locales: ['zh-cn'],
-    defaultLocale: 'zh-cn',
-    routing: {
-      prefixDefaultLocale: false,
-      redirectToDefaultLocale: false
-    }
-  },
-  integrations: [icon({
-    include: {
-      "fa6-brands": ["*"],
-      "fa6-solid": ["*"],
-      "simple-icons": ["*"],
-      "vscode-icons": ["*"],
-      "material-symbols": ["*"],
-      "flue": ["*"],
-    }
-  }), svelte()],
-  markdown: {
-    shikiConfig: {
-      theme: 'one-dark-pro', // code theme
-      // theme: 'github-dark',
-      wrap: false
-    },
-    processor: unified({
-      remarkPlugins: [
-        remarkMath,
-        remarkReadingTime,
-        remarkDirective,
-        remarkTypst,
-        parseDirectiveNode,
-        remarkCombined,
-        [remarkLqip, { enable: siteConfig.theme.LQIP }],
-      ],
-      rehypePlugins: [
-        rehypeKatex,
-        customFigurePlugin,
-        [
-          rehypeComponents,
-          {
-            components: {
-              github: GithubCardComponent,
-              music: MusicCardComponent,
-              quote: QuoteComponent,
-              note: admonition("note"),
-              tip: admonition("tip"),
-              important: admonition("important"),
-              caution: admonition("caution"),
-              warning: admonition("warning"),
-            },
-          },
-        ],
-      ]
-    })
-  },
-  vite: {
-    plugins: [tailwindcss()]
-  }
+	site: siteUrl,
+	integrations: [
+		mdx(),
+		sitemap({
+			filter: (page) => {
+				const pathname = new URL(page).pathname;
+				if (pathname === '/tags/' || pathname.startsWith('/tags/')) return false;
+				if (/^\/blog\/page\/\d+\/?$/.test(pathname)) return false;
+				return true;
+			},
+		}),
+	],
+	prefetch: {
+		prefetchAll: true,
+		defaultStrategy: 'hover',
+	},
+	markdown: {
+		// 支持 Hexo 相对图片路径 image/xxx/ 自动转换为 /image/xxx/
+		remarkPlugins: [remarkHexoImages, remarkMath, remarkBlockquoteLineBreaks, remarkSearchBlocks],
+		// 使用 KaTeX 渲染数学公式，图片懒加载
+		rehypePlugins: [rehypeKatex, rehypeLazyImages, rehypeImageCaptions, rehypeResponsiveTables],
+		// 使用双主题支持代码高亮
+		shikiConfig: {
+			themes: {
+				light: 'github-light',
+				dark: 'github-dark',
+			},
+			wrap: true,
+		},
+	},
+	vite: {
+		plugins: [patchKatexFontDisplayPlugin()],
+	},
 });
+
