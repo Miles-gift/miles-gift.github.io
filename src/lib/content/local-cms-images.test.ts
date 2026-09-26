@@ -77,6 +77,25 @@ describe('local CMS image references', () => {
 		expect(await readFile(path.join(workspaceRoot, 'media', path.basename(result.migrations[0].to)))).toEqual(image);
 	});
 
+	it('imports an absolute image path from inside the allowed user directory', async () => {
+		const { projectRoot, workspaceRoot } = await fixture();
+		const image = await sharp({ create: { width: 3, height: 2, channels: 3, background: '#2877aa' } }).png().toBuffer();
+		const assetPath = path.join(projectRoot, 'external', 'desktop-image.png');
+		await mkdir(path.dirname(assetPath), { recursive: true });
+		await writeFile(assetPath, image);
+		const content = serializePostSource({ title: '绝对路径导入', date: '2026-09-26T10:00', draft: false, categories: ['测试'], tags: ['image'] }, `\n![图](<${assetPath}>)`).content;
+		const document = { version: 1, slug: 'absolute-image', extension: 'md', sourceExists: false, content, deleted: false, readyToPublish: true, savedAt: new Date().toISOString() };
+		await saveWorkspaceDocument(workspaceRoot, document);
+
+		const result = await migrateSelectedPostImages({ projectRoot, workspaceRoot, userHomeRoot: projectRoot }, [{ document, action: 'write', relativePath: 'src/content/blog/absolute-image.md' }]);
+		const saved = await readWorkspaceDocument(workspaceRoot, 'absolute-image');
+		expect(result.blockers).toEqual([]);
+		expect(result.migrations).toHaveLength(1);
+		expect(saved?.content).not.toContain(assetPath);
+		expect(saved?.content).toContain(result.migrations[0].to);
+		expect(await readFile(path.join(workspaceRoot, 'media', path.basename(result.migrations[0].to)))).toEqual(image);
+	});
+
 	it('blocks a missing image with the article and original path', async () => {
 		const { projectRoot, workspaceRoot } = await fixture();
 		const content = serializePostSource({ title: '缺图文章', date: '2026-09-26T10:00', draft: false, categories: ['测试'], tags: ['test'] }, '\n![坏图](./missing/file.png)').content;

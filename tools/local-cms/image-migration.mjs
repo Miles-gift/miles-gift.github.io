@@ -1,4 +1,5 @@
 import { lstat, readFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { parsePostSource } from './content.mjs';
 import { archiveLocalImage } from './media.mjs';
@@ -24,6 +25,27 @@ async function regularFile(root, relativePath) {
 	return { absolute };
 }
 
+async function regularUserFile(filePath, userHomeRoot = os.homedir()) {
+	const home = path.resolve(userHomeRoot);
+	const absolute = path.resolve(filePath);
+	if (absolute === home || !absolute.startsWith(`${home}${path.sep}`)) {
+		return { error: '绝对图片路径只允许从当前用户目录导入' };
+	}
+	let cursor = home;
+	const parts = path.relative(home, absolute).split(path.sep).filter(Boolean);
+	for (let index = 0; index < parts.length; index += 1) {
+		cursor = path.join(cursor, parts[index]);
+		let info;
+		try { info = await lstat(cursor); }
+		catch (error) { if (error.code === 'ENOENT') return { missing: true }; throw error; }
+		if (info.isSymbolicLink()) return { error: '绝对图片路径包含符号链接' };
+		if (index < parts.length - 1 && !info.isDirectory()) return { error: '绝对图片路径中的目录不是文件夹' };
+		if (index === parts.length - 1 && !info.isFile()) return { error: '绝对图片路径不是普通文件' };
+		if (index === parts.length - 1 && info.size > 20 * 1024 * 1024) return { error: '图片文件超过 20 MB' };
+	}
+	return { absolute };
+}
+
 function localCandidates(projectRoot, sourcePath, urlPath) {
 	const normalized = urlPath.replaceAll('\\', '/').replace(/^\.\//, '');
 	if (normalized.startsWith('/')) {
@@ -37,13 +59,20 @@ function localCandidates(projectRoot, sourcePath, urlPath) {
 	];
 }
 
-async function findLocalImage(projectRoot, sourcePath, url) {
+async function findLocalImage(projectRoot, sourcePath, url, userHomeRoot) {
 	const splitAt = url.search(/[?#]/);
 	const urlPath = (splitAt < 0 ? url : url.slice(0, splitAt)).trim();
 	const suffix = splitAt < 0 ? '' : url.slice(splitAt);
 	let decoded;
 	try { decoded = decodeURIComponent(urlPath); }
 	catch { return { error: '图片地址包含无效的 URL 编码' }; }
+	const home = path.resolve(userHomeRoot || os.homedir());
+	if (path.isAbsolute(decoded) && path.resolve(decoded).startsWith(`${home}${path.sep}`)) {
+		const result = await regularUserFile(decoded, home);
+		if (result.error) return result;
+		if (result.missing) return { missing: true, checked: [decoded] };
+		return { absolute: result.absolute, suffix };
+	}
 	const candidates = localCandidates(projectRoot, sourcePath, decoded);
 	for (const candidate of [...new Set(candidates)]) {
 		const result = await regularFile(projectRoot, path.relative(projectRoot, candidate));
@@ -71,6 +100,7 @@ async function managedImageExists(projectRoot, workspaceRoot, url) {
 
 export async function migrateSelectedPostImages(options, selected) {
 	const { projectRoot, workspaceRoot } = options;
+	const userHomeRoot = options.userHomeRoot || os.homedir();
 	const blockers = [];
 	const migrations = [];
 	const archivedBySource = new Map();
@@ -108,7 +138,7 @@ export async function migrateSelectedPostImages(options, selected) {
 				replacements.push(null);
 				continue;
 			}
-			const found = await findLocalImage(projectRoot, item.relativePath, url);
+			const found = await findLocalImage(projectRoot, item.relativePath, url, userHomeRoot);
 			if (found.error) {
 				blockers.push(`文章「${title}」(${document.slug}) 第 ${reference.line} 行的图片「${url}」无法安全读取：${found.error}。`);
 				replacements.push(null);
@@ -145,4 +175,3 @@ export async function migrateSelectedPostImages(options, selected) {
 	}
 	return { blockers, migrations };
 }
-
