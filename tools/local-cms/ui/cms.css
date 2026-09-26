@@ -10,6 +10,9 @@
 
 .cms-body {
 	min-height: 100vh;
+	height: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	margin: 0;
 	background: var(--color-bg);
 	color: var(--color-text);
