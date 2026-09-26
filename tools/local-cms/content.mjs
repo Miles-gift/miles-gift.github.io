@@ -18,7 +18,9 @@ export function splitPostSource(source) {
 	if (document.errors.length) throw validationError(document.errors.map((error) => error.message).join('\n'));
 	return {
 		data: document.toJS(),
-		body: match[5],
+		// Match the frontmatter checker: leading blank lines are formatting around
+		// the delimiter, not article body content.
+		body: match[5].replace(/^(?:\r?\n)*/, ''),
 		lineEnding: source.includes('\r\n') ? '\r\n' : '\n',
 	};
 }
@@ -114,7 +116,8 @@ export function serializePostSource(input, body = '') {
 	} else {
 		lines.push('tags: []');
 	}
-	return { content: `${lines.join(lineEnding)}${lineEnding}---${lineEnding}${body}`, data };
+	const normalizedBody = String(body).replace(/^(?:\r?\n)*/, '');
+	return { content: `${lines.join(lineEnding)}${lineEnding}---${lineEnding}${lineEnding}${normalizedBody}`, data };
 }
 
 export function summarizePost(source, slug, extension) {

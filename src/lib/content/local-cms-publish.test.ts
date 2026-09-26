@@ -106,6 +106,20 @@ describe('local CMS publish transaction', () => {
 		expect(await readFile(path.join(f.workspaceRoot, 'media', path.basename(migration.to)))).toEqual(image);
 	});
 
+	it('normalizes an older CMS draft with an extra blank line before publication', async () => {
+		const f = await fixture();
+		const canonical = serializePostSource({
+			title: '旧格式文章', date: '2026-09-26T10:00', draft: false, categories: ['测试'], tags: ['format'],
+		}, '## 正文').content;
+		const legacy = canonical.replace('\n---\n\n## 正文', '\n---\n\n\n## 正文');
+		await writeFile(path.join(f.workspaceRoot, 'drafts/existing.json'), JSON.stringify({ ...f.document, content: legacy }));
+
+		const summary = await getPublishSummary({ ...f, expectedRemote: f.remotePath });
+		const saved = JSON.parse(await readFile(path.join(f.workspaceRoot, 'drafts/existing.json'), 'utf8'));
+		expect(summary.canPublish).toBe(true);
+		expect(saved.content).toBe(canonical);
+	});
+
 	it('publishes only selected article and referenced image paths to main', async () => {
 		const state = await fixture();
 		const settings = JSON.parse(await readFile(state.settingsPath, 'utf8'));

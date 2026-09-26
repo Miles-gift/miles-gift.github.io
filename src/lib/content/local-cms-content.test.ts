@@ -45,6 +45,16 @@ describe('local CMS article serialization', () => {
 		}, '\n正文。')).toThrow(/分类/);
 	});
 
+	it('writes canonical spacing between frontmatter and Markdown body', () => {
+		const serialized = serializePostSource({
+			title: '空白行规范', date: '2026-09-26T12:00', draft: true, categories: [], tags: [],
+		}, '\n\n## 正文');
+
+		expect(serialized.content).toContain('---\n\n## 正文');
+		expect(serialized.content).not.toContain('---\n\n\n## 正文');
+		expect(parsePostSource(serialized.content).body).toBe('## 正文');
+	});
+
 	it('rejects external cover paths', () => {
 		expect(() => serializePostSource({
 			title: '封面路径检查', date: '2026-09-26T12:00', draft: true, categories: [], tags: [],

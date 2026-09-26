@@ -3,9 +3,9 @@ import { promisify } from 'node:util';
 import { copyFile, lstat, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { hashContent, parsePostSource } from './content.mjs';
+import { hashContent, parsePostSource, serializePostSource } from './content.mjs';
 import { readSettingsDocument, hashSettings } from './settings.mjs';
-import { listWorkspaceDocuments, removeWorkspaceDocument } from './workspace.mjs';
+import { listWorkspaceDocuments, removeWorkspaceDocument, saveWorkspaceDocument } from './workspace.mjs';
 import { migrateSelectedPostImages } from './image-migration.mjs';
 
 const defaultRemote = 'https://github.com/Miles-gift/miles-gift.github.io.git';
@@ -190,12 +190,31 @@ async function inspectWorkspace({ projectRoot, workspaceRoot, postRoot, settings
 	return { branch, remoteUrl, status, blockers, changes, selected, settingsDocument, settingsChange, media: [...media] };
 }
 
+async function normalizeSelectedPostDocuments(workspaceRoot, selected) {
+	let changed = false;
+	for (const item of selected) {
+		if (item.action !== 'write') continue;
+		const parsed = parsePostSource(item.document.content);
+		const normalized = serializePostSource(
+			{ ...parsed.data, lineEnding: parsed.lineEnding },
+			parsed.body,
+		).content;
+		if (normalized === item.document.content) continue;
+		item.document.content = normalized;
+		item.document.savedAt = new Date().toISOString();
+		await saveWorkspaceDocument(workspaceRoot, item.document);
+		changed = true;
+	}
+	return changed;
+}
+
 export async function getPublishSummary(options) {
 	let inspection = await inspectWorkspace(options);
 	let imageMigration = { blockers: [], migrations: [] };
 	if (inspection.blockers.length === 0) {
+		const contentNormalized = await normalizeSelectedPostDocuments(options.workspaceRoot, inspection.selected);
 		imageMigration = await migrateSelectedPostImages(options, inspection.selected);
-		if (imageMigration.migrations.length > 0) inspection = await inspectWorkspace(options);
+		if (contentNormalized || imageMigration.migrations.length > 0) inspection = await inspectWorkspace(options);
 	}
 	const blockers = [...inspection.blockers, ...imageMigration.blockers];
 	return {
@@ -382,10 +401,11 @@ export async function publishWorkspace(options) {
 	report('planning', '核对文章基线、博客设置和图片引用…');
 	let inspection = await inspectWorkspace(options);
 	if (inspection.blockers.length) throw new Error(inspection.blockers.join('\n'));
+	const contentNormalized = await normalizeSelectedPostDocuments(workspaceRoot, inspection.selected);
 	const imageMigration = await migrateSelectedPostImages(options, inspection.selected);
 	if (imageMigration.blockers.length) throw new Error(imageMigration.blockers.join('\n'));
 	if (imageMigration.migrations.length) report('planning', `已将 ${imageMigration.migrations.length} 个图片引用迁移到本地统一媒体库…`);
-	if (imageMigration.migrations.length) inspection = await inspectWorkspace(options);
+	if (contentNormalized || imageMigration.migrations.length) inspection = await inspectWorkspace(options);
 	if (inspection.blockers.length) throw new Error(inspection.blockers.join('\n'));
 	if (inspection.changes.length === 0) throw new Error('没有加入发布清单的改动。');
 	selected = inspection.selected;
