@@ -145,6 +145,25 @@ export function setupToc(): ArticleNavigationController | null {
 		navigateToId(id, preferredBehavior());
 	}, { signal });
 
+	article.addEventListener('click', (event) => {
+		if (
+			event.defaultPrevented
+			|| event.button !== 0
+			|| event.metaKey
+			|| event.ctrlKey
+			|| event.shiftKey
+			|| event.altKey
+		) return;
+		const link = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+		if (!link) return;
+		const id = decodeHash(link.hash);
+		const target = id ? document.getElementById(id) : null;
+		if (!target || !article.contains(target)) return;
+		event.preventDefault();
+		if (location.hash !== link.hash) history.replaceState({ ...history.state }, '', link.hash);
+		void controller.navigate(target, { behavior: preferredBehavior() });
+	}, { signal });
+
 	window.addEventListener('hashchange', () => {
 		const id = decodeHash(location.hash);
 		if (id) navigateToId(id, preferredBehavior());

@@ -186,9 +186,9 @@ const articleSchema = {
 			/* 布局容器 */
 			.layout-container {
 				display: grid;
-				grid-template-columns: 1fr 260px;
-				gap: 60px;
-				max-width: 1400px;
+				grid-template-columns: minmax(0, 1fr) 248px;
+				gap: clamp(32px, 4vw, 56px);
+				max-width: 1360px;
 				margin: 0 auto;
 				padding: 0 1em 2em;
 				position: relative;
@@ -196,25 +196,15 @@ const articleSchema = {
 			}
 			
 			/* 内容卡片样式 */
-			.content-card {
+			.article-reading {
 				background: var(--color-surface);
-				border-radius: 16px;
-				box-shadow: var(--shadow-card);
-				padding: 3em;
+				border: 1px solid var(--color-border);
+				border-radius: 14px;
+				box-shadow: none;
+				padding: clamp(1.8rem, 4vw, 3.5rem);
 				min-height: 300px;
 				width: 100%;
-				animation: slideUp 0.5s ease-out forwards;
-				opacity: 0; /* 初始隐藏 */
-				transform: translateY(30px); /* 初始下移 */
 				min-width: 0; /* 修复：防止 Grid Item 被内部宽元素（如代码块）撑大 */
-				will-change: transform, opacity;
-			}
-
-			@keyframes slideUp {
-				to {
-					opacity: 1;
-					transform: translateY(0);
-				}
 			}
 
 			/* 响应式调整 */
@@ -225,7 +215,7 @@ const articleSchema = {
 					gap: 24px;
 					padding: 0 0.75em 1.5em;
 				}
-				.content-card {
+				.article-reading {
 					padding: 2.1em 1.6em;
 				}
 			}
@@ -252,9 +242,9 @@ const articleSchema = {
 					font-size: 0.88em;
 				}
 
-					.content-card {
-						padding: 1.2em 1em;
-						border-radius: 0;
+					.article-reading {
+						padding: 1.45rem clamp(1.1rem, 5vw, 1.5rem);
+						border-radius: 12px;
 						box-sizing: border-box;
 					}
 
@@ -332,10 +322,8 @@ const articleSchema = {
 					padding: 0;
 					background: transparent;
 					box-shadow: none;
+					border: 0;
 					border-radius: 0;
-					animation: none;
-					opacity: 1;
-					transform: none;
 				}
 
 				.pdf-print-heading {
@@ -715,7 +703,7 @@ const articleSchema = {
 		
 	<div class="stats-wrapper">
 		<div class="layout-container">
-			<main class="content-card" transition:name="page-content">
+			<main class="content-card article-reading" transition:name="page-content">
 				<article>
 					<div class="prose">
 						<header class="pdf-print-heading">
