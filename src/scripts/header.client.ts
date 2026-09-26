@@ -177,6 +177,8 @@
                 if (link.classList.contains('active') && !isActive) oldActive = link;
                 if (isActive) newActive = link;
                 link.classList.toggle('active', isActive);
+                if (isActive) link.setAttribute('aria-current', 'page');
+                else link.removeAttribute('aria-current');
             });
 
             return { oldActive, newActive };
@@ -324,19 +326,32 @@
 
         const openMenu = () => {
             if (!isMobileViewport()) return;
+            drawer.inert = false;
             header.classList.add('mobile-menu-open');
             document.body.classList.add('mobile-menu-open');
             menuBtn.setAttribute('aria-expanded', 'true');
+            menuBtn.setAttribute('aria-label', '关闭菜单');
             overlay.setAttribute('aria-hidden', 'false');
             drawer.setAttribute('aria-hidden', 'false');
+
+            requestAnimationFrame(() => {
+                if (header.classList.contains('mobile-menu-open')) {
+                    mobileLinks[0]?.focus({ preventScroll: true });
+                }
+            });
         };
 
-        const closeMenu = () => {
+        const closeMenu = (restoreFocus = false) => {
+            if (restoreFocus && drawer.contains(document.activeElement)) {
+                menuBtn.focus({ preventScroll: true });
+            }
             header.classList.remove('mobile-menu-open');
             document.body.classList.remove('mobile-menu-open');
             menuBtn.setAttribute('aria-expanded', 'false');
+            menuBtn.setAttribute('aria-label', '打开菜单');
             overlay.setAttribute('aria-hidden', 'true');
             drawer.setAttribute('aria-hidden', 'true');
+            drawer.inert = true;
         };
 
         const toggleMenu = () => {
@@ -367,15 +382,33 @@
         }
 
         menuBtnAny.__menuToggleHandler = toggleMenu;
-        overlayAny.__menuOverlayHandler = closeMenu;
+        overlayAny.__menuOverlayHandler = () => closeMenu(true);
         windowAny.__menuResizeHandler = () => {
             if (!isMobileViewport()) {
+                if (drawer.contains(document.activeElement)) {
+                    (document.activeElement as HTMLElement).blur();
+                }
                 closeMenu();
             }
         };
         docAny.__menuKeyHandler = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                closeMenu();
+            const isOpen = header.classList.contains('mobile-menu-open');
+            if (e.key === 'Escape' && isOpen) {
+                e.preventDefault();
+                closeMenu(true);
+                return;
+            }
+
+            if (e.key === 'Tab' && isOpen && mobileLinks.length > 0) {
+                const firstLink = mobileLinks[0];
+                const lastLink = mobileLinks[mobileLinks.length - 1];
+                if (e.shiftKey && document.activeElement === firstLink) {
+                    e.preventDefault();
+                    lastLink.focus();
+                } else if (!e.shiftKey && document.activeElement === lastLink) {
+                    e.preventDefault();
+                    firstLink.focus();
+                }
             }
         };
 
@@ -389,7 +422,7 @@
             if (linkAny.__menuLinkHandler) {
                 link.removeEventListener('click', linkAny.__menuLinkHandler);
             }
-            linkAny.__menuLinkHandler = closeMenu;
+            linkAny.__menuLinkHandler = () => closeMenu(true);
             link.addEventListener('click', linkAny.__menuLinkHandler);
         });
 
