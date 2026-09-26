@@ -21,7 +21,7 @@
 - `npm run build`：成功，生成 21 个页面。Vite 仍有既有的大型 chunk 提示，不影响构建。
 - `git diff --check`：通过。
 
-首次推送到 `main` 后，Astro 的 build 和 deploy job 成功，但 Verify job 在独立 runner 上因没有 checkout、无法读取 `src/content/blog/` 而失败。阶段 5 已为该 job 增加只读 `contents` 权限和 checkout，并加入“选对 Astro workflow”回归测试；修复后的 GitHub Actions 最终运行结果见下方。
+CI 验收期间修正了三项环境差异：测试 fixture 显式将 bare Git remote 设为 `main`；Verify job 在独立 runner 上 checkout 源码，并以无依赖的 frontmatter 检查读取文章清单；CMS 状态查询限定 Astro Pages 工作流，忽略同一 SHA 的自动 Jekyll job。相应发布状态筛选加入了回归测试。
 
 ## 范围与限制
 
@@ -31,4 +31,4 @@
 
 ## 提交与线上部署
 
-阶段 5 实现及 CI 修正提交与 `main` 合并后的 SHA、Actions 工作流和线上检查结果将在此处补录。
+CMS 阶段 0–5 代码 SHA：`217323f73b966267103283fbe0edf16f9e3bd5ec`。对应 [GitHub Actions 运行](https://github.com/Miles-gift/miles-gift.github.io/actions/runs/36226317907)已成功；Verify 检查首页 `/`、博客 `/blog/`、RSS，以及仓库中所有非草稿文章页和旧地址跳转。
