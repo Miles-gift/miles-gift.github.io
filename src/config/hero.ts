@@ -34,8 +34,8 @@ export interface HeroConfig {
 
 export const heroConfig: HeroConfig = {
   home: {
-    text: 'Build your ideas, one post at a time.',
-    subtitle: 'A clean Astro theme with centralized configuration.',
+    text: '你好，我是 yoyo。',
+    subtitle: '在华中科技大学学习电子科学与技术，关注高性能处理器的电源架构。',
     backgroundImage: defaultBackground.src,
   },
   blog: {
@@ -50,7 +50,7 @@ export const heroConfig: HeroConfig = {
   },
   about: {
     text: 'About',
-    subtitle: 'Introduce yourself and your work.',
+    subtitle: '华中科技大学集成电路学院 · 电子科学与技术本科生',
     backgroundImage: defaultBackground.src,
   },
   postDefaultBackground: defaultBackground.src,

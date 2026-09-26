@@ -33,12 +33,12 @@ export interface SiteConfig {
 }
 
 export const siteConfig: SiteConfig = {
-  siteUrl: 'https://template.ulna520.top',
-  siteTitle: 'ulBo Astro Theme',
+  siteUrl: 'https://miles-gift.github.io',
+  siteTitle: 'yoyo',
   siteTitleSuffix: '个人博客',
-  siteDescription: 'A configurable Astro blog theme with centralized config and zero-content defaults.',
+  siteDescription: 'yoyo 的个人博客，记录电子科学与技术学习、AI 芯片、集成电路设计与高性能处理器电源架构方面的长篇文章。',
   locale: 'zh-CN',
-  headerGithubRepoUrl: 'https://github.com/xxy1103/ulbo-astro-theme-template',
+  headerGithubRepoUrl: 'https://github.com/Miles-gift/miles-gift.github.io',
   faviconIco: '/favicon.ico',
 };
 

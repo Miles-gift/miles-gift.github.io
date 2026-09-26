@@ -1,5 +1,4 @@
 import type { ImageMetadata } from 'astro';
-import defaultAvatar from '../assets/profile.jpg';
 
 /**
  * Allowed social entry keys in profile configuration.
@@ -54,16 +53,10 @@ export interface ProfileConfig {
 }
 
 export const profileConfig: ProfileConfig = {
-  avatar: defaultAvatar,
-  name: 'Your Name',
-  title: 'Your Role / Focus',
-  bio: 'Write a short self-introduction here. This content is used in About and article schema.',
-  location: 'Your City',
-  email: 'you@example.com',
-  githubProfileUrl: 'https://example.com',
-  socials: [
-    { key: 'github', label: 'GitHub', url: 'https://example.com' },
-    { key: 'x', label: 'X', url: 'https://example.com' },
-    { key: 'website', label: 'Website', url: 'https://example.com' },
-  ],
+  name: 'yoyo',
+  title: '华中科技大学集成电路学院 · 电子科学与技术本科生',
+  bio: '本科大四，预计 2027 年毕业。希望继续探索高性能处理器电源架构，长期关注 AI 芯片与集成电路设计。课余喜欢健身、寻找和品尝美食、打乒乓球。',
+  location: '中国 · 湖北 · 武汉 · 华中科技大学',
+  githubProfileUrl: 'https://github.com/Miles-gift',
+  socials: [{ key: 'github', label: 'GitHub · Miles-gift', url: 'https://github.com/Miles-gift' }],
 };
