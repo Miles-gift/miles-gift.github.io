@@ -81,14 +81,12 @@ jobs:
           node --input-type=module > "$RUNNER_TEMP/published-slugs.txt" <<'NODE'
           import { readFile, readdir } from 'node:fs/promises';
           import path from 'node:path';
-          import { parse } from 'yaml';
 
           const directory = 'src/content/blog';
           for (const name of (await readdir(directory)).filter((file) => /\.(md|mdx)$/i.test(file)).sort()) {
             const source = await readFile(path.join(directory, name), 'utf8');
             const match = source.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
             if (!match) throw new Error(`${name} has no valid frontmatter`);
-            const metadata = parse(match[1]);
             const draft = match[1].match(/^draft\s*:\s*(true|false)\s*$/m);
             if (!draft) throw new Error(`${name} has no valid draft field`);
             if (draft[1] !== 'true') console.log(name.replace(/\.(md|mdx)$/i, ''));
