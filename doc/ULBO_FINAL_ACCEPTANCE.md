@@ -31,18 +31,20 @@
 | `npm run frontmatter:check` | 通过：4 篇，0 规范变化、0 错误、0 正文哈希差异。 |
 | `npm run build` | 通过：21 page(s)，含模板原生页面、4 篇文章及4个旧地址跳转。 |
 | 输出核验 | 搜索/RSS 各 4 篇；退役内容集合不存在；sitemap 不含 redirect/退役栏目；四条旧地址目标正确。 |
-| 部署工作流 | YAML 解析通过；包含 build、deploy、verify 三个 job。 |
+| GitHub Actions | Astro Pages 工作流 run `36213026781` 全部成功；Build、deploy、Verify live site 均通过。 |
+| 生产站点 | `https://miles-gift.github.io/` 返回 Ulbo 原生首页；线上验证覆盖首页、文章索引、4 篇文章、标签、About、RSS、robots、sitemap 及 4 条旧文章跳转。 |
 
 ## 已知提示
 
 - 上游 Astro Markdown 配置 API 输出 deprecation 提示；为保持与冻结模板一致，本次未擅自升级 Astro 或重写配置。
 - 上游 build 提示存在超过 500 kB 的 chunk；未为视觉/依赖表现偏离上游做拆包调整。
-- `npm ci` 报告了 19 项依赖 audit 告警（1 low、7 moderate、10 high、1 critical）；本次未升级依赖。GitHub Actions 的 CI 和 Pages 部署仍需在合并后完成实际运行确认。
+- `npm ci` 报告了 19 项依赖 audit 告警（1 low、7 moderate、10 high、1 critical）；本次未升级依赖。
+- GitHub 还为仓库启动了默认 Jekyll Pages 检查 run `36213026871`，其 Build with Jekyll 步骤失败。Astro Pages 工作流 run `36213026781` 已用 `actions/deploy-pages` 成功发布，并完成生产 URL 路由检查；线上带缓存绕过参数复核也确认展示 Ulbo 首页。旧浏览器缓存可能暂时保留上一版首页。
 
 ## 发布状态
 
 - [x] 阶段 0–5 均已分别提交并推送到实施分支。
 - [x] 阶段 6 本地最终检查已完成。
-- [ ] 阶段 6 验收记录已提交并推送实施分支。
-- [ ] 合并到 `main`，等待 GitHub Actions 部署。
-- [ ] 检查生产首页、四篇文章、About、标签、搜索、RSS、sitemap 与四条旧地址跳转。
+- [x] 阶段 6 验收记录已提交并推送实施分支。
+- [x] 实施分支已快进合并到 `main` 并推送至 GitHub（`d5a9d97`）。
+- [x] GitHub Astro Pages 工作流部署完成；生产首页和全部目标路由检查通过。
