@@ -514,10 +514,14 @@ async function previewPage(pathname) {
 	}
 }
 
-function renderPublishSummary(summary) {
+function renderPublishSummary(summary, { preserveResult = false } = {}) {
+	const status = document.querySelector('#publish-status');
+	const previousStatus = status.textContent;
+	const previousError = status.classList.contains('is-error');
+	const message = document.querySelector('#publish-message');
+	const previousMessage = message.textContent;
 	const target = document.querySelector('#publish-target');
 	target.textContent = `${summary.target} · ${summary.branch || '未知分支'}`;
-	const status = document.querySelector('#publish-status');
 	status.textContent = summary.canPublish ? `发现 ${summary.changeCount} 项待发布变更。` : summary.changeCount ? '当前有阻塞项，处理后才能发布。' : '发布清单为空。';
 	status.classList.toggle('is-error', summary.blockers.length > 0);
 	const list = document.querySelector('#publish-changes');
@@ -538,15 +542,20 @@ function renderPublishSummary(summary) {
 		blockers.append(items);
 	}
 	document.querySelector('#publish-now').disabled = !summary.canPublish || Boolean(publishView.dataset.running === 'true');
-	document.querySelector('#publish-message').textContent = summary.canPublish
+	message.textContent = summary.canPublish
 		? '私有草稿不会进入 GitHub；提交前会显示检查结果。'
 		: summary.branch !== 'main' ? '正式发布仅从 main 推送；合并 CMS 实施分支后可启用。' : '没有内容被发布。';
+	if (preserveResult) {
+		status.textContent = previousStatus;
+		status.classList.toggle('is-error', previousError);
+		message.textContent = previousMessage;
+	}
 }
 
-async function loadPublishSummary() {
+async function loadPublishSummary({ preserveResult = false } = {}) {
 	try {
 		const summary = await api('/api/publish/summary');
-		renderPublishSummary(summary);
+		renderPublishSummary(summary, { preserveResult });
 	} catch (error) {
 		document.querySelector('#publish-status').textContent = error.message;
 		document.querySelector('#publish-status').classList.add('is-error');
@@ -575,7 +584,7 @@ async function pollPublishRun(id) {
 			document.querySelector('#publish-message').textContent = run.result?.workflow?.workflowUrl
 				? `提交 ${run.result.commitSha?.slice(0, 12) || ''} · GitHub Actions：${run.result.workflow.state} · ${run.result.workflow.message}`
 				: run.message;
-			await loadPublishSummary();
+			await loadPublishSummary({ preserveResult: true });
 			return;
 		}
 		setTimeout(() => void pollPublishRun(id), 1500);
