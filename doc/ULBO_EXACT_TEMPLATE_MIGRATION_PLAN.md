@@ -112,7 +112,7 @@
 **动作**
 
 1. 在 `src/content/blog/` 建立恰好四个条目，使用原 `slug`，以 Ulbo 原生 `/blog/<slug>/` 为 canonical 地址；全部为公开文章，不附带演示文章。
-2. 严格按上游 schema 映射：旧 `title → title`、`pubDate → date`、`description → description`、`draft → draft`、`topic → categories` 的单元素数组、`tags → tags`。确有旧 `updated` 时才映射 `updated`；旧 `kind`、`series`、`cover`、`featured` 等模板不支持的字段不塞入新 frontmatter，也不为它们改 schema。保持日期及标签原值。
+2. 严格按上游 schema 映射：旧 `title → title`、`pubDate → date`、`description → description`、`draft → draft`、`topic → categories` 的单元素数组、`tags → tags`。确有旧 `updatedDate` 时映射为模板字段 `updated`；旧 `kind`、`series`、`cover`、`featured` 等模板不支持的字段不塞入新 frontmatter，也不为它们改 schema。保持日期与标签含义；模板规范化工具要求 `Git`、`Markdown` 使用小写标签 `git`、`markdown`，迁移时遵循此规范。
 3. 逐篇复制 Markdown 正文。只修正站内路径和资产引用；《内容不是文件》所用的 `/illustrations/content-loop.svg` 和 `/illustrations/publication-boundary.svg` 随文章迁入，并核验它们不会被用于其它旧栏目。
 4. 审核正文里的旧站导航、栏目名称、内部链接。如果属于作者文章原文叙述，原则上保持原文；如果它是已失效的功能链接，则仅改链接目标或去掉失效导航，逐项记录，不悄悄删段落。
 5. 对比迁入前后：四篇标题、发布日期、简介、标签、正文段落/标题/代码块/图片的数量与内容；记录每篇差异。运行 Ulbo 的 frontmatter 校验。
