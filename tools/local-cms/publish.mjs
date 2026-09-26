@@ -202,8 +202,13 @@ export async function getPublishSummary(options) {
 }
 
 async function publishCommand(commandName, args, cwd) {
-	const { stdout } = await execFileAsync(commandName, args, { cwd, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 });
-	return stdout.trim();
+	try {
+		const { stdout } = await execFileAsync(commandName, args, { cwd, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 });
+		return stdout.trim();
+	} catch (error) {
+		const details = String(error.stderr || error.stdout || error.message || '').trim().split('\n').slice(-12).join('\n');
+		throw new Error(`${commandName} ${args.join(' ')} 失败${details ? `：\n${details}` : ''}`);
+	}
 }
 
 async function prepareBackup(projectRoot, workspaceRoot, relativePaths) {
