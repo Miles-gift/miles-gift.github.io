@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="cms-session" content="__CMS_SESSION__" />
+		<meta name="theme-color" content="#f4f5f6" />
+		<title>本地内容管理 · yoyo</title>
+		<link rel="stylesheet" href="/theme.css" />
+		<link rel="stylesheet" href="/assets/cms.css" />
+		<script type="module" src="/assets/app.js"></script>
+	</head>
+	<body class="cms-body">
+		<div class="cms-app">
+			<header class="cms-topbar">
+				<a class="cms-brand" href="/" aria-label="本地 CMS 首页">
+					<span class="cms-brand-mark" aria-hidden="true">y</span>
+					<span><strong>yoyo</strong><small>本地内容管理</small></span>
+				</a>
+				<div class="cms-topbar-actions">
+					<span class="cms-local-badge"><span></span>仅本机</span>
+					<button class="cms-icon-button" id="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">
+						<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path></svg>
+					</button>
+				</div>
+			</header>
+
+			<main class="cms-main">
+				<section class="cms-heading-row">
+					<div>
+						<p class="cms-eyebrow">CONTENT STUDIO <span>·</span> LOCAL</p>
+						<h1>文章</h1>
+						<p class="cms-lede">查看博客内容与本地草稿。</p>
+					</div>
+					<div class="cms-project-status" id="project-status" aria-live="polite">
+						<span class="cms-status-dot"></span><span>正在连接本地仓库…</span>
+					</div>
+				</section>
+
+				<nav class="cms-tabs" aria-label="内容管理">
+					<a href="#articles" class="is-active" aria-current="page">文章</a>
+					<a href="#settings" aria-disabled="true" title="阶段 3 开放">博客设置 <span class="cms-soon">稍后</span></a>
+					<a href="#publish" aria-disabled="true" title="阶段 4 开放">发布 <span class="cms-soon">稍后</span></a>
+				</nav>
+
+				<section class="cms-card cms-list-card" id="articles" aria-labelledby="articles-title">
+					<div class="cms-card-header">
+						<div><h2 id="articles-title">文章库</h2><p>来自 `src/content/blog/` 的 Markdown 与 MDX。</p></div>
+						<span class="cms-count" id="post-count">— 篇</span>
+					</div>
+					<div class="cms-list-tools">
+						<label class="cms-search">
+							<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+							<input id="post-search" type="search" placeholder="搜索标题、slug 或标签" autocomplete="off" />
+						</label>
+						<label class="cms-filter-label" for="status-filter">状态</label>
+						<select id="status-filter" class="cms-select"><option value="all">全部</option><option value="published">已发布</option><option value="draft">草稿</option><option value="local">有本地草稿</option></select>
+					</div>
+					<div class="cms-list" id="post-list" aria-live="polite">
+						<div class="cms-loading"><span class="cms-spinner"></span>正在读取文章…</div>
+					</div>
+					<div class="cms-error" id="load-error" hidden role="alert"></div>
+				</section>
+
+				<aside class="cms-notice" id="workspace-notice" hidden>
+					<span class="cms-notice-icon" aria-hidden="true">✦</span>
+					<div><strong>本机有未发布的保存</strong><p id="workspace-summary"></p></div>
+				</aside>
+
+				<footer class="cms-footer"><span>Ulbo Content Studio</span><span id="runtime-status">本地仓库 · 读取中</span></footer>
+			</main>
+		</div>
+
+		<dialog class="cms-dialog" id="post-dialog">
+			<div class="cms-dialog-header"><div><p class="cms-eyebrow">MARKDOWN SOURCE</p><h2 id="dialog-title">文章源码</h2></div><button class="cms-icon-button" id="dialog-close" type="button" aria-label="关闭">×</button></div>
+			<pre class="cms-source" id="dialog-content"></pre>
+		</dialog>
+		<div class="cms-toast" id="toast" role="status" aria-live="polite"></div>
+	</body>
+</html>
