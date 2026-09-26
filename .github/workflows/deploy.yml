@@ -69,8 +69,11 @@ jobs:
           SITE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
           set -euo pipefail
+          check_url() {
+            curl --fail --silent --show-error --retry 6 --retry-all-errors --retry-delay 10 --output /dev/null "$1"
+          }
           for path in "" "blog/" "tags/" "about/" "rss.xml" "robots.txt" "sitemap-index.xml"; do
-            curl --fail --silent --show-error --retry 6 --retry-delay 10 "${SITE_URL}${path}" >/dev/null
+            check_url "${SITE_URL}${path}"
           done
           node --input-type=module > "$RUNNER_TEMP/published-slugs.txt" <<'NODE'
           import { readFile, readdir } from 'node:fs/promises';
@@ -88,6 +91,8 @@ jobs:
           NODE
           while IFS= read -r slug; do
             [ -n "$slug" ] || continue
-            curl --fail --silent --show-error --retry 6 --retry-delay 10 "${SITE_URL}blog/${slug}/" >/dev/null
-            curl --fail --silent --show-error --retry 6 --retry-delay 10 "${SITE_URL}articles/${slug}/" | grep -q 'http-equiv="refresh"'
+            check_url "${SITE_URL}blog/${slug}/"
+            legacy_page="$RUNNER_TEMP/legacy-page.html"
+            curl --fail --silent --show-error --retry 6 --retry-all-errors --retry-delay 10 --output "$legacy_page" "${SITE_URL}articles/${slug}/"
+            grep -qF 'http-equiv="refresh"' "$legacy_page"
           done < "$RUNNER_TEMP/published-slugs.txt"
