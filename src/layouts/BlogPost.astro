@@ -208,7 +208,7 @@ const articleSchema = {
 			}
 
 			/* 响应式调整 */
-			@media (max-width: 1100px) { 
+			@media (max-width: 960px) {
 				.layout-container {
 					grid-template-columns: 1fr; /* 单列布局 */
 					max-width: 960px;
@@ -217,6 +217,19 @@ const articleSchema = {
 				}
 				.article-reading {
 					padding: 2.1em 1.6em;
+				}
+			}
+
+			@media (min-width: 961px) and (max-width: 1100px) {
+				.layout-container {
+					grid-template-columns: minmax(0, 1fr) 220px;
+					gap: clamp(24px, 3vw, 32px);
+					max-width: 1060px;
+					padding: 0 1em 2em;
+				}
+
+				.article-reading {
+					padding: 2.1em 1.35em;
 				}
 			}
 			
@@ -737,6 +750,7 @@ const articleSchema = {
             import { prepareMermaidForPrint, setupMermaid } from '../scripts/mermaid';
             import { setupLightbox } from '../scripts/lightbox';
             import { setupSearchLanding } from '../scripts/search/landing';
+            import { setupArticleScrollReveal } from '../scripts/article-scroll-reveal';
 
 			const prepareCodeHighlightForPrint = () => {
 				const tokens = Array.from(
@@ -882,6 +896,8 @@ const articleSchema = {
 			};
 
             const runEnhancements = async () => {
+                runtimeWindow.__articleRevealCleanup?.();
+                runtimeWindow.__articleRevealCleanup = setupArticleScrollReveal() ?? undefined;
                 await setupMermaid?.();
                 setupCodeBlocks?.();
                 const articleNavigation = setupToc?.() ?? null;
@@ -894,6 +910,7 @@ const articleSchema = {
             const runtimeWindow = window as Window & {
                 __blogEnhancementsHandler?: () => void;
 				__blogBeforePrintHandler?: () => void;
+				__articleRevealCleanup?: () => void;
             };
 
             if (runtimeWindow.__blogEnhancementsHandler) {

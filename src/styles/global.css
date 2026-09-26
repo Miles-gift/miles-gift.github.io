@@ -242,7 +242,7 @@
 	--font-ui: 'IBM Plex Sans', 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 	--font-reading: var(--font-ui);
 	--font-code: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
-	--reading-measure: 43rem;
+	--reading-measure: 49rem;
 }
 
 [data-theme="dark"] {
@@ -1424,14 +1424,16 @@ hr {
 		margin: 0 auto;
 		border: 1px solid var(--color-border-subtle);
 		border-radius: 8px;
-		box-shadow: none;
-		transition: none;
-		transform: none;
+		box-shadow: 0 8px 22px -10px rgba(25, 43, 58, 0.24);
+		transition:
+			transform 360ms cubic-bezier(0.2, 0.75, 0.25, 1),
+			box-shadow 360ms cubic-bezier(0.2, 0.75, 0.25, 1),
+			filter 300ms ease;
 	}
 
 	.article-reading .prose figure.markdown-image img:hover {
-		box-shadow: none;
-		transform: none;
+		box-shadow: 0 16px 30px -12px rgba(25, 43, 58, 0.3);
+		transform: translateY(-3px) scale(1.008);
 	}
 
 	.article-reading .prose figure.markdown-image figcaption {
@@ -1446,9 +1448,9 @@ hr {
 	}
 
 	.article-reading .prose a {
-		color: var(--accent);
+		color: inherit;
 		text-decoration-line: underline;
-		text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
+		text-decoration-color: color-mix(in srgb, var(--accent) 34%, transparent);
 		text-decoration-thickness: 0.07em;
 		text-underline-offset: 0.19em;
 		transition: color 150ms ease, text-decoration-color 150ms ease;
@@ -1474,7 +1476,26 @@ hr {
 		height: 0.72em;
 		margin-left: 0.16em;
 		vertical-align: 0.06em;
+		opacity: 0.56;
 		text-decoration: none;
+		transition: opacity 150ms ease;
+	}
+
+	.article-reading .prose a:hover .article-link__outbound-mark {
+		opacity: 0.9;
+	}
+
+	.article-reading .prose.article-reveal-ready > .article-reveal-item {
+		opacity: 0;
+		transform: translate3d(0, 0.65rem, 0);
+		transition:
+			opacity 520ms cubic-bezier(0.2, 0.65, 0.25, 1),
+			transform 620ms cubic-bezier(0.2, 0.65, 0.25, 1);
+	}
+
+	.article-reading .prose.article-reveal-ready > .article-reveal-item.is-visible {
+		opacity: 1;
+		transform: translate3d(0, 0, 0);
 	}
 
 	.article-reading .prose code:not(pre code) {
@@ -1555,5 +1576,11 @@ hr {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
+	}
+
+	.article-reading .prose.article-reveal-ready > .article-reveal-item {
+		opacity: 1 !important;
+		transform: none !important;
+		transition: none !important;
 	}
 }
