@@ -33,7 +33,7 @@ async function fixture() {
 	run(['config', 'user.email', 'cms-test@example.invalid']);
 	run(['add', '--all']);
 	run(['commit', '-m', 'initial']);
-	execFileSync('git', ['init', '--bare', remotePath], { encoding: 'utf8', stdio: 'ignore' });
+	execFileSync('git', ['init', '--bare', '--initial-branch=main', remotePath], { encoding: 'utf8', stdio: 'ignore' });
 	run(['remote', 'add', 'origin', remotePath]);
 	run(['push', '-u', 'origin', 'main']);
 	const baseHead = run(['rev-parse', 'HEAD']);
