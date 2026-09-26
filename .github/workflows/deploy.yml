@@ -64,14 +64,30 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - name: Check published pages and migrated article URLs
+      - name: Check published pages and article URLs
         env:
           SITE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
           set -euo pipefail
-          for path in "" "blog/" "blog/site-start/" "blog/why-a-digital-garden/" "blog/content-operating-system/" "blog/public-not-private/" "tags/" "about/" "rss.xml" "robots.txt" "sitemap-index.xml"; do
+          for path in "" "blog/" "tags/" "about/" "rss.xml" "robots.txt" "sitemap-index.xml"; do
             curl --fail --silent --show-error --retry 6 --retry-delay 10 "${SITE_URL}${path}" >/dev/null
           done
-          for slug in site-start why-a-digital-garden content-operating-system public-not-private; do
+          node --input-type=module > "$RUNNER_TEMP/published-slugs.txt" <<'NODE'
+          import { readFile, readdir } from 'node:fs/promises';
+          import path from 'node:path';
+          import { parse } from 'yaml';
+
+          const directory = 'src/content/blog';
+          for (const name of (await readdir(directory)).filter((file) => /\.(md|mdx)$/i.test(file)).sort()) {
+            const source = await readFile(path.join(directory, name), 'utf8');
+            const match = source.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+            if (!match) throw new Error(`${name} has no valid frontmatter`);
+            const metadata = parse(match[1]);
+            if (metadata.draft !== true) console.log(name.replace(/\.(md|mdx)$/i, ''));
+          }
+          NODE
+          while IFS= read -r slug; do
+            [ -n "$slug" ] || continue
+            curl --fail --silent --show-error --retry 6 --retry-delay 10 "${SITE_URL}blog/${slug}/" >/dev/null
             curl --fail --silent --show-error --retry 6 --retry-delay 10 "${SITE_URL}articles/${slug}/" | grep -q 'http-equiv="refresh"'
-          done
+          done < "$RUNNER_TEMP/published-slugs.txt"

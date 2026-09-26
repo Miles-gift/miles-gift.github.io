@@ -43,7 +43,7 @@
 				<nav class="cms-tabs" aria-label="内容管理">
 					<a href="#articles" id="articles-tab" class="is-active" aria-current="page">文章</a>
 					<a href="#settings" id="settings-tab">博客设置</a>
-					<a href="#publish" aria-disabled="true" title="阶段 4 开放">发布 <span class="cms-soon">稍后</span></a>
+					<a href="#publish" id="publish-tab">发布</a>
 				</nav>
 
 				<section class="cms-card cms-list-card" id="articles" aria-labelledby="articles-title">
@@ -63,6 +63,17 @@
 						<div class="cms-loading"><span class="cms-spinner"></span>正在读取文章…</div>
 					</div>
 					<div class="cms-error" id="load-error" hidden role="alert"></div>
+				</section>
+
+				<section class="cms-publish-view" id="publish-view" hidden aria-labelledby="publish-title">
+					<div class="cms-card cms-publish-card">
+						<div class="cms-card-header"><div><h2 id="publish-title">检查并发布</h2><p>只会发布已加入清单的文章、待删除文章、博客设置及其图片。</p></div><span class="cms-count" id="publish-target">origin/main</span></div>
+						<div class="cms-publish-status" id="publish-status" role="status" aria-live="polite">正在检查发布清单…</div>
+						<p class="cms-publish-workflow"><a id="publish-workflow-link" href="https://github.com/Miles-gift/miles-gift.github.io/actions" target="_blank" rel="noopener noreferrer" hidden>打开 GitHub Actions</a></p>
+						<div class="cms-publish-changes" id="publish-changes"></div>
+						<div class="cms-publish-blockers" id="publish-blockers" hidden></div>
+						<div class="cms-editor-footer"><span id="publish-message">私有草稿不会进入 GitHub。</span><button class="cms-button cms-primary-button" id="publish-now" type="button" disabled>检查并发布到 main</button></div>
+					</div>
 				</section>
 
 				<section class="cms-settings-view" id="settings-view" hidden aria-labelledby="settings-title">
@@ -110,6 +121,7 @@
 							<label class="cms-field" for="field-tags"><span>标签 <b>用逗号或换行分隔；可选已有标签</b></span><input id="field-tags" type="text" list="tag-options" placeholder="Markdown, 数字花园" /><datalist id="tag-options"></datalist></label>
 							<label class="cms-field cms-field-wide" for="field-cover"><span>文章 Hero 封面 <b>可选；留空使用全站默认图</b></span><div class="cms-cover-row"><input id="field-cover" type="text" placeholder="/uploads/blog/…webp" /><button class="cms-button" id="cover-upload" type="button">上传封面</button></div></label>
 							<label class="cms-toggle-field cms-field-wide"><input id="field-draft" type="checkbox" /><span><strong>保存为草稿</strong><small>草稿只保存在本机工作区，不会自动进入发布内容。</small></span></label>
+							<label class="cms-toggle-field cms-field-wide"><input id="field-ready-publish" type="checkbox" /><span><strong>加入发布清单</strong><small>勾选后才会被“一键发布”选中；发布文章需关闭草稿状态。</small></span></label>
 							<div class="cms-field cms-field-wide cms-body-field">
 								<div class="cms-body-label"><label for="field-body">正文 <b>Markdown / MDX 源码</b></label><div class="cms-body-tools"><span id="word-count">0 字</span><button class="cms-button" id="compare-body" type="button">查看正文对比</button><button class="cms-button" id="insert-image" type="button">上传并插入图片</button><input id="image-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden /></div></div>
 								<div class="cms-markdown-tools" aria-label="Markdown 插入工具">

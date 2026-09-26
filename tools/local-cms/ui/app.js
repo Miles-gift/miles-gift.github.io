@@ -9,6 +9,7 @@ const toast = document.querySelector('#toast');
 const editorView = document.querySelector('#editor-view');
 const listView = document.querySelector('#articles');
 const settingsView = document.querySelector('#settings-view');
+const publishView = document.querySelector('#publish-view');
 const tabs = document.querySelector('.cms-tabs');
 let entries = [];
 let workspaceSlugs = new Set();
@@ -51,7 +52,8 @@ function button(text, action, slug, className = 'cms-button') {
 function postState(post) {
 	if (post.conflict) return element('span', 'cms-post-state is-draft', '有版本冲突');
 	if (post.localState === 'deleted') return element('span', 'cms-post-state is-draft', '待删除');
-	if (post.localState === 'saved' || post.localState === 'ready') return element('span', 'cms-post-state is-local', '本机已保存');
+	if (post.localState === 'ready') return element('span', 'cms-post-state is-local', '加入发布清单');
+	if (post.localState === 'saved') return element('span', 'cms-post-state is-local', '本机已保存');
 	if (post.localState === 'invalid') return element('span', 'cms-post-state is-draft', '校验失败');
 	if (post.draft) return element('span', 'cms-post-state is-draft', '源文件草稿');
 	return element('span', 'cms-post-state', '已发布');
@@ -143,6 +145,7 @@ function slugSuggestion() {
 function showEditor() {
 	listView.hidden = true;
 	settingsView.hidden = true;
+	publishView.hidden = true;
 	editorView.hidden = false;
 	tabs.hidden = true;
 	document.querySelector('#workspace-notice').hidden = true;
@@ -152,6 +155,7 @@ function showEditor() {
 function showList() {
 	listView.hidden = false;
 	settingsView.hidden = true;
+	publishView.hidden = true;
 	editorView.hidden = true;
 	tabs.hidden = false;
 	setActiveTab('articles');
@@ -162,14 +166,26 @@ function showList() {
 function showSettings() {
 	listView.hidden = true;
 	editorView.hidden = true;
+	publishView.hidden = true;
 	settingsView.hidden = false;
 	tabs.hidden = false;
 	setActiveTab('settings');
 	window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function showPublish() {
+	listView.hidden = true;
+	editorView.hidden = true;
+	settingsView.hidden = true;
+	publishView.hidden = false;
+	tabs.hidden = false;
+	setActiveTab('publish');
+	void loadPublishSummary();
+	window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function setActiveTab(active) {
-	for (const [id, name] of [['articles-tab', 'articles'], ['settings-tab', 'settings']]) {
+	for (const [id, name] of [['articles-tab', 'articles'], ['settings-tab', 'settings'], ['publish-tab', 'publish']]) {
 		const tab = document.querySelector(`#${id}`);
 		tab.classList.toggle('is-active', active === name);
 		if (active === name) tab.setAttribute('aria-current', 'page');
@@ -189,6 +205,7 @@ function formFingerprint() {
 		tags: document.querySelector('#field-tags').value,
 		cover: document.querySelector('#field-cover').value,
 		draft: document.querySelector('#field-draft').checked,
+		readyToPublish: document.querySelector('#field-ready-publish').checked,
 		body: document.querySelector('#field-body').value,
 	});
 }
@@ -299,6 +316,7 @@ function fillEditor(post, body, options = {}) {
 	document.querySelector('#field-tags').value = (post.tags || []).join(', ');
 	document.querySelector('#field-cover').value = post.cover || '';
 	document.querySelector('#field-draft').checked = Boolean(post.draft);
+	document.querySelector('#field-ready-publish').checked = Boolean(post.readyToPublish);
 	document.querySelector('#field-body').value = body || '';
 	document.querySelector('#delete-post').hidden = options.isNew;
 	document.querySelector('#save-post').disabled = Boolean(post.deleted);
@@ -385,6 +403,7 @@ async function savePost() {
 			lineEnding: editor.lineEnding,
 			baseHash: editor.baseHash,
 			baseHead: editor.baseHead,
+			readyToPublish: document.querySelector('#field-ready-publish').checked,
 		};
 		const result = await api('/api/workspace/post', {
 			method: editor.isNew ? 'POST' : 'PUT',
@@ -480,6 +499,98 @@ async function previewPage(pathname) {
 	} catch (error) {
 		popup?.close();
 		showToast(error.message);
+	}
+}
+
+function renderPublishSummary(summary) {
+	const target = document.querySelector('#publish-target');
+	target.textContent = `${summary.target} · ${summary.branch || '未知分支'}`;
+	const status = document.querySelector('#publish-status');
+	status.textContent = summary.canPublish ? `发现 ${summary.changeCount} 项待发布变更。` : summary.changeCount ? '当前有阻塞项，处理后才能发布。' : '发布清单为空。';
+	status.classList.toggle('is-error', summary.blockers.length > 0);
+	const list = document.querySelector('#publish-changes');
+	list.replaceChildren();
+	if (!summary.changes.length) list.append(element('p', 'cms-empty', '暂无待发布变更。编辑文章后勾选“加入发布清单”，或标记文章待删除。'));
+	for (const change of summary.changes) {
+		const row = element('div', 'cms-publish-row');
+		row.append(element('strong', '', change.type), element('span', '', change.title || ''), element('code', '', change.path));
+		list.append(row);
+	}
+	const blockers = document.querySelector('#publish-blockers');
+	blockers.hidden = summary.blockers.length === 0;
+	blockers.replaceChildren();
+	if (summary.blockers.length) {
+		blockers.append(element('h3', '', '需要先处理'));
+		const items = element('ul');
+		for (const message of summary.blockers) items.append(element('li', '', message));
+		blockers.append(items);
+	}
+	document.querySelector('#publish-now').disabled = !summary.canPublish || Boolean(publishView.dataset.running === 'true');
+	document.querySelector('#publish-message').textContent = summary.canPublish
+		? '私有草稿不会进入 GitHub；提交前会显示检查结果。'
+		: summary.branch !== 'main' ? '正式发布仅从 main 推送；合并 CMS 实施分支后可启用。' : '没有内容被发布。';
+}
+
+async function loadPublishSummary() {
+	try {
+		const summary = await api('/api/publish/summary');
+		renderPublishSummary(summary);
+	} catch (error) {
+		document.querySelector('#publish-status').textContent = error.message;
+		document.querySelector('#publish-status').classList.add('is-error');
+	}
+}
+
+async function pollPublishRun(id) {
+	try {
+		const run = await api(`/api/publish/${encodeURIComponent(id)}`);
+		const status = document.querySelector('#publish-status');
+		status.textContent = run.message || run.phaseMessage || '发布处理中…';
+		status.classList.toggle('is-error', Boolean(run.error || run.result?.workflow?.state === 'site_check_failed' || ['failure', 'cancelled', 'timed_out'].includes(run.result?.workflow?.state)));
+		if (run.done) {
+			const workflowLink = document.querySelector('#publish-workflow-link');
+			if (run.result?.workflow?.workflowUrl) {
+				workflowLink.href = run.result.workflow.workflowUrl;
+				workflowLink.hidden = false;
+			}
+			const deploymentState = run.result?.workflow?.state;
+			if (run.result?.ok && ['waiting', 'queued', 'in_progress', 'pending'].includes(deploymentState)) {
+				setTimeout(() => void pollPublishRun(id), 5000);
+				return;
+			}
+			publishView.dataset.running = 'false';
+			document.querySelector('#publish-now').disabled = false;
+			document.querySelector('#publish-message').textContent = run.result?.workflow?.workflowUrl
+				? `提交 ${run.result.commitSha?.slice(0, 12) || ''} · GitHub Actions：${run.result.workflow.state} · ${run.result.workflow.message}`
+				: run.message;
+			await loadPublishSummary();
+			return;
+		}
+		setTimeout(() => void pollPublishRun(id), 1500);
+	} catch (error) {
+		publishView.dataset.running = 'false';
+		document.querySelector('#publish-now').disabled = false;
+		document.querySelector('#publish-status').textContent = error.message;
+		document.querySelector('#publish-status').classList.add('is-error');
+	}
+}
+
+async function startPublish() {
+	const button = document.querySelector('#publish-now');
+	try {
+		const summary = await api('/api/publish/summary');
+		if (!summary.canPublish) return renderPublishSummary(summary);
+		if (!window.confirm(`将 ${summary.changeCount} 项变更提交并推送到 origin/main？`)) return;
+		button.disabled = true;
+		publishView.dataset.running = 'true';
+		document.querySelector('#publish-status').textContent = '正在启动预发布检查…';
+		const run = await api('/api/publish', { method: 'POST', body: '{}' });
+		void pollPublishRun(run.id);
+	} catch (error) {
+		publishView.dataset.running = 'false';
+		button.disabled = false;
+		document.querySelector('#publish-status').textContent = error.message;
+		document.querySelector('#publish-status').classList.add('is-error');
 	}
 }
 
@@ -583,6 +694,12 @@ document.querySelector('#settings-tab').addEventListener('click', (event) => {
 	if (isDirty && !window.confirm('文章有未保存的修改，确定离开吗？')) return;
 	showSettings();
 });
+document.querySelector('#publish-tab').addEventListener('click', (event) => {
+	event.preventDefault();
+	if (isDirty && !window.confirm('文章有未保存的修改，确定离开吗？')) return;
+	if (settingsDirty && !window.confirm('博客设置有未保存的修改，确定离开吗？')) return;
+	showPublish();
+});
 document.querySelector('#back-to-list').addEventListener('click', () => {
 	if (isDirty && !window.confirm('有未保存的修改，确定离开编辑器吗？')) return;
 	showList();
@@ -592,6 +709,7 @@ document.querySelector('#save-post-footer').addEventListener('click', () => void
 document.querySelector('#preview-post').addEventListener('click', () => editor && void previewPage(`/blog/${editor.slug}/`));
 document.querySelector('#save-settings').addEventListener('click', () => void saveSettings());
 document.querySelector('#preview-blog').addEventListener('click', () => void previewPage('/blog/'));
+document.querySelector('#publish-now').addEventListener('click', () => void startPublish());
 document.querySelector('#delete-post').addEventListener('click', async () => {
 	if (!editor?.slug) return;
 	if (await removePost(editor.slug)) showList();

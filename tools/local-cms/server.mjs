@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { randomBytes } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { readFile, readdir } from 'node:fs/promises';
 import { createServer } from 'node:http';
@@ -10,6 +11,7 @@ import { hashContent, parsePostSource, serializePostSource, summarizePost } from
 import { optimizePrivateImage } from './media.mjs';
 import { readSettingsDocument, saveSettingsDocument, validateBlogSettings } from './settings.mjs';
 import { createPreviewManager } from './preview.mjs';
+import { getDeploymentStatus, getPublishSummary, publishWorkspace } from './publish.mjs';
 import { listWorkspaceDocuments, readWorkspaceDocument, removeWorkspaceDocument, saveWorkspaceDocument } from './workspace.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -22,6 +24,7 @@ const port = Number(process.env.CMS_PORT || 4178);
 const sessionToken = randomBytes(32).toString('base64url');
 const sessionHeader = 'x-cms-session';
 const previewManager = createPreviewManager({ projectRoot, workspaceRoot, postRoot, settingsPath });
+let publishRun = null;
 const maxBodyBytes = 25 * 1024 * 1024;
 const mimeTypes = {
 	'.css': 'text/css; charset=utf-8',
@@ -154,6 +157,7 @@ async function readPosts() {
 			sourceHead: document.baseHead || '',
 			localState: document.deleted ? 'deleted' : document.readyToPublish ? 'ready' : 'saved',
 			deleted: Boolean(document.deleted),
+			readyToPublish: Boolean(document.readyToPublish),
 			savedAt: document.savedAt,
 			conflict: Boolean(document.sourceExists && sourcePost && sourcePost.sourceHash !== document.baseHash),
 		});
@@ -181,6 +185,7 @@ async function sourceOrWorkspace(slug) {
 			sourceExists: Boolean(document ? document.sourceExists : source),
 			localState: document ? (document.deleted ? 'deleted' : 'saved') : 'published',
 			deleted: Boolean(document && document.deleted),
+			readyToPublish: Boolean(document && document.readyToPublish),
 			savedAt: document ? document.savedAt : null,
 			conflict: Boolean(document && document.sourceExists && source && source.hash !== document.baseHash),
 		},
@@ -235,6 +240,7 @@ async function savePostWorkspace(request, response, { create = false } = {}) {
 	} catch (error) {
 		return sendJson(response, error.status || 400, { error: error.message, issues: error.issues || [] });
 	}
+	if (payload.readyToPublish && serialized.data.draft) return sendJson(response, 400, { error: '加入发布清单前，请取消“保存为草稿”。' });
 	const document = {
 		slug,
 		extension: prior ? prior.extension : source ? source.extension : extension,
@@ -336,6 +342,47 @@ async function routeApi(request, response, url) {
 		const payload = await parseJsonRequest(request);
 		if (typeof payload.pathname !== 'string') return sendJson(response, 400, { error: '缺少预览页面地址。' });
 		return sendJson(response, 200, await previewManager.start(payload.pathname));
+	}
+	if (request.method === 'GET' && url.pathname === '/api/publish/summary') {
+		return sendJson(response, 200, await getPublishSummary({ projectRoot, workspaceRoot, postRoot, settingsPath }));
+	}
+	if (request.method === 'POST' && url.pathname === '/api/publish') {
+		await readBody(request);
+		if (publishRun && !publishRun.done) return sendJson(response, 409, { error: '已有发布任务正在运行。' });
+		const run = { id: randomUUID(), done: false, phase: 'starting', message: '正在启动发布检查…', result: null, error: false, nextStatusCheck: 0 };
+		publishRun = run;
+		setImmediate(() => {
+			void publishWorkspace({
+				projectRoot, workspaceRoot, postRoot, settingsPath,
+				onProgress: (phase, message) => { run.phase = phase; run.message = message; },
+			}).then((result) => {
+				run.result = result;
+				run.error = !result.ok;
+				run.phase = result.state;
+				run.message = result.message;
+				run.done = true;
+			}).catch((error) => {
+				run.error = true;
+				run.phase = 'failed';
+				run.message = error.message;
+				run.done = true;
+			});
+		});
+		return sendJson(response, 202, { id: run.id });
+	}
+	const publishMatch = url.pathname.match(/^\/api\/publish\/([a-f0-9-]{36})$/);
+	if (request.method === 'GET' && publishMatch) {
+		if (!publishRun || publishRun.id !== publishMatch[1]) return sendJson(response, 404, { error: '发布记录不存在。' });
+		if (publishRun.done && publishRun.result?.ok && publishRun.result.commitSha && Date.now() >= publishRun.nextStatusCheck) {
+			publishRun.nextStatusCheck = Date.now() + 10_000;
+			publishRun.result.workflow = await getDeploymentStatus(publishRun.result.commitSha, fetch, publishRun.result.slugs || []);
+			if (publishRun.result.workflow.state === 'success') publishRun.message = 'GitHub Actions 部署成功。';
+			else if (['failure', 'cancelled', 'timed_out'].includes(publishRun.result.workflow.state)) publishRun.message = `GitHub Actions 运行结束：${publishRun.result.workflow.state}。`;
+		}
+		return sendJson(response, 200, {
+			id: publishRun.id, done: publishRun.done, phase: publishRun.phase, message: publishRun.message,
+			error: publishRun.error, result: publishRun.result,
+		});
 	}
 
 	const readMatch = url.pathname.match(/^\/api\/posts\/([a-z0-9-]+)$/);
