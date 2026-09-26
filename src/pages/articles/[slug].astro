@@ -1,0 +1,29 @@
+---
+import { getBlogPosts } from '../../lib/content/blog';
+
+export async function getStaticPaths() {
+	const posts = await getBlogPosts();
+	return posts.map((post) => ({
+		params: { slug: post.id },
+		props: { slug: post.id, title: post.data.title },
+	}));
+}
+
+const { slug, title } = Astro.props;
+const destination = new URL(`/blog/${slug}/`, Astro.site ?? Astro.url).toString();
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta name="robots" content="noindex,follow" />
+		<link rel="canonical" href={destination} />
+		<meta http-equiv="refresh" content={`0;url=${destination}`} />
+		<title>{title}</title>
+	</head>
+	<body>
+		<p>这篇文章已移至新地址：<a href={destination}>{title}</a></p>
+	</body>
+</html>
