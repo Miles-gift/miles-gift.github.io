@@ -307,7 +307,7 @@ export async function getDeploymentStatus(commitSha, fetchImpl = fetch, publishe
 		});
 		if (!response.ok) return { state: 'unknown', message: `GitHub Actions 状态暂不可读（HTTP ${response.status}）。`, workflowUrl };
 		const data = await response.json();
-		const run = data.workflow_runs?.find((item) => item.head_sha === commitSha);
+		const run = data.workflow_runs?.find((item) => item.head_sha === commitSha && item.path === '.github/workflows/deploy.yml');
 		if (!run) return { state: 'waiting', message: '已推送，尚未发现对应的 Actions 运行。', workflowUrl };
 		let state = run.status === 'completed' ? run.conclusion || 'completed' : run.status;
 		let message = run.conclusion || run.status;

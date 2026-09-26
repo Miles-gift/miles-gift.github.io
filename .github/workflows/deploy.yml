@@ -62,8 +62,11 @@ jobs:
     name: Verify live site
     needs: deploy
     runs-on: ubuntu-latest
-    permissions: {}
+    permissions:
+      contents: read
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
       - name: Check published pages and article URLs
         env:
           SITE_URL: ${{ needs.deploy.outputs.page_url }}
@@ -86,7 +89,9 @@ jobs:
             const match = source.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
             if (!match) throw new Error(`${name} has no valid frontmatter`);
             const metadata = parse(match[1]);
-            if (metadata.draft !== true) console.log(name.replace(/\.(md|mdx)$/i, ''));
+            const draft = match[1].match(/^draft\s*:\s*(true|false)\s*$/m);
+            if (!draft) throw new Error(`${name} has no valid draft field`);
+            if (draft[1] !== 'true') console.log(name.replace(/\.(md|mdx)$/i, ''));
           }
           NODE
           while IFS= read -r slug; do

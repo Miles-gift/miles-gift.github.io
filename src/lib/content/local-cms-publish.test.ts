@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { hashContent, serializePostSource } from '../../../tools/local-cms/content.mjs';
-import { getPublishSummary, publishWorkspace } from '../../../tools/local-cms/publish.mjs';
+import { getDeploymentStatus, getPublishSummary, publishWorkspace } from '../../../tools/local-cms/publish.mjs';
 import { saveSettingsDocument } from '../../../tools/local-cms/settings.mjs';
 
 const tempRoots: string[] = [];
@@ -66,6 +66,18 @@ afterEach(async () => {
 });
 
 describe('local CMS publish transaction', () => {
+	it('tracks the Astro Pages workflow instead of GitHub Pages Jekyll builds', async () => {
+		const sha = 'a'.repeat(40);
+		const astroRun = { head_sha: sha, path: '.github/workflows/deploy.yml', status: 'completed', conclusion: 'success', html_url: 'https://github.com/example/actions/astro' };
+		const jekyllRun = { head_sha: sha, path: 'dynamic/pages/pages-build-deployment', status: 'completed', conclusion: 'failure', html_url: 'https://github.com/example/actions/jekyll' };
+		const status = await getDeploymentStatus(sha, async (url) => String(url).includes('/actions/runs?')
+			? { ok: true, status: 200, json: async () => ({ workflow_runs: [jekyllRun, astroRun] }) } as Response
+			: { ok: true, status: 200 } as Response);
+		expect(status.state).toBe('success');
+		expect(status.workflowUrl).toBe(astroRun.html_url);
+		expect(status.siteCheck?.ok).toBe(true);
+	});
+
 	it('publishes only selected article and referenced image paths to main', async () => {
 		const state = await fixture();
 		const settings = JSON.parse(await readFile(state.settingsPath, 'utf8'));
