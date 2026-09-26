@@ -44,6 +44,9 @@ const tocTree = buildTocTree(Astro.props.headings);
 <style is:global>
 	.sidebar-container {
 		padding-top: 100px;
+		position: relative;
+		inset-inline-start: 24px;
+		width: calc(100% - 24px);
 		min-width: 0;
 		max-width: 100%;
 		background-color: var(--color-bg);
