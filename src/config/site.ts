@@ -1,3 +1,5 @@
+import blogSettings from '../data/blog-settings.json';
+
 /**
  * Site-level settings shared by header, SEO tags, and feed generation.
  */
@@ -34,9 +36,9 @@ export interface SiteConfig {
 
 export const siteConfig: SiteConfig = {
   siteUrl: 'https://miles-gift.github.io',
-  siteTitle: 'yoyo',
+  siteTitle: blogSettings.siteTitle,
   siteTitleSuffix: '个人博客',
-  siteDescription: 'yoyo 的个人博客，记录电子科学与技术学习、AI 芯片、集成电路设计与高性能处理器电源架构方面的长篇文章。',
+  siteDescription: blogSettings.siteDescription,
   locale: 'zh-CN',
   headerGithubRepoUrl: 'https://github.com/Miles-gift/miles-gift.github.io',
   faviconIco: '/favicon.ico',

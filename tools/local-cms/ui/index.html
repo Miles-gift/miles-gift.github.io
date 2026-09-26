@@ -41,8 +41,8 @@
 				</section>
 
 				<nav class="cms-tabs" aria-label="内容管理">
-					<a href="#articles" class="is-active" aria-current="page">文章</a>
-					<a href="#settings" aria-disabled="true" title="阶段 3 开放">博客设置 <span class="cms-soon">稍后</span></a>
+					<a href="#articles" id="articles-tab" class="is-active" aria-current="page">文章</a>
+					<a href="#settings" id="settings-tab">博客设置</a>
 					<a href="#publish" aria-disabled="true" title="阶段 4 开放">发布 <span class="cms-soon">稍后</span></a>
 				</nav>
 
@@ -65,10 +65,31 @@
 					<div class="cms-error" id="load-error" hidden role="alert"></div>
 				</section>
 
+				<section class="cms-settings-view" id="settings-view" hidden aria-labelledby="settings-title">
+					<div class="cms-card cms-settings-card">
+						<div class="cms-card-header"><div><h2 id="settings-title">博客页面设置</h2><p>只编辑博客页与文章页中由你管理的标题、说明和背景图片。</p></div><span class="cms-post-state is-local" id="settings-save-state">已读取</span></div>
+						<div class="cms-editor-fields">
+							<label class="cms-field" for="setting-site-title"><span>站点名称</span><input id="setting-site-title" maxlength="80" /></label>
+							<label class="cms-field cms-field-wide" for="setting-site-description"><span>站点摘要</span><textarea id="setting-site-description" rows="2" maxlength="320"></textarea></label>
+							<label class="cms-field" for="setting-blog-title"><span>博客 Hero 标题</span><input id="setting-blog-title" maxlength="120" /></label>
+							<label class="cms-field" for="setting-blog-subtitle"><span>博客 Hero 副标题</span><input id="setting-blog-subtitle" maxlength="240" /></label>
+							<label class="cms-field cms-field-wide" for="setting-blog-background"><span>博客 Hero 背景图</span><div class="cms-cover-row"><input id="setting-blog-background" placeholder="留空使用模板默认图" /><button class="cms-button" type="button" data-settings-image="blogHero.backgroundImage">上传图片</button></div></label>
+							<label class="cms-field" for="setting-archive-title"><span>归档标题</span><input id="setting-archive-title" maxlength="120" /></label>
+							<label class="cms-field" for="setting-archive-intro"><span>归档介绍</span><input id="setting-archive-intro" maxlength="260" /><small>动态值可用 {total}、{current}、{last}。</small></label>
+							<label class="cms-field cms-field-wide" for="setting-empty-archive"><span>没有文章时的归档介绍</span><textarea id="setting-empty-archive" rows="2" maxlength="260"></textarea></label>
+							<label class="cms-field cms-field-wide" for="setting-empty-list"><span>文章列表空状态</span><textarea id="setting-empty-list" rows="2" maxlength="260"></textarea></label>
+							<label class="cms-field cms-field-wide" for="setting-default-post-hero"><span>默认文章 Hero 背景图</span><div class="cms-cover-row"><input id="setting-default-post-hero" placeholder="留空使用模板默认图" /><button class="cms-button" type="button" data-settings-image="defaultPostHero">上传图片</button></div></label>
+						</div>
+						<div class="cms-editor-footer"><span id="settings-message" role="status" aria-live="polite">保存只写入本机工作区。</span><div class="cms-editor-actions"><button class="cms-button" id="preview-blog" type="button">预览博客页</button><button class="cms-button cms-primary-button" id="save-settings" type="button">保存到本机</button></div></div>
+					</div>
+					<input id="settings-image-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+				</section>
+
 				<section class="cms-editor-view" id="editor-view" hidden aria-labelledby="editor-heading">
 					<div class="cms-editor-toolbar">
 						<button class="cms-button" id="back-to-list" type="button">← 返回文章</button>
 						<div class="cms-editor-actions">
+							<button class="cms-button" id="preview-post" type="button">预览文章</button>
 							<button class="cms-button cms-danger-button" id="delete-post" type="button" hidden>删除文章</button>
 							<button class="cms-button cms-primary-button" id="save-post" type="button">保存到本机</button>
 						</div>

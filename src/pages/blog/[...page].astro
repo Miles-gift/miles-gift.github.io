@@ -12,6 +12,7 @@ import {
   getBlogPageUrls,
 } from '../../lib/content/blog-page-path';
 import { extractExcerpt } from '../../lib/content/text';
+import blogSettings from '../../data/blog-settings.json';
 
 export const getStaticPaths: GetStaticPaths = async ({ paginate }) => {
   const posts = await getBlogPosts();
@@ -70,6 +71,10 @@ const pageDescription =
     : page.currentPage === 1
     ? `按发布时间倒序浏览全部 ${page.total} 篇文章。`
     : `博客归档第 ${page.currentPage} 页（共 ${page.lastPage} 页），收录 ${page.total} 篇文章。`;
+const formatBlogCopy = (template: string) => template
+  .replaceAll('{total}', String(page.total))
+  .replaceAll('{current}', String(page.currentPage))
+  .replaceAll('{last}', String(page.lastPage));
 const shouldNoindex = page.currentPage > 1;
 const canonicalPath = getBlogPagePath(page.currentPage);
 const canonicalURL = new URL(canonicalPath, siteURL);
@@ -426,10 +431,8 @@ if (last > 1) paginationList.push(last);
   <ArchiveCard
     variant="blog"
     number={`Page ${page.currentPage}`}
-    title="所有文章"
-    intro={hasPosts
-      ? `这里收录了所有的 ${page.total} 篇文章 (第 ${page.currentPage} / ${page.lastPage} 页)`
-      : '当前没有文章内容。请在 src/content/blog/ 添加 .md/.mdx 文件后重新构建。'}
+    title={blogSettings.archiveTitle}
+    intro={hasPosts ? formatBlogCopy(blogSettings.archiveIntro) : blogSettings.emptyArchiveIntro}
   >
 
         <div class="blog-posts-list">
@@ -453,7 +456,7 @@ if (last > 1) paginationList.push(last);
             ))
           ) : (
             <p class="blog-post-excerpt" style="text-align:center;padding:1.5em 0;">
-              暂无文章。请在 <code>src/content/blog/</code> 添加内容后再查看此页。
+              {blogSettings.emptyListMessage}
             </p>
           )}
         </div>

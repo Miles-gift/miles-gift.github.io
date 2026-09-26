@@ -8,6 +8,7 @@ const statusBox = document.querySelector('#project-status');
 const toast = document.querySelector('#toast');
 const editorView = document.querySelector('#editor-view');
 const listView = document.querySelector('#articles');
+const settingsView = document.querySelector('#settings-view');
 const tabs = document.querySelector('.cms-tabs');
 let entries = [];
 let workspaceSlugs = new Set();
@@ -15,6 +16,8 @@ let health = null;
 let editor = null;
 let savedFingerprint = '';
 let isDirty = false;
+let settingsDirty = false;
+let settingsBaseHead = '';
 
 async function api(path, options = {}) {
 	const headers = new Headers(options.headers || {});
@@ -139,6 +142,7 @@ function slugSuggestion() {
 
 function showEditor() {
 	listView.hidden = true;
+	settingsView.hidden = true;
 	editorView.hidden = false;
 	tabs.hidden = true;
 	document.querySelector('#workspace-notice').hidden = true;
@@ -147,10 +151,30 @@ function showEditor() {
 
 function showList() {
 	listView.hidden = false;
+	settingsView.hidden = true;
 	editorView.hidden = true;
 	tabs.hidden = false;
+	setActiveTab('articles');
 	if (workspaceSlugs.size > 0) document.querySelector('#workspace-notice').hidden = false;
 	window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showSettings() {
+	listView.hidden = true;
+	editorView.hidden = true;
+	settingsView.hidden = false;
+	tabs.hidden = false;
+	setActiveTab('settings');
+	window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setActiveTab(active) {
+	for (const [id, name] of [['articles-tab', 'articles'], ['settings-tab', 'settings']]) {
+		const tab = document.querySelector(`#${id}`);
+		tab.classList.toggle('is-active', active === name);
+		if (active === name) tab.setAttribute('aria-current', 'page');
+		else tab.removeAttribute('aria-current');
+	}
 }
 
 function formFingerprint() {
@@ -175,6 +199,71 @@ function updateDirtyState() {
 	state.textContent = isDirty ? '有未保存的修改' : (editor?.localState ? '只保存在这台电脑' : '未保存');
 	state.classList.toggle('is-draft', isDirty);
 	updateWordCount();
+}
+
+function settingsFingerprint() {
+	return JSON.stringify(collectSettings());
+}
+
+function updateSettingsDirtyState() {
+	settingsDirty = settingsFingerprint() !== settingsView.dataset.savedFingerprint;
+	const state = document.querySelector('#settings-save-state');
+	state.textContent = settingsDirty ? '有未保存的修改' : (settingsView.dataset.local === 'true' ? '只保存在这台电脑' : '与线上设置一致');
+	state.classList.toggle('is-draft', settingsDirty);
+}
+
+function fillSettings(settings, info = {}) {
+	document.querySelector('#setting-site-title').value = settings.siteTitle;
+	document.querySelector('#setting-site-description').value = settings.siteDescription;
+	document.querySelector('#setting-blog-title').value = settings.blogHero.title;
+	document.querySelector('#setting-blog-subtitle').value = settings.blogHero.subtitle;
+	document.querySelector('#setting-blog-background').value = settings.blogHero.backgroundImage;
+	document.querySelector('#setting-archive-title').value = settings.archiveTitle;
+	document.querySelector('#setting-archive-intro').value = settings.archiveIntro;
+	document.querySelector('#setting-empty-archive').value = settings.emptyArchiveIntro;
+	document.querySelector('#setting-empty-list').value = settings.emptyListMessage;
+	document.querySelector('#setting-default-post-hero').value = settings.defaultPostHero;
+	settingsBaseHead = info.baseHead || health?.headSha || '';
+	settingsView.dataset.local = String(Boolean(info.local));
+	settingsView.dataset.savedFingerprint = settingsFingerprint();
+	updateSettingsDirtyState();
+}
+
+function collectSettings() {
+	return {
+		siteTitle: document.querySelector('#setting-site-title').value,
+		siteDescription: document.querySelector('#setting-site-description').value,
+		blogHero: {
+			title: document.querySelector('#setting-blog-title').value,
+			subtitle: document.querySelector('#setting-blog-subtitle').value,
+			backgroundImage: document.querySelector('#setting-blog-background').value,
+		},
+		archiveTitle: document.querySelector('#setting-archive-title').value,
+		archiveIntro: document.querySelector('#setting-archive-intro').value,
+		emptyArchiveIntro: document.querySelector('#setting-empty-archive').value,
+		emptyListMessage: document.querySelector('#setting-empty-list').value,
+		defaultPostHero: document.querySelector('#setting-default-post-hero').value,
+	};
+}
+
+async function saveSettings() {
+	const button = document.querySelector('#save-settings');
+	button.disabled = true;
+	document.querySelector('#settings-message').textContent = '正在校验并保存到本机…';
+	try {
+		const result = await api('/api/workspace/settings', { method: 'PUT', body: JSON.stringify({ settings: collectSettings(), baseHead: settingsBaseHead }) });
+		settingsView.dataset.local = 'true';
+		settingsView.dataset.savedFingerprint = settingsFingerprint();
+		settingsBaseHead = result.baseHead;
+		updateSettingsDirtyState();
+		document.querySelector('#settings-message').textContent = '已保存到本机工作区，公开网站尚未变化。';
+		return true;
+	} catch (error) {
+		document.querySelector('#settings-message').textContent = error.message;
+		return false;
+	} finally {
+		button.disabled = false;
+	}
 }
 
 function updateWordCount() {
@@ -313,9 +402,11 @@ async function savePost() {
 		isDirty = false;
 		setEditorMessage('已保存到本机工作区；上线前还需要通过发布检查。', 'is-success');
 		await load();
+		return true;
 	} catch (error) {
 		const details = error.issues?.length ? ' ' + error.issues.map((issue) => issue.message).join('；') : '';
 		setEditorMessage(error.message + details, 'is-error');
+		return false;
 	} finally {
 		buttons.forEach((item) => { item.disabled = Boolean(editor?.deleted); });
 		editorView.classList.remove('is-saving');
@@ -374,6 +465,24 @@ async function uploadImage(file, setCover) {
 	}
 }
 
+async function previewPage(pathname) {
+	const popup = window.open('about:blank', '_blank');
+	if (pathname.startsWith('/blog/') && editor && isDirty && !(await savePost())) { popup?.close(); return; }
+	if (settingsDirty && !(await saveSettings())) { popup?.close(); return; }
+	try {
+		const result = await api('/api/preview', { method: 'POST', body: JSON.stringify({ pathname }) });
+		if (!popup) {
+			showToast('浏览器拦截了预览窗口，请允许本地 CMS 打开新标签页。');
+			return;
+		}
+		popup.location.href = result.url;
+		showToast('已启动基于 Astro 的本地预览。');
+	} catch (error) {
+		popup?.close();
+		showToast(error.message);
+	}
+}
+
 function applyTheme(theme) {
 	document.documentElement.dataset.theme = theme;
 	localStorage.setItem('cms-theme', theme);
@@ -424,8 +533,9 @@ function insertMarkdown(kind) {
 
 async function load() {
 	try {
-		const [project, result] = await Promise.all([api('/api/health'), api('/api/posts')]);
+		const [project, result, settings] = await Promise.all([api('/api/health'), api('/api/posts'), api('/api/settings')]);
 		health = project;
+		if (!settingsDirty) fillSettings(settings.settings, settings);
 		entries = result.posts;
 		updateSuggestions();
 		workspaceSlugs = new Set(result.workspaceDrafts);
@@ -459,13 +569,29 @@ list.addEventListener('click', (event) => {
 	if (action === 'delete') void removePost(slug);
 	if (action === 'restore') void restorePost(slug);
 });
-document.querySelector('#new-post').addEventListener('click', () => newPost());
+document.querySelector('#new-post').addEventListener('click', () => {
+	if (settingsDirty && !window.confirm('博客设置有未保存的修改，确定离开吗？')) return;
+	newPost();
+});
+document.querySelector('#articles-tab').addEventListener('click', (event) => {
+	event.preventDefault();
+	if (settingsDirty && !window.confirm('博客设置有未保存的修改，确定离开吗？')) return;
+	showList();
+});
+document.querySelector('#settings-tab').addEventListener('click', (event) => {
+	event.preventDefault();
+	if (isDirty && !window.confirm('文章有未保存的修改，确定离开吗？')) return;
+	showSettings();
+});
 document.querySelector('#back-to-list').addEventListener('click', () => {
 	if (isDirty && !window.confirm('有未保存的修改，确定离开编辑器吗？')) return;
 	showList();
 });
 document.querySelector('#save-post').addEventListener('click', () => void savePost());
 document.querySelector('#save-post-footer').addEventListener('click', () => void savePost());
+document.querySelector('#preview-post').addEventListener('click', () => editor && void previewPage(`/blog/${editor.slug}/`));
+document.querySelector('#save-settings').addEventListener('click', () => void saveSettings());
+document.querySelector('#preview-blog').addEventListener('click', () => void previewPage('/blog/'));
 document.querySelector('#delete-post').addEventListener('click', async () => {
 	if (!editor?.slug) return;
 	if (await removePost(editor.slug)) showList();
@@ -485,6 +611,28 @@ document.querySelector('#image-upload').addEventListener('change', (event) => {
 	event.target.dataset.useAsCover = '';
 	event.target.value = '';
 });
+for (const control of settingsView.querySelectorAll('input, textarea')) {
+	control.addEventListener('input', updateSettingsDirtyState);
+	control.addEventListener('change', updateSettingsDirtyState);
+}
+document.querySelectorAll('[data-settings-image]').forEach((button) => button.addEventListener('click', () => {
+	const input = document.querySelector('#settings-image-upload');
+	input.dataset.targetField = button.dataset.settingsImage;
+	input.click();
+}));
+document.querySelector('#settings-image-upload').addEventListener('change', async (event) => {
+	const input = event.currentTarget;
+	const file = input.files?.[0];
+	if (file) {
+		try {
+			const result = await api('/api/media', { method: 'POST', body: file });
+			const targetId = input.dataset.targetField === 'blogHero.backgroundImage' ? '#setting-blog-background' : '#setting-default-post-hero';
+			document.querySelector(targetId).value = result.path;
+			updateSettingsDirtyState();
+		} catch (error) { showToast(error.message); }
+	}
+	input.value = '';
+});
 document.querySelectorAll('#editor-view input, #editor-view textarea, #editor-view select').forEach((control) => {
 	control.addEventListener('input', updateDirtyState);
 	control.addEventListener('change', updateDirtyState);
@@ -493,7 +641,7 @@ document.querySelector('#theme-toggle').addEventListener('click', () => {
 	applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 });
 window.addEventListener('beforeunload', (event) => {
-	if (!isDirty) return;
+	if (!isDirty && !settingsDirty) return;
 	event.preventDefault();
 	event.returnValue = '';
 });

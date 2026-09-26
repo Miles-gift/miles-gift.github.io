@@ -1,4 +1,5 @@
 import defaultBackground from '../assets/blog-placeholder-1.webp';
+import blogSettings from '../data/blog-settings.json';
 
 /**
  * Hero copy and background settings for one page.
@@ -39,9 +40,9 @@ export const heroConfig: HeroConfig = {
     backgroundImage: defaultBackground.src,
   },
   blog: {
-    text: 'All Posts',
-    subtitle: 'Browse your writing archive.',
-    backgroundImage: defaultBackground.src,
+    text: blogSettings.blogHero.title,
+    subtitle: blogSettings.blogHero.subtitle,
+    backgroundImage: blogSettings.blogHero.backgroundImage || defaultBackground.src,
   },
   tags: {
     text: 'Tags',
@@ -53,5 +54,5 @@ export const heroConfig: HeroConfig = {
     subtitle: '华中科技大学集成电路学院 · 电子科学与技术本科生',
     backgroundImage: defaultBackground.src,
   },
-  postDefaultBackground: defaultBackground.src,
+  postDefaultBackground: blogSettings.defaultPostHero || defaultBackground.src,
 };

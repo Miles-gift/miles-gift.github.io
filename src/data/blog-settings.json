@@ -1,0 +1,14 @@
+{
+	"siteTitle": "yoyo",
+	"siteDescription": "yoyo 的个人博客，记录电子科学与技术学习、AI 芯片、集成电路设计与高性能处理器电源架构方面的长篇文章。",
+	"blogHero": {
+		"title": "All Posts",
+		"subtitle": "Browse your writing archive.",
+		"backgroundImage": ""
+	},
+	"archiveTitle": "所有文章",
+	"archiveIntro": "这里收录了所有的 {total} 篇文章 (第 {current} / {last} 页)",
+	"emptyArchiveIntro": "当前没有文章内容。请在 src/content/blog/ 添加 .md/.mdx 文件后重新构建。",
+	"emptyListMessage": "暂无文章。请在 src/content/blog/ 添加内容后再查看此页。",
+	"defaultPostHero": ""
+}

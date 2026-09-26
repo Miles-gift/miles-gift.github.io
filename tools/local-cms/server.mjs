@@ -8,16 +8,20 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hashContent, parsePostSource, serializePostSource, summarizePost } from './content.mjs';
 import { optimizePrivateImage } from './media.mjs';
+import { readSettingsDocument, saveSettingsDocument, validateBlogSettings } from './settings.mjs';
+import { createPreviewManager } from './preview.mjs';
 import { listWorkspaceDocuments, readWorkspaceDocument, removeWorkspaceDocument, saveWorkspaceDocument } from './workspace.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(here, '../..');
 const workspaceRoot = path.join(projectRoot, '.local-cms');
 const postRoot = path.join(projectRoot, 'src/content/blog');
+const settingsPath = path.join(projectRoot, 'src/data/blog-settings.json');
 const host = '127.0.0.1';
 const port = Number(process.env.CMS_PORT || 4178);
 const sessionToken = randomBytes(32).toString('base64url');
 const sessionHeader = 'x-cms-session';
+const previewManager = createPreviewManager({ projectRoot, workspaceRoot, postRoot, settingsPath });
 const maxBodyBytes = 25 * 1024 * 1024;
 const mimeTypes = {
 	'.css': 'text/css; charset=utf-8',
@@ -320,6 +324,20 @@ async function routeApi(request, response, url) {
 		return sendJson(response, 200, { posts, workspaceDrafts, count: posts.length });
 	}
 
+	if (request.method === 'GET' && url.pathname === '/api/settings') {
+		return sendJson(response, 200, await readSettingsDocument(workspaceRoot, settingsPath));
+	}
+	if (request.method === 'PUT' && url.pathname === '/api/workspace/settings') {
+		const payload = await parseJsonRequest(request);
+		const settings = validateBlogSettings(payload.settings);
+		return sendJson(response, 200, { ok: true, ...(await saveSettingsDocument(workspaceRoot, settingsPath, settings, payload.baseHead || await currentHead())) });
+	}
+	if (request.method === 'POST' && url.pathname === '/api/preview') {
+		const payload = await parseJsonRequest(request);
+		if (typeof payload.pathname !== 'string') return sendJson(response, 400, { error: '缺少预览页面地址。' });
+		return sendJson(response, 200, await previewManager.start(payload.pathname));
+	}
+
 	const readMatch = url.pathname.match(/^\/api\/posts\/([a-z0-9-]+)$/);
 	if (request.method === 'GET' && readMatch) {
 		const slug = assertSlug(readMatch[1]);
@@ -407,3 +425,11 @@ server.on('error', (error) => {
 	}
 	process.exitCode = 1;
 });
+
+for (const signal of ['SIGINT', 'SIGTERM']) {
+	process.on(signal, () => {
+		previewManager.cleanupSync();
+		server.close(() => process.exit(signal === 'SIGINT' ? 130 : 0));
+	});
+}
+process.on('exit', () => previewManager.cleanupSync());
