@@ -167,6 +167,7 @@ function serialize(data, eol) {
 
 	if (data.updated) lines.push(`updated: ${quote(data.updated)}`);
 	if (data.description) lines.push(`description: ${quote(data.description)}`);
+	if (data.cover) lines.push(`cover: ${quote(data.cover)}`);
 	if (data.draft !== undefined) lines.push(`draft: ${data.draft}`);
 
 	lines.push('categories:');
@@ -234,6 +235,7 @@ function normalizeDocument(parsed, relativePath) {
 		'updated',
 		'updatedDate',
 		'description',
+		'cover',
 		'draft',
 		'categories',
 		'tags',
@@ -246,12 +248,17 @@ function normalizeDocument(parsed, relativePath) {
 		typeof parsed.description === 'string' && parsed.description.trim()
 			? parsed.description.trim()
 			: undefined;
+	const cover = typeof parsed.cover === 'string' && parsed.cover.trim() ? parsed.cover.trim() : undefined;
+	if (cover && (!cover.startsWith('/uploads/blog/') || cover.startsWith('//') || cover.split('/').includes('..'))) {
+		throw new Error(`${relativePath}: cover must be a local path under /uploads/blog/`);
+	}
 	return {
 		title,
 		date: normalizeDate(dateSource, 'date', relativePath),
 		updated:
 			updatedSource === undefined ? undefined : normalizeDate(updatedSource, 'updated', relativePath),
 		description,
+		cover,
 		draft,
 		categories,
 		tags,

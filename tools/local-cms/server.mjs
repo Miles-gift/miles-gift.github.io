@@ -2,10 +2,13 @@
 
 import { randomBytes } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { hashContent, parsePostSource, serializePostSource, summarizePost } from './content.mjs';
+import { optimizePrivateImage } from './media.mjs';
+import { listWorkspaceDocuments, readWorkspaceDocument, removeWorkspaceDocument, saveWorkspaceDocument } from './workspace.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(here, '../..');
@@ -15,7 +18,7 @@ const host = '127.0.0.1';
 const port = Number(process.env.CMS_PORT || 4178);
 const sessionToken = randomBytes(32).toString('base64url');
 const sessionHeader = 'x-cms-session';
-const maxBodyBytes = 5 * 1024 * 1024;
+const maxBodyBytes = 25 * 1024 * 1024;
 const mimeTypes = {
 	'.css': 'text/css; charset=utf-8',
 	'.js': 'text/javascript; charset=utf-8',
@@ -40,15 +43,19 @@ function sendJson(response, status, value) {
 	send(response, status, JSON.stringify(value), 'application/json; charset=utf-8');
 }
 
-async function readBody(request) {
+async function readRawBody(request) {
 	const chunks = [];
 	let size = 0;
 	for await (const chunk of request) {
 		size += chunk.length;
-		if (size > maxBodyBytes) throw Object.assign(new Error('请求内容超过 5 MB。'), { status: 413 });
+		if (size > maxBodyBytes) throw Object.assign(new Error('请求内容超过 25 MB。'), { status: 413 });
 		chunks.push(chunk);
 	}
-	return Buffer.concat(chunks).toString('utf8');
+	return Buffer.concat(chunks);
+}
+
+async function readBody(request) {
+	return (await readRawBody(request)).toString('utf8');
 }
 
 function assertLocalRequest(request, url, { write = false } = {}) {
@@ -78,108 +85,278 @@ async function git(args) {
 	return execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 }
 
-function frontmatterBlock(source) {
-	const match = source.match(/^---\s*\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
-	return match?.[1] ?? '';
-}
-
-function simpleField(frontmatter, name) {
-	const match = frontmatter.match(new RegExp(`^${name}:\\s*(?:"([^"]*)"|'([^']*)'|([^\\r\\n]*))\\s*$`, 'm'));
-	return match?.[1] ?? match?.[2] ?? match?.[3]?.trim() ?? '';
-}
-
-function yamlList(frontmatter, name) {
-	const block = frontmatter.match(new RegExp(`^${name}:\\s*\\r?\\n((?:[ \\t]+-[^\\r\\n]*\\r?\\n?)*)`, 'm'))?.[1];
-	if (!block) return [];
-	return [...block.matchAll(/^\s+-\s*["']?(.*?)["']?\s*$/gm)].map((match) => match[1]);
-}
-
-async function readPosts() {
+async function findSourcePost(slug) {
 	const entries = await readdir(postRoot, { withFileTypes: true });
-	const posts = [];
+	const matches = entries.filter((entry) => entry.isFile() && ['md', 'mdx'].some((extension) => entry.name === slug + '.' + extension));
+	if (matches.length > 1) throw Object.assign(new Error('同一 slug 同时存在 Markdown 与 MDX 文件：' + slug), { status: 409 });
+	if (matches.length === 0) return null;
+	const filename = matches[0].name;
+	const extension = path.extname(filename).slice(1);
+	const content = await readFile(path.join(postRoot, filename), 'utf8');
+	return { slug, extension, content, hash: hashContent(content) };
+}
+
+async function readSourcePosts() {
+	const entries = await readdir(postRoot, { withFileTypes: true });
+	const sourcePosts = [];
+	const seen = new Set();
+	const head = await git(['rev-parse', 'HEAD']);
 	for (const entry of entries) {
 		if (!entry.isFile() || !/\.(md|mdx)$/i.test(entry.name)) continue;
 		const slug = entry.name.replace(/\.(md|mdx)$/i, '');
+		if (seen.has(slug)) throw Object.assign(new Error('同一 slug 同时存在 Markdown 与 MDX 文件：' + slug), { status: 409 });
+		seen.add(slug);
+		const extension = path.extname(entry.name).slice(1);
 		const content = await readFile(path.join(postRoot, entry.name), 'utf8');
-		const frontmatter = frontmatterBlock(content);
-		posts.push({
-			slug,
-			extension: path.extname(entry.name).slice(1),
-			title: simpleField(frontmatter, 'title') || '未命名文章',
-			date: simpleField(frontmatter, 'date'),
-			updated: simpleField(frontmatter, 'updated'),
-			category: yamlList(frontmatter, 'categories')[0] || '',
-			tags: yamlList(frontmatter, 'tags'),
-			draft: simpleField(frontmatter, 'draft') === 'true',
-		});
+		try {
+			sourcePosts.push({
+				...summarizePost(content, slug, extension),
+				sourceExists: true,
+				sourceHash: hashContent(content),
+				sourceHead: head,
+				localState: 'published',
+			});
+		} catch (error) {
+			sourcePosts.push({
+				slug, extension, title: '文章校验失败', date: '', updated: '', description: '',
+				cover: '', categories: [], tags: [], draft: true, sourceExists: true,
+				sourceHash: hashContent(content), sourceHead: head, localState: 'invalid',
+				validationError: error.message,
+			});
+		}
 	}
-	return posts.sort((a, b) => b.date.localeCompare(a.date, 'zh-CN'));
+	return sourcePosts;
 }
 
-async function listWorkspaceDrafts() {
-	const directory = path.join(workspaceRoot, 'drafts');
-	try {
-		const names = await readdir(directory);
-		return names.filter((name) => name.endsWith('.json')).map((name) => name.slice(0, -5));
-	} catch (error) {
-		if (error.code === 'ENOENT') return [];
-		throw error;
+async function readPosts() {
+	const [sourcePosts, documents] = await Promise.all([readSourcePosts(), listWorkspaceDocuments(workspaceRoot)]);
+	const posts = new Map(sourcePosts.map((post) => [post.slug, post]));
+	for (const document of documents) {
+		let post;
+		try {
+			post = summarizePost(document.content, document.slug, document.extension);
+		} catch (error) {
+			post = {
+				slug: document.slug, extension: document.extension, title: '需要修复的本地草稿',
+				date: '', updated: '', description: '', cover: '', categories: [], tags: [],
+				draft: true, validationError: error.message,
+			};
+		}
+		const sourcePost = posts.get(document.slug);
+		posts.set(document.slug, {
+			...post,
+			sourceExists: Boolean(document.sourceExists),
+			sourceHash: document.baseHash || '',
+			sourceHead: document.baseHead || '',
+			localState: document.deleted ? 'deleted' : document.readyToPublish ? 'ready' : 'saved',
+			deleted: Boolean(document.deleted),
+			savedAt: document.savedAt,
+			conflict: Boolean(document.sourceExists && sourcePost && sourcePost.sourceHash !== document.baseHash),
+		});
 	}
+	return [...posts.values()].sort((a, b) => (b.date || '').localeCompare(a.date || '', 'zh-CN'));
+}
+
+async function currentHead() {
+	return git(['rev-parse', 'HEAD']);
+}
+
+async function sourceOrWorkspace(slug) {
+	const [source, document] = await Promise.all([
+		findSourcePost(slug),
+		readWorkspaceDocument(workspaceRoot, slug),
+	]);
+	if (!source && !document) return null;
+	const content = document ? document.content : source.content;
+	const extension = document ? document.extension : source.extension;
+	const parsed = parsePostSource(content);
+	const post = { slug, extension, ...parsed.data };
+	return {
+		post: {
+			...post,
+			sourceExists: Boolean(document ? document.sourceExists : source),
+			localState: document ? (document.deleted ? 'deleted' : 'saved') : 'published',
+			deleted: Boolean(document && document.deleted),
+			savedAt: document ? document.savedAt : null,
+			conflict: Boolean(document && document.sourceExists && source && source.hash !== document.baseHash),
+		},
+		content,
+		body: parsed.body,
+		lineEnding: parsed.lineEnding,
+		sourceContent: source ? source.content : null,
+		baseContent: document && document.baseContent ? document.baseContent : source ? source.content : null,
+		baseBody: document && document.baseContent ? parsePostSource(document.baseContent).body : source ? parsePostSource(source.content).body : '',
+		baseHash: document ? document.baseHash : source ? source.hash : '',
+		baseHead: document ? document.baseHead : await currentHead(),
+		extension,
+		document,
+		source,
+	};
+}
+
+async function parseJsonRequest(request) {
+	try {
+		return JSON.parse(await readBody(request));
+	} catch (error) {
+		if (error.status) throw error;
+		throw Object.assign(new Error('请求格式必须是 JSON。'), { status: 400 });
+	}
+}
+
+async function savePostWorkspace(request, response, { create = false } = {}) {
+	const payload = await parseJsonRequest(request);
+	const slug = assertSlug(payload.slug);
+	const [source, prior] = await Promise.all([
+		findSourcePost(slug),
+		readWorkspaceDocument(workspaceRoot, slug),
+	]);
+	if (create && (source || prior)) return sendJson(response, 409, { error: '这个 slug 已经存在，请选择其他地址。' });
+	if (!create && !source && !prior) return sendJson(response, 404, { error: '文章不存在，请刷新列表后重试。' });
+	const extension = payload.extension || (prior ? prior.extension : source ? source.extension : 'md');
+	if (!['md', 'mdx'].includes(extension)) return sendJson(response, 400, { error: '文章格式只能是 Markdown 或 MDX。' });
+	if (source && payload.extension && payload.extension !== source.extension) {
+		return sendJson(response, 409, { error: '已发布文章不能直接切换文件格式。' });
+	}
+	if (typeof payload.body !== 'string' || !payload.metadata || typeof payload.metadata !== 'object') {
+		return sendJson(response, 400, { error: '文章内容或字段缺失。' });
+	}
+
+	const baseHash = prior ? prior.baseHash : (payload.baseHash || (source ? source.hash : ''));
+	const baseHead = prior ? prior.baseHead : (payload.baseHead || await currentHead());
+	const baseContent = prior ? prior.baseContent : (source ? source.content : null);
+	const lineEnding = prior ? prior.lineEnding : (payload.lineEnding || (source && source.content.includes('\r\n') ? '\r\n' : '\n'));
+	let serialized;
+	try {
+		serialized = serializePostSource({ ...payload.metadata, lineEnding }, payload.body);
+	} catch (error) {
+		return sendJson(response, error.status || 400, { error: error.message, issues: error.issues || [] });
+	}
+	const document = {
+		slug,
+		extension: prior ? prior.extension : source ? source.extension : extension,
+		sourceExists: Boolean(prior ? prior.sourceExists : source),
+		baseHead,
+		baseHash,
+		baseContent,
+		lineEnding,
+		content: serialized.content,
+		deleted: false,
+		readyToPublish: Boolean(payload.readyToPublish),
+		savedAt: new Date().toISOString(),
+	};
+	await saveWorkspaceDocument(workspaceRoot, document);
+	return sendJson(response, 200, {
+		ok: true,
+		slug,
+		post: summarizePost(document.content, slug, document.extension),
+		savedAt: document.savedAt,
+	});
+}
+
+async function deletePostWorkspace(slug) {
+	const [source, prior] = await Promise.all([
+		findSourcePost(slug),
+		readWorkspaceDocument(workspaceRoot, slug),
+	]);
+	if (!source && !prior) throw Object.assign(new Error('没有找到这篇文章。'), { status: 404 });
+	if (!source && prior && !prior.sourceExists) {
+		await removeWorkspaceDocument(workspaceRoot, slug);
+		return { ok: true, removedLocalDraft: true };
+	}
+	const content = prior ? prior.content : source.content;
+	const document = {
+		slug,
+		extension: prior ? prior.extension : source.extension,
+		sourceExists: true,
+		baseHead: prior ? prior.baseHead : await currentHead(),
+		baseHash: prior ? prior.baseHash : source.hash,
+		baseContent: prior ? prior.baseContent : source.content,
+		lineEnding: prior ? prior.lineEnding : (source.content.includes('\r\n') ? '\r\n' : '\n'),
+		content,
+		deleted: true,
+		readyToPublish: false,
+		savedAt: new Date().toISOString(),
+	};
+	await saveWorkspaceDocument(workspaceRoot, document);
+	return { ok: true, deleted: true, slug };
+}
+
+async function restorePostWorkspace(slug) {
+	const document = await readWorkspaceDocument(workspaceRoot, slug);
+	if (!document) throw Object.assign(new Error('没有找到本机删除记录。'), { status: 404 });
+	if (!document.sourceExists) {
+		await removeWorkspaceDocument(workspaceRoot, slug);
+		return { ok: true, removedLocalDraft: true };
+	}
+	if (document.content === document.baseContent) {
+		await removeWorkspaceDocument(workspaceRoot, slug);
+		return { ok: true, restoredPublishedPost: true, slug };
+	}
+	document.deleted = false;
+	document.readyToPublish = false;
+	document.savedAt = new Date().toISOString();
+	await saveWorkspaceDocument(workspaceRoot, document);
+	return { ok: true, slug };
 }
 
 async function routeApi(request, response, url) {
 	if (request.method === 'GET' && url.pathname === '/api/health') {
-		const [branch, head, status] = await Promise.all([
+		const [branch, head, headSha, status] = await Promise.all([
 			git(['branch', '--show-current']),
 			git(['rev-parse', '--short', 'HEAD']),
+			git(['rev-parse', 'HEAD']),
 			git(['status', '--porcelain=v1']),
 		]);
-		return sendJson(response, 200, { ok: true, branch, head, dirtyCount: status ? status.split('\n').length : 0, node: process.version });
+		return sendJson(response, 200, {
+			ok: true, branch, head, headSha,
+			dirtyCount: status ? status.split('\n').length : 0,
+			node: process.version,
+		});
 	}
 
 	if (request.method === 'GET' && url.pathname === '/api/posts') {
-		const [posts, drafts] = await Promise.all([readPosts(), listWorkspaceDrafts()]);
-		return sendJson(response, 200, { posts, workspaceDrafts: drafts, count: posts.length });
+		const posts = await readPosts();
+		const workspaceDrafts = posts.filter((post) => ['saved', 'ready', 'deleted'].includes(post.localState)).map((post) => post.slug);
+		return sendJson(response, 200, { posts, workspaceDrafts, count: posts.length });
 	}
 
 	const readMatch = url.pathname.match(/^\/api\/posts\/([a-z0-9-]+)$/);
 	if (request.method === 'GET' && readMatch) {
 		const slug = assertSlug(readMatch[1]);
-		const existing = (await readPosts()).find((post) => post.slug === slug);
-		if (!existing) return sendJson(response, 404, { error: '没有找到这篇文章。' });
-		const content = await readFile(path.join(postRoot, `${slug}.${existing.extension}`), 'utf8');
-		return sendJson(response, 200, { post: existing, content });
+		const result = await sourceOrWorkspace(slug);
+		if (!result) return sendJson(response, 404, { error: '没有找到这篇文章。' });
+		return sendJson(response, 200, result);
 	}
 
-	if (request.method === 'PUT' && url.pathname === '/api/workspace/post') {
-		const raw = await readBody(request);
-		let payload;
+	if (request.method === 'POST' && url.pathname === '/api/workspace/post') return savePostWorkspace(request, response, { create: true });
+	if (request.method === 'PUT' && url.pathname === '/api/workspace/post') return savePostWorkspace(request, response);
+
+	const deleteMatch = url.pathname.match(/^\/api\/workspace\/post\/([a-z0-9-]+)$/);
+	if (request.method === 'DELETE' && deleteMatch) {
+		return sendJson(response, 200, await deletePostWorkspace(assertSlug(deleteMatch[1])));
+	}
+	const restoreMatch = url.pathname.match(/^\/api\/workspace\/post\/([a-z0-9-]+)\/restore$/);
+	if (request.method === 'POST' && restoreMatch) {
+		return sendJson(response, 200, await restorePostWorkspace(assertSlug(restoreMatch[1])));
+	}
+
+	if (request.method === 'POST' && url.pathname === '/api/media') {
+		const buffer = await readRawBody(request);
+		return sendJson(response, 201, await optimizePrivateImage(workspaceRoot, buffer));
+	}
+
+	const mediaMatch = url.pathname.match(/^\/api\/media\/([a-f0-9]{20}\.webp)$/);
+	if (request.method === 'GET' && mediaMatch) {
 		try {
-			payload = JSON.parse(raw);
-		} catch {
-			return sendJson(response, 400, { error: '请求格式必须是 JSON。' });
+			const mediaPath = path.join(workspaceRoot, 'media', mediaMatch[1]);
+			const { lstat } = await import('node:fs/promises');
+			const info = await lstat(mediaPath);
+			if (!info.isFile() || info.isSymbolicLink()) return sendJson(response, 404, { error: '本地图片不存在。' });
+			return send(response, 200, await readFile(mediaPath), 'image/webp');
+		} catch (error) {
+			if (error.code === 'ENOENT') return sendJson(response, 404, { error: '本地图片不存在。' });
+			throw error;
 		}
-		const slug = assertSlug(payload.slug);
-		if (!['md', 'mdx'].includes(payload.extension) || typeof payload.content !== 'string') {
-			return sendJson(response, 400, { error: '需要有效的文章格式和文本内容。' });
-		}
-		if (!payload.content.startsWith('---')) return sendJson(response, 400, { error: '文章必须包含 YAML frontmatter。' });
-		const draftsRoot = path.join(workspaceRoot, 'drafts');
-		await mkdir(draftsRoot, { recursive: true });
-		const target = path.join(draftsRoot, `${slug}.json`);
-		const temporary = `${target}.${process.pid}.tmp`;
-		const document = {
-			version: 1,
-			slug,
-			extension: payload.extension,
-			baseHead: typeof payload.baseHead === 'string' ? payload.baseHead.slice(0, 80) : '',
-			baseHash: typeof payload.baseHash === 'string' ? payload.baseHash.slice(0, 128) : '',
-			savedAt: new Date().toISOString(),
-			content: payload.content,
-		};
-		await writeFile(temporary, JSON.stringify(document, null, 2), { encoding: 'utf8', mode: 0o600 });
-		await rename(temporary, target);
-		return sendJson(response, 200, { ok: true, slug, savedAt: document.savedAt });
 	}
 
 	return sendJson(response, 404, { error: '找不到该本地 CMS 接口。' });

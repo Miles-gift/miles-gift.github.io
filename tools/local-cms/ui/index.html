@@ -32,8 +32,11 @@
 						<h1>文章</h1>
 						<p class="cms-lede">查看博客内容与本地草稿。</p>
 					</div>
-					<div class="cms-project-status" id="project-status" aria-live="polite">
-						<span class="cms-status-dot"></span><span>正在连接本地仓库…</span>
+					<div class="cms-heading-actions">
+						<div class="cms-project-status" id="project-status" aria-live="polite">
+							<span class="cms-status-dot"></span><span>正在连接本地仓库…</span>
+						</div>
+						<button class="cms-button cms-primary-button" id="new-post" type="button">＋ 新建文章</button>
 					</div>
 				</section>
 
@@ -62,6 +65,43 @@
 					<div class="cms-error" id="load-error" hidden role="alert"></div>
 				</section>
 
+				<section class="cms-editor-view" id="editor-view" hidden aria-labelledby="editor-heading">
+					<div class="cms-editor-toolbar">
+						<button class="cms-button" id="back-to-list" type="button">← 返回文章</button>
+						<div class="cms-editor-actions">
+							<button class="cms-button cms-danger-button" id="delete-post" type="button" hidden>删除文章</button>
+							<button class="cms-button cms-primary-button" id="save-post" type="button">保存到本机</button>
+						</div>
+					</div>
+					<div class="cms-card cms-editor-card">
+						<div class="cms-editor-heading">
+							<div><p class="cms-eyebrow">MARKDOWN ARTICLE</p><h2 id="editor-heading">新建文章</h2></div>
+							<span class="cms-post-state is-local" id="editor-save-state">只保存到这台电脑</span>
+						</div>
+						<div class="cms-editor-fields">
+							<label class="cms-field cms-field-title" for="field-title"><span>标题 <b>必填</b></span><input id="field-title" type="text" maxlength="180" placeholder="写一个清晰的标题" /></label>
+							<label class="cms-field" for="field-slug"><span>文章地址 slug <b id="slug-hint">新文章可编辑</b></span><input id="field-slug" type="text" maxlength="100" autocomplete="off" spellcheck="false" /></label>
+							<label class="cms-field" for="field-extension"><span>文件格式</span><select id="field-extension" class="cms-select"><option value="md">Markdown</option><option value="mdx">MDX</option></select></label>
+							<label class="cms-field" for="field-date"><span>发布时间 <b>必填 · Asia/Shanghai</b></span><input id="field-date" type="datetime-local" /></label>
+							<label class="cms-field" for="field-updated"><span>更新时间 <b>可选</b></span><input id="field-updated" type="datetime-local" /></label>
+							<label class="cms-field cms-field-wide" for="field-description"><span>文章摘要 <b>可选</b></span><textarea id="field-description" rows="2" maxlength="320" placeholder="留空时，网站从正文生成摘要"></textarea></label>
+							<label class="cms-field" for="field-category"><span>分类 <b>正式文章必填 1 项</b></span><input id="field-category" type="text" maxlength="60" list="category-options" placeholder="如：知识管理" /><datalist id="category-options"></datalist></label>
+							<label class="cms-field" for="field-tags"><span>标签 <b>用逗号或换行分隔；可选已有标签</b></span><input id="field-tags" type="text" list="tag-options" placeholder="Markdown, 数字花园" /><datalist id="tag-options"></datalist></label>
+							<label class="cms-field cms-field-wide" for="field-cover"><span>文章 Hero 封面 <b>可选；留空使用全站默认图</b></span><div class="cms-cover-row"><input id="field-cover" type="text" placeholder="/uploads/blog/…webp" /><button class="cms-button" id="cover-upload" type="button">上传封面</button></div></label>
+							<label class="cms-toggle-field cms-field-wide"><input id="field-draft" type="checkbox" /><span><strong>保存为草稿</strong><small>草稿只保存在本机工作区，不会自动进入发布内容。</small></span></label>
+							<div class="cms-field cms-field-wide cms-body-field">
+								<div class="cms-body-label"><label for="field-body">正文 <b>Markdown / MDX 源码</b></label><div class="cms-body-tools"><span id="word-count">0 字</span><button class="cms-button" id="compare-body" type="button">查看正文对比</button><button class="cms-button" id="insert-image" type="button">上传并插入图片</button><input id="image-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden /></div></div>
+								<div class="cms-markdown-tools" aria-label="Markdown 插入工具">
+									<button class="cms-button" type="button" data-markdown="heading">标题</button><button class="cms-button" type="button" data-markdown="bold">粗体</button><button class="cms-button" type="button" data-markdown="link">链接</button><button class="cms-button" type="button" data-markdown="code">代码</button><button class="cms-button" type="button" data-markdown="list">列表</button>
+								</div>
+								<div class="cms-markdown-hint">支持标题、列表、引用、代码块、数学公式和模板已启用的 Markdown 扩展。原文会保留。</div>
+								<textarea id="field-body" class="cms-markdown-editor" spellcheck="false" placeholder="从正文开始写作…"></textarea>
+							</div>
+						</div>
+						<div class="cms-editor-footer"><span id="editor-message" role="status" aria-live="polite"></span><button class="cms-button cms-primary-button" id="save-post-footer" type="button">保存到本机</button></div>
+					</div>
+				</section>
+
 				<aside class="cms-notice" id="workspace-notice" hidden>
 					<span class="cms-notice-icon" aria-hidden="true">✦</span>
 					<div><strong>本机有未发布的保存</strong><p id="workspace-summary"></p></div>
@@ -73,7 +113,7 @@
 
 		<dialog class="cms-dialog" id="post-dialog">
 			<div class="cms-dialog-header"><div><p class="cms-eyebrow">MARKDOWN SOURCE</p><h2 id="dialog-title">文章源码</h2></div><button class="cms-icon-button" id="dialog-close" type="button" aria-label="关闭">×</button></div>
-			<pre class="cms-source" id="dialog-content"></pre>
+			<div class="cms-diff" id="dialog-content"></div>
 		</dialog>
 		<div class="cms-toast" id="toast" role="status" aria-live="polite"></div>
 	</body>

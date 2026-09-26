@@ -8,6 +8,14 @@ export const blogFrontmatterSchema = z
 		date: z.coerce.date(),
 		updated: z.coerce.date().optional(),
 		description: nonEmptyText.optional(),
+		cover: z
+			.string()
+			.trim()
+			.refine(
+				(value) => value.startsWith('/uploads/blog/') && !value.startsWith('//') && !value.split('/').includes('..'),
+				'封面必须是 /uploads/blog/ 下的本地图片路径',
+			)
+			.optional(),
 		draft: z.boolean().optional().default(false),
 		categories: z.array(nonEmptyText),
 		tags: z.array(nonEmptyText),
