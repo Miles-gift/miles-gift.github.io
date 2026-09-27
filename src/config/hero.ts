@@ -1,4 +1,5 @@
 import defaultBackground from '../assets/blog-placeholder-1.webp';
+import homeBackground from '../assets/home-hero.webp';
 import blogSettings from '../data/blog-settings.json';
 
 /**
@@ -37,7 +38,7 @@ export const heroConfig: HeroConfig = {
   home: {
     text: '你好，我是 yoyo。',
     subtitle: '在华中科技大学学习电子科学与技术，关注高性能处理器的电源架构。',
-    backgroundImage: defaultBackground.src,
+    backgroundImage: homeBackground.src,
   },
   blog: {
     text: blogSettings.blogHero.title,
