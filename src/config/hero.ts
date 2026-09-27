@@ -1,5 +1,4 @@
-import defaultBackground from '../assets/blog-placeholder-1.webp';
-import homeBackground from '../assets/home-hero.webp';
+import sharedBackground from '../assets/site-hero.webp';
 import blogSettings from '../data/blog-settings.json';
 
 /**
@@ -38,22 +37,22 @@ export const heroConfig: HeroConfig = {
   home: {
     text: '你好，我是 yoyo。',
     subtitle: '在华中科技大学学习电子科学与技术，关注高性能处理器的电源架构。',
-    backgroundImage: homeBackground.src,
+    backgroundImage: sharedBackground.src,
   },
   blog: {
     text: blogSettings.blogHero.title,
     subtitle: blogSettings.blogHero.subtitle,
-    backgroundImage: blogSettings.blogHero.backgroundImage || defaultBackground.src,
+    backgroundImage: blogSettings.blogHero.backgroundImage || sharedBackground.src,
   },
   tags: {
     text: 'Tags',
     subtitle: 'Explore topics by category and tag.',
-    backgroundImage: defaultBackground.src,
+    backgroundImage: sharedBackground.src,
   },
   about: {
     text: 'About',
     subtitle: '华中科技大学集成电路学院 · 电子科学与技术本科生',
-    backgroundImage: defaultBackground.src,
+    backgroundImage: sharedBackground.src,
   },
-  postDefaultBackground: blogSettings.defaultPostHero || defaultBackground.src,
+  postDefaultBackground: blogSettings.defaultPostHero || sharedBackground.src,
 };
