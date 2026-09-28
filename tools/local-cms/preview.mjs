@@ -8,6 +8,7 @@ import { mkdtemp } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
 import { listWorkspaceDocuments } from './workspace.mjs';
 import { readSettingsDocument } from './settings.mjs';
+import { readFriendLinksDocument } from './friend-links.mjs';
 
 async function unusedPort() {
 	const socket = createServer();
@@ -17,7 +18,7 @@ async function unusedPort() {
 	return port;
 }
 
-export function createPreviewManager({ projectRoot, workspaceRoot, postRoot, settingsPath }) {
+export function createPreviewManager({ projectRoot, workspaceRoot, postRoot, settingsPath, friendLinksPath }) {
 	let active = null;
 
 	async function cleanupStale() {
@@ -50,8 +51,8 @@ export function createPreviewManager({ projectRoot, workspaceRoot, postRoot, set
 	}
 
 	async function start(pathname) {
-		if (!/^\/blog\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)?$/.test(pathname)) {
-			throw Object.assign(new Error('预览地址只支持博客列表或单篇博客。'), { status: 400 });
+		if (pathname !== '/about/' && !/^\/blog\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)?$/.test(pathname)) {
+			throw Object.assign(new Error('预览地址只支持 About、博客列表或单篇博客。'), { status: 400 });
 		}
 		await stop();
 		await cleanupStale();
@@ -110,7 +111,11 @@ export function createPreviewManager({ projectRoot, workspaceRoot, postRoot, set
 			if (settings.local) {
 				await writeFile(path.join(snapshotRoot, path.relative(projectRoot, settingsPath)), `${JSON.stringify(settings.settings, null, 2)}\n`, 'utf8');
 			}
-			if (pathname !== '/blog/') {
+			const friendLinks = await readFriendLinksDocument(workspaceRoot, friendLinksPath);
+			if (friendLinks.local) {
+				await writeFile(path.join(snapshotRoot, path.relative(projectRoot, friendLinksPath)), `${JSON.stringify(friendLinks.data, null, 2)}\n`, 'utf8');
+			}
+			if (pathname.startsWith('/blog/') && pathname !== '/blog/') {
 				const slug = pathname.split('/')[2];
 				const filename = (await readdir(postDirectory)).find((name) => name === `${slug}.md` || name === `${slug}.mdx`);
 				if (!filename) throw Object.assign(new Error('预览文章不存在或已标记删除。'), { status: 404 });
@@ -131,7 +136,7 @@ export function createPreviewManager({ projectRoot, workspaceRoot, postRoot, set
 			while (Date.now() < deadline) {
 				if (child.exitCode !== null) throw new Error(`Astro 本地预览启动失败：${output.slice(-1800)}`);
 				try {
-					const response = await fetch(`http://127.0.0.1:${port}/blog/`, { signal: AbortSignal.timeout(1200) });
+					const response = await fetch(`http://127.0.0.1:${port}${pathname}`, { signal: AbortSignal.timeout(1200) });
 					if (response.ok) return { url: `http://127.0.0.1:${port}${pathname}`, port };
 				} catch { /* Astro 正在启动。 */ }
 				await delay(300);

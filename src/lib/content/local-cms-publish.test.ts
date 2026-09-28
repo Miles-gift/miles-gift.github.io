@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { hashContent, serializePostSource } from '../../../tools/local-cms/content.mjs';
 import { getDeploymentStatus, getPublishSummary, publishWorkspace } from '../../../tools/local-cms/publish.mjs';
 import { saveSettingsDocument } from '../../../tools/local-cms/settings.mjs';
+import { saveFriendLinksDocument } from '../../../tools/local-cms/friend-links.mjs';
 
 const tempRoots: string[] = [];
 
@@ -18,6 +19,7 @@ async function fixture() {
 	const workspaceRoot = path.join(root, 'private-cms');
 	const postRoot = path.join(projectRoot, 'src/content/blog');
 	const settingsPath = path.join(projectRoot, 'src/data/blog-settings.json');
+	const friendLinksPath = path.join(projectRoot, 'src/data/friend-links.json');
 	const remotePath = path.join(root, 'origin.git');
 	const run = (args: string[], cwd = projectRoot) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 	await mkdir(postRoot, { recursive: true });
@@ -25,6 +27,8 @@ async function fixture() {
 	await mkdir(path.join(workspaceRoot, 'drafts'), { recursive: true });
 	const settings = JSON.parse(await readFile(new URL('../../data/blog-settings.json', import.meta.url), 'utf8'));
 	await writeFile(settingsPath, `${JSON.stringify(settings, null, 2)}\n`);
+	const friendLinks = JSON.parse(await readFile(new URL('../../data/friend-links.json', import.meta.url), 'utf8'));
+	await writeFile(friendLinksPath, `${JSON.stringify(friendLinks, null, 2)}\n`);
 	const original = serializePostSource({
 		title: '初始文章', date: '2026-09-26T10:00', draft: false, categories: ['测试'], tags: ['test'],
 	}, '\n初始正文。').content;
@@ -59,7 +63,7 @@ async function fixture() {
 	await writeFile(path.join(workspaceRoot, 'drafts/existing.json'), JSON.stringify(document));
 	await mkdir(path.join(workspaceRoot, 'media'), { recursive: true });
 	await writeFile(path.join(workspaceRoot, 'media/0123456789abcdefabcd.webp'), Buffer.from('test-webp-payload'));
-	return { root, projectRoot, workspaceRoot, postRoot, settingsPath, remotePath, run, original, update, document };
+	return { root, projectRoot, workspaceRoot, postRoot, settingsPath, friendLinksPath, remotePath, run, original, update, document };
 }
 
 afterEach(async () => {
@@ -151,6 +155,27 @@ describe('local CMS publish transaction', () => {
 			'src/data/blog-settings.json',
 		]);
 		expect(await readFile(path.join(state.workspaceRoot, 'archive', result.commitSha.slice(0, 12), 'drafts/existing.json'), 'utf8')).toContain('更新后的文章');
+	});
+
+	it('publishes friend links as an exact independent resource and archives the local copy', async () => {
+		const state = await fixture();
+		await writeFile(path.join(state.workspaceRoot, 'drafts/existing.json'), JSON.stringify({ ...state.document, readyToPublish: false }));
+		const base = JSON.parse(await readFile(state.friendLinksPath, 'utf8'));
+		const updated = { ...base, links: [...base.links, { id: 'third', name: 'Example', url: 'https://example.org/', description: '', enabled: true }] };
+		const privateDocument = await saveFriendLinksDocument(state.workspaceRoot, state.friendLinksPath, updated, 'source');
+		const summary = await getPublishSummary({ ...state, expectedRemote: state.remotePath });
+		expect(summary.canPublish).toBe(true);
+		expect(summary.changes.map((item: { path: string }) => item.path)).toEqual(['src/data/friend-links.json']);
+		const result = await publishWorkspace({
+			...state,
+			expectedRemote: state.remotePath,
+			checkRunner: () => '',
+			deploymentStatus: async () => ({ state: 'waiting', message: 'queued', workflowUrl: 'https://github.com/example/actions' }),
+		});
+		expect(result.ok).toBe(true);
+		expect(JSON.parse(await readFile(state.friendLinksPath, 'utf8')).links).toHaveLength(3);
+		expect(state.run(['show', '--pretty=format:', '--name-only', 'HEAD'])).toBe('src/data/friend-links.json');
+		expect(await readFile(path.join(state.workspaceRoot, 'archive', result.commitSha.slice(0, 12), 'friend-links.json'), 'utf8')).toContain(privateDocument.revision);
 	});
 
 	it('restores public files and leaves workspace drafts when validation fails', async () => {

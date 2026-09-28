@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "links": [
+    {
+      "id": "motues",
+      "name": "Motues",
+      "url": "https://motues.top/",
+      "description": "Like River!",
+      "enabled": true
+    },
+    {
+      "id": "zgzlcc",
+      "name": "zgzlcc.github.io",
+      "url": "https://zgzlcc.github.io/",
+      "description": "",
+      "enabled": true
+    }
+  ]
+}

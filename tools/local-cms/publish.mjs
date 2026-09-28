@@ -5,6 +5,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { hashContent, normalizeMarkdownTrailingWhitespace, parsePostSource, serializePostSource } from './content.mjs';
 import { readSettingsDocument, hashSettings } from './settings.mjs';
+import { readFriendLinksDocument } from './friend-links.mjs';
 import { listWorkspaceDocuments, removeWorkspaceDocument, saveWorkspaceDocument } from './workspace.mjs';
 import { migrateSelectedPostImages } from './image-migration.mjs';
 
@@ -93,7 +94,7 @@ function collectMediaPaths(content) {
 	return [...paths];
 }
 
-async function inspectWorkspace({ projectRoot, workspaceRoot, postRoot, settingsPath, expectedRemote = defaultRemote }) {
+async function inspectWorkspace({ projectRoot, workspaceRoot, postRoot, settingsPath, friendLinksPath, expectedRemote = defaultRemote }) {
 	const blockers = [];
 	for (const relative of ['src/content/blog', 'src/data/blog-settings.json']) {
 		try { await assertSafePath(projectRoot, relative); }
@@ -164,6 +165,20 @@ async function inspectWorkspace({ projectRoot, workspaceRoot, postRoot, settings
 		}
 	}
 	if (settingsDocument.local) for (const filename of collectMediaPaths(JSON.stringify(settingsDocument.settings))) media.add(filename);
+	let friendLinksDocument = null;
+	let friendLinksChange = null;
+	if (friendLinksPath) {
+		try { await assertSafePath(projectRoot, path.relative(projectRoot, friendLinksPath)); }
+		catch (error) { blockers.push(error.message); }
+		friendLinksDocument = await readFriendLinksDocument(workspaceRoot, friendLinksPath);
+		if (friendLinksDocument.local && JSON.stringify(friendLinksDocument.data) !== JSON.stringify(friendLinksDocument.baseData)) {
+			if (friendLinksDocument.sourceChanged) blockers.push('公开友联文件已变化，请重新读取并解决版本冲突。');
+			else {
+				friendLinksChange = { type: '更新友联', path: path.relative(projectRoot, friendLinksPath) };
+				changes.push(friendLinksChange);
+			}
+		}
+	}
 
 	for (const filename of media) {
 		const publicPath = path.join(projectRoot, 'public/uploads/blog', filename);
@@ -187,7 +202,7 @@ async function inspectWorkspace({ projectRoot, workspaceRoot, postRoot, settings
 			changes.push({ type: '新增图片', title: filename, path: `public/uploads/blog/${filename}` });
 		}
 	}
-	return { branch, remoteUrl, status, blockers, changes, selected, settingsDocument, settingsChange, media: [...media] };
+	return { branch, remoteUrl, status, blockers, changes, selected, settingsDocument, settingsChange, friendLinksDocument, friendLinksChange, media: [...media] };
 }
 
 async function normalizeSelectedPostDocuments(workspaceRoot, selected) {
@@ -225,6 +240,7 @@ export async function getPublishSummary(options) {
 		changes: inspection.changes,
 		changeCount: inspection.changes.length,
 		imageMigrations: imageMigration.migrations,
+		friendLinks: inspection.friendLinksDocument?.data || null,
 	};
 }
 
@@ -311,7 +327,7 @@ async function runChecks(projectRoot, onProgress, checkRunner = publishCommand) 
 	}
 }
 
-async function archiveWorkspace(workspaceRoot, selected, settingsDocument, commitSha) {
+async function archiveWorkspace(workspaceRoot, selected, settingsDocument, friendLinksDocument, commitSha) {
 	const archiveRoot = path.join(workspaceRoot, 'archive', commitSha.slice(0, 12));
 	await mkdir(archiveRoot, { recursive: true, mode: 0o700 });
 	for (const { document } of selected) {
@@ -324,6 +340,12 @@ async function archiveWorkspace(workspaceRoot, selected, settingsDocument, commi
 	if (settingsDocument.local) {
 		const source = path.join(workspaceRoot, 'blog-settings.json');
 		const target = path.join(archiveRoot, 'blog-settings.json');
+		await copyFile(source, target);
+		await rm(source, { force: true });
+	}
+	if (friendLinksDocument?.local) {
+		const source = path.join(workspaceRoot, 'friend-links.json');
+		const target = path.join(archiveRoot, 'friend-links.json');
 		await copyFile(source, target);
 		await rm(source, { force: true });
 	}
@@ -345,7 +367,7 @@ export async function getDeploymentStatus(commitSha, fetchImpl = fetch, publishe
 		let message = run.conclusion || run.status;
 		let siteCheck = null;
 		if (state === 'success') {
-			const paths = [...new Set(['', 'blog/', 'rss.xml', ...publishedSlugs.map((slug) => `blog/${slug}/`)])];
+			const paths = [...new Set(['', 'about/', 'blog/', 'rss.xml', ...publishedSlugs.map((slug) => `blog/${slug}/`)])];
 			const checks = await Promise.all(paths.map(async (pathname) => {
 				try {
 					const response = await fetchImpl(`https://miles-gift.github.io/${pathname}`, { signal: AbortSignal.timeout(5000) });
@@ -378,6 +400,7 @@ export async function publishWorkspace(options) {
 	let pathsToRestore = [];
 	let selected = [];
 	let settingsDocument = null;
+	let friendLinksDocument = null;
 	const appliedCurrent = new Map();
 
 	report('preflight', '检查分支、远程仓库和工作区…');
@@ -410,9 +433,11 @@ export async function publishWorkspace(options) {
 	if (inspection.changes.length === 0) throw new Error('没有加入发布清单的改动。');
 	selected = inspection.selected;
 	settingsDocument = inspection.settingsDocument;
+	friendLinksDocument = inspection.friendLinksDocument;
 	const changedPaths = new Set(inspection.changes.map((change) => change.path));
 	for (const { document } of selected) if (!document.deleted) changedPaths.add(`src/content/blog/${document.slug}.${document.extension}`);
 	if (inspection.settingsChange) changedPaths.add('src/data/blog-settings.json');
+	if (inspection.friendLinksChange) changedPaths.add(path.relative(projectRoot, options.friendLinksPath));
 	for (const filename of inspection.media) {
 		const target = path.join(projectRoot, 'public/uploads/blog', filename);
 		if (!await safeLstat(target)) changedPaths.add(`public/uploads/blog/${filename}`);
@@ -437,6 +462,13 @@ export async function publishWorkspace(options) {
 			const serialized = `${JSON.stringify(settingsDocument.settings, null, 2)}\n`;
 			await atomicWrite(destination, serialized);
 			appliedCurrent.set('src/data/blog-settings.json', hashContent(serialized));
+		}
+		if (inspection.friendLinksChange) {
+			const relativePath = path.relative(projectRoot, options.friendLinksPath);
+			const destination = await assertSafePath(projectRoot, relativePath);
+			const serialized = `${JSON.stringify(friendLinksDocument.data, null, 2)}\n`;
+			await atomicWrite(destination, serialized);
+			appliedCurrent.set(relativePath, hashContent(serialized));
 		}
 		for (const filename of inspection.media) {
 			const target = await assertSafePath(projectRoot, `public/uploads/blog/${filename}`);
@@ -480,9 +512,9 @@ export async function publishWorkspace(options) {
 		if (!staged.length) throw new Error('检查完成，但没有文件变化可提交。');
 		await command(['diff', '--cached', '--check'], projectRoot);
 
-		report('committing', '仅提交 CMS 管理的文章、设置和图片…');
+		report('committing', '仅提交 CMS 清单中的文章、设置、友联和图片…');
 		const names = [...new Set(selected.map((item) => item.document.slug))].slice(0, 4);
-		const subject = names.length ? `content: update ${names.join(', ')}` : 'content: update blog settings';
+		const subject = names.length ? `content: update ${names.join(', ')}` : inspection.friendLinksChange && !inspection.settingsChange ? 'content: update friend links' : 'content: update blog settings';
 		await publishCommand('git', ['commit', '-m', subject], projectRoot);
 		committedSha = await command(['rev-parse', 'HEAD'], projectRoot);
 		report('pushing', `推送提交 ${committedSha.slice(0, 12)} 到 origin/main…`);
@@ -498,7 +530,7 @@ export async function publishWorkspace(options) {
 
 		report('pushed', '已推送到 GitHub；正在查询 Actions 状态…');
 		let archiveWarning = '';
-		try { await archiveWorkspace(workspaceRoot, selected, settingsDocument, committedSha); }
+		try { await archiveWorkspace(workspaceRoot, selected, settingsDocument, friendLinksDocument, committedSha); }
 		catch (error) { archiveWarning = `本机草稿归档未完成，仍可从 ${backupRoot} 恢复：${error.message}`; }
 		const slugs = selected.filter((item) => item.action === 'write').map((item) => item.document.slug);
 		const deployment = await deploymentStatus(committedSha, fetch, slugs);

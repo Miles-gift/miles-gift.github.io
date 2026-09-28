@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { hashContent, parsePostSource, serializePostSource, summarizePost } from './content.mjs';
 import { optimizePrivateImage } from './media.mjs';
 import { readSettingsDocument, saveSettingsDocument, validateBlogSettings } from './settings.mjs';
+import { readFriendLinksDocument, saveFriendLinksDocument, validateFriendLinks } from './friend-links.mjs';
 import { createPreviewManager } from './preview.mjs';
 import { getDeploymentStatus, getPublishSummary, publishWorkspace } from './publish.mjs';
 import { listWorkspaceDocuments, readWorkspaceDocument, removeWorkspaceDocument, saveWorkspaceDocument } from './workspace.mjs';
@@ -19,12 +20,14 @@ const projectRoot = path.resolve(here, '../..');
 const workspaceRoot = path.join(projectRoot, '.local-cms');
 const postRoot = path.join(projectRoot, 'src/content/blog');
 const settingsPath = path.join(projectRoot, 'src/data/blog-settings.json');
+const friendLinksPath = path.join(projectRoot, 'src/data/friend-links.json');
 const host = '127.0.0.1';
 const port = Number(process.env.CMS_PORT || 4178);
 const sessionToken = randomBytes(32).toString('base64url');
 const sessionHeader = 'x-cms-session';
-const previewManager = createPreviewManager({ projectRoot, workspaceRoot, postRoot, settingsPath });
+const previewManager = createPreviewManager({ projectRoot, workspaceRoot, postRoot, settingsPath, friendLinksPath });
 let publishRun = null;
+let friendLinksWriteQueue = Promise.resolve();
 const maxBodyBytes = 25 * 1024 * 1024;
 const mimeTypes = {
 	'.css': 'text/css; charset=utf-8',
@@ -333,6 +336,16 @@ async function routeApi(request, response, url) {
 	if (request.method === 'GET' && url.pathname === '/api/settings') {
 		return sendJson(response, 200, await readSettingsDocument(workspaceRoot, settingsPath));
 	}
+	if (request.method === 'GET' && url.pathname === '/api/friend-links') {
+		return sendJson(response, 200, await readFriendLinksDocument(workspaceRoot, friendLinksPath));
+	}
+	if (request.method === 'PUT' && url.pathname === '/api/workspace/friend-links') {
+		if (publishRun && !publishRun.done) return sendJson(response, 409, { error: '发布正在运行，请完成后再保存友联。' });
+		const payload = await parseJsonRequest(request);
+		const saving = friendLinksWriteQueue.then(() => saveFriendLinksDocument(workspaceRoot, friendLinksPath, validateFriendLinks(payload.data), payload.expectedRevision));
+		friendLinksWriteQueue = saving.catch(() => {});
+		return sendJson(response, 200, { ok: true, ...(await saving) });
+	}
 	if (request.method === 'PUT' && url.pathname === '/api/workspace/settings') {
 		const payload = await parseJsonRequest(request);
 		const settings = validateBlogSettings(payload.settings);
@@ -344,7 +357,7 @@ async function routeApi(request, response, url) {
 		return sendJson(response, 200, await previewManager.start(payload.pathname));
 	}
 	if (request.method === 'GET' && url.pathname === '/api/publish/summary') {
-		return sendJson(response, 200, await getPublishSummary({ projectRoot, workspaceRoot, postRoot, settingsPath }));
+		return sendJson(response, 200, await getPublishSummary({ projectRoot, workspaceRoot, postRoot, settingsPath, friendLinksPath }));
 	}
 	if (request.method === 'POST' && url.pathname === '/api/publish') {
 		await readBody(request);
@@ -353,7 +366,7 @@ async function routeApi(request, response, url) {
 		publishRun = run;
 		setImmediate(() => {
 			void publishWorkspace({
-				projectRoot, workspaceRoot, postRoot, settingsPath,
+				projectRoot, workspaceRoot, postRoot, settingsPath, friendLinksPath,
 				onProgress: (phase, message) => { run.phase = phase; run.message = message; },
 			}).then((result) => {
 				run.result = result;

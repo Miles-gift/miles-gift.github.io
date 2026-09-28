@@ -9,6 +9,7 @@ const toast = document.querySelector('#toast');
 const editorView = document.querySelector('#editor-view');
 const listView = document.querySelector('#articles');
 const settingsView = document.querySelector('#settings-view');
+const friendsView = document.querySelector('#friends-view');
 const publishView = document.querySelector('#publish-view');
 const tabs = document.querySelector('.cms-tabs');
 let entries = [];
@@ -19,6 +20,13 @@ let savedFingerprint = '';
 let isDirty = false;
 let settingsDirty = false;
 let settingsBaseHead = '';
+let friendLinks = [];
+let friendRevision = 'source';
+let friendSavedFingerprint = '';
+let friendsDirty = false;
+let friendEditingId = null;
+let friendLoaded = false;
+let lastRemovedFriend = null;
 
 async function api(path, options = {}) {
 	const headers = new Headers(options.headers || {});
@@ -145,6 +153,7 @@ function slugSuggestion() {
 function showEditor() {
 	listView.hidden = true;
 	settingsView.hidden = true;
+	friendsView.hidden = true;
 	publishView.hidden = true;
 	editorView.hidden = false;
 	tabs.hidden = true;
@@ -158,6 +167,7 @@ function showEditor() {
 function showList() {
 	listView.hidden = false;
 	settingsView.hidden = true;
+	friendsView.hidden = true;
 	publishView.hidden = true;
 	editorView.hidden = true;
 	tabs.hidden = false;
@@ -174,6 +184,7 @@ function showSettings() {
 	editorView.hidden = true;
 	publishView.hidden = true;
 	settingsView.hidden = false;
+	friendsView.hidden = true;
 	tabs.hidden = false;
 	document.querySelector('#page-title').textContent = '博客设置';
 	document.querySelector('#page-lede').textContent = '编辑博客页面展示的标题、说明和图片。';
@@ -182,10 +193,26 @@ function showSettings() {
 	window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function showFriends() {
+	listView.hidden = true;
+	editorView.hidden = true;
+	settingsView.hidden = true;
+	publishView.hidden = true;
+	friendsView.hidden = false;
+	tabs.hidden = false;
+	document.querySelector('#page-title').textContent = '友联';
+	document.querySelector('#page-lede').textContent = '管理 About 页面展示的网站。';
+	document.querySelector('#new-post').hidden = true;
+	setActiveTab('friends');
+	if (!friendLoaded) void loadFriendLinks();
+	window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function showPublish() {
 	listView.hidden = true;
 	editorView.hidden = true;
 	settingsView.hidden = true;
+	friendsView.hidden = true;
 	publishView.hidden = false;
 	tabs.hidden = false;
 	document.querySelector('#page-title').textContent = '发布';
@@ -197,7 +224,7 @@ function showPublish() {
 }
 
 function setActiveTab(active) {
-	for (const [id, name] of [['articles-tab', 'articles'], ['settings-tab', 'settings'], ['publish-tab', 'publish']]) {
+	for (const [id, name] of [['articles-tab', 'articles'], ['settings-tab', 'settings'], ['friends-tab', 'friends'], ['publish-tab', 'publish']]) {
 		const tab = document.querySelector(`#${id}`);
 		tab.classList.toggle('is-active', active === name);
 		if (active === name) tab.setAttribute('aria-current', 'page');
@@ -293,6 +320,111 @@ async function saveSettings() {
 	} finally {
 		button.disabled = false;
 	}
+}
+
+function friendFingerprint() { return JSON.stringify({ version: 1, links: friendLinks }); }
+
+function updateFriendsDirty() {
+	friendsDirty = friendFingerprint() !== friendSavedFingerprint;
+	const state = document.querySelector('#friends-save-state');
+	state.textContent = friendsDirty ? '有未保存的修改' : '与本机保存内容一致';
+	state.classList.toggle('is-draft', friendsDirty);
+}
+
+function renderFriendLinks() {
+	const container = document.querySelector('#friends-list');
+	container.replaceChildren();
+	if (friendLinks.length === 0) {
+		container.append(element('div', 'cms-empty', '还没有友联，添加第一位朋友。'));
+		return;
+	}
+	friendLinks.forEach((friend, index) => {
+		const row = element('div', `cms-friend-row${friend.enabled ? '' : ' is-disabled'}`);
+		const summary = element('div', 'cms-friend-summary');
+		summary.append(element('strong', '', friend.name));
+		const detail = element('p', '', `${friend.url}${friend.description ? ` · ${friend.description}` : ''}`);
+		summary.append(detail, element('span', 'cms-post-state', friend.enabled ? '显示' : '已隐藏'));
+		const actions = element('div', 'cms-friend-actions');
+		const addAction = (label, action, disabled = false, style = 'cms-button cms-quiet-button') => {
+			const control = document.createElement('button');
+			control.type = 'button'; control.className = style; control.textContent = label;
+			control.dataset.friendAction = action; control.dataset.friendId = friend.id;
+			control.setAttribute('aria-label', `${label}：${friend.name}`); control.disabled = disabled;
+			actions.append(control);
+		};
+		addAction('编辑', 'edit', false, 'cms-button');
+		addAction('上移', 'up', index === 0);
+		addAction('下移', 'down', index === friendLinks.length - 1);
+		addAction(friend.enabled ? '隐藏' : '显示', 'toggle');
+		addAction('移除', 'remove', false, 'cms-button cms-danger-button');
+		row.append(summary, actions);
+		container.append(row);
+	});
+}
+
+async function loadFriendLinks() {
+	const message = document.querySelector('#friends-message');
+	message.textContent = '正在读取友联…';
+	try {
+		const result = await api('/api/friend-links');
+		friendLinks = result.data.links.map((friend) => ({ ...friend }));
+		friendRevision = result.revision;
+		friendSavedFingerprint = friendFingerprint();
+		friendLoaded = true; renderFriendLinks(); updateFriendsDirty();
+		message.textContent = result.local ? '已读取本机保存版本。' : '已读取公开版本，修改会先保存在本机。';
+	} catch (error) {
+		message.textContent = error.message;
+		document.querySelector('#friends-list').replaceChildren(element('div', 'cms-error', error.message));
+	}
+}
+
+function editFriend(id = null) {
+	friendEditingId = id;
+	const friend = friendLinks.find((item) => item.id === id);
+	document.querySelector('#friend-editor-title').textContent = friend ? '编辑友联' : '添加友联';
+	document.querySelector('#friend-name').value = friend?.name || '';
+	document.querySelector('#friend-url').value = friend?.url || '';
+	document.querySelector('#friend-description').value = friend?.description || '';
+	document.querySelector('#friend-enabled').checked = friend?.enabled ?? true;
+	document.querySelector('#friend-form-message').textContent = '';
+	document.querySelector('#friend-editor').hidden = false;
+	document.querySelector('#friend-name').focus();
+}
+
+function closeFriendEditor() { document.querySelector('#friend-editor').hidden = true; friendEditingId = null; }
+
+function commitFriendEdit() {
+	const name = document.querySelector('#friend-name').value.trim();
+	const rawUrl = document.querySelector('#friend-url').value.trim();
+	const description = document.querySelector('#friend-description').value.trim();
+	const message = document.querySelector('#friend-form-message');
+	if (!name || !rawUrl) { message.textContent = '名称和网址为必填项。'; return; }
+	if (/[，。！？；：]$/.test(rawUrl)) { message.textContent = '网址末尾包含中文标点，请确认并移除后再保存。'; return; }
+	let url;
+	try { url = new URL(/^[a-z][a-z\d+.-]*:/i.test(rawUrl) ? rawUrl : `https://${rawUrl}`); }
+	catch { message.textContent = '请输入有效的网址。'; return; }
+	if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) { message.textContent = '只支持不含账号信息的 HTTP 或 HTTPS 网址。'; return; }
+	const id = friendEditingId || crypto.randomUUID();
+	const duplicate = friendLinks.find((item) => item.id !== id && new URL(item.url).href === url.href);
+	if (duplicate) { message.textContent = `该网址已用于「${duplicate.name}」。`; return; }
+	const entry = { id, name, url: url.href, description, enabled: document.querySelector('#friend-enabled').checked };
+	if (friendEditingId) friendLinks = friendLinks.map((item) => item.id === id ? entry : item);
+	else friendLinks = [...friendLinks, entry];
+	closeFriendEditor(); renderFriendLinks(); updateFriendsDirty();
+}
+
+async function saveFriendLinks() {
+	const button = document.querySelector('#save-friends');
+	button.disabled = true;
+	const message = document.querySelector('#friends-message');
+	message.textContent = '正在校验并保存到本机…';
+	try {
+		const result = await api('/api/workspace/friend-links', { method: 'PUT', body: JSON.stringify({ data: { version: 1, links: friendLinks }, expectedRevision: friendRevision }) });
+		friendRevision = result.revision; friendSavedFingerprint = friendFingerprint(); updateFriendsDirty();
+		message.textContent = '已保存到本机工作区，公开网站尚未变化。';
+		return true;
+	} catch (error) { message.textContent = error.message; return false; }
+	finally { button.disabled = false; }
 }
 
 function updateWordCount() {
@@ -498,8 +630,12 @@ async function uploadImage(file, setCover) {
 
 async function previewPage(pathname) {
 	const popup = window.open('about:blank', '_blank');
+	if (pathname === '/about/' && !document.querySelector('#friend-editor').hidden) {
+		popup?.close(); document.querySelector('#friend-form-message').textContent = '请先完成或取消当前编辑，再预览 About。'; return;
+	}
 	if (pathname.startsWith('/blog/') && editor && isDirty && !(await savePost())) { popup?.close(); return; }
 	if (settingsDirty && !(await saveSettings())) { popup?.close(); return; }
+	if (pathname === '/about/' && friendsDirty && !(await saveFriendLinks())) { popup?.close(); return; }
 	try {
 		const result = await api('/api/preview', { method: 'POST', body: JSON.stringify({ pathname }) });
 		if (!popup) {
@@ -603,6 +739,8 @@ async function pollPublishRun(id) {
 async function startPublish() {
 	const button = document.querySelector('#publish-now');
 	try {
+		if (!document.querySelector('#friend-editor').hidden) { document.querySelector('#publish-status').textContent = '请先完成或取消当前友联编辑，再发布。'; return; }
+		if (friendsDirty && !(await saveFriendLinks())) return;
 		document.querySelector('#publish-status').textContent = '正在重新检查发布清单…';
 		document.querySelector('#publish-status').classList.remove('is-error');
 		const summary = await api('/api/publish/summary');
@@ -698,6 +836,40 @@ async function load() {
 
 search.addEventListener('input', renderList);
 filter.addEventListener('change', renderList);
+document.querySelector('#friends-tab').addEventListener('click', (event) => { event.preventDefault(); showFriends(); });
+document.querySelector('#friend-add').addEventListener('click', () => editFriend());
+document.querySelector('#friend-cancel').addEventListener('click', closeFriendEditor);
+document.querySelector('#friend-save-edit').addEventListener('click', commitFriendEdit);
+document.querySelector('#save-friends').addEventListener('click', () => void saveFriendLinks());
+document.querySelector('#preview-about').addEventListener('click', () => void previewPage('/about/'));
+document.querySelector('#friends-list').addEventListener('click', (event) => {
+	const control = event.target.closest('[data-friend-action]');
+	if (!control) return;
+	const index = friendLinks.findIndex((item) => item.id === control.dataset.friendId);
+	if (index < 0) return;
+	const action = control.dataset.friendAction;
+	if (action === 'edit') { editFriend(friendLinks[index].id); return; }
+	if (action === 'remove') {
+		if (!window.confirm(`移除「${friendLinks[index].name}」？保存前仍可重新添加。`)) return;
+		lastRemovedFriend = { friend: friendLinks[index], index };
+		document.querySelector('#friend-undo').hidden = false;
+		friendLinks = friendLinks.filter((item) => item.id !== control.dataset.friendId);
+	} else if (action === 'toggle') {
+		friendLinks[index].enabled = !friendLinks[index].enabled;
+	} else if (action === 'up' && index > 0) {
+		[friendLinks[index - 1], friendLinks[index]] = [friendLinks[index], friendLinks[index - 1]];
+	} else if (action === 'down' && index < friendLinks.length - 1) {
+		[friendLinks[index + 1], friendLinks[index]] = [friendLinks[index], friendLinks[index + 1]];
+	}
+	renderFriendLinks(); updateFriendsDirty();
+});
+document.querySelector('#friend-undo').addEventListener('click', () => {
+	if (!lastRemovedFriend) return;
+	friendLinks.splice(lastRemovedFriend.index, 0, lastRemovedFriend.friend);
+	lastRemovedFriend = null;
+	document.querySelector('#friend-undo').hidden = true;
+	renderFriendLinks(); updateFriendsDirty();
+});
 list.addEventListener('click', (event) => {
 	const target = event.target.closest('[data-action]');
 	if (!target) return;
@@ -786,7 +958,7 @@ document.querySelector('#theme-toggle').addEventListener('click', () => {
 	applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 });
 window.addEventListener('beforeunload', (event) => {
-	if (!isDirty && !settingsDirty) return;
+	if (!isDirty && !settingsDirty && !friendsDirty && document.querySelector('#friend-editor').hidden) return;
 	event.preventDefault();
 	event.returnValue = '';
 });

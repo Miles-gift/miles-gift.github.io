@@ -131,6 +131,24 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .cms-diff-panel h3 { position: sticky; top: 0; margin: 0; padding: .7rem 1rem; background: var(--color-surface-elevated); color: var(--color-text-secondary); font-size: .72rem; }
 .cms-diff-panel .cms-source { max-height: none; min-height: 120px; }
 .cms-toast { position: fixed; z-index: 30; right: 1rem; bottom: 1rem; max-width: min(420px, calc(100vw - 2rem)); padding: .75rem 1rem; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-card); font-size: .78rem; opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .2s, transform .2s; }
+
+.cms-friends-list { border-top: 1px solid var(--color-border-subtle); }
+.cms-friend-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; align-items: center; padding: 1rem 1.4rem; border-bottom: 1px solid var(--color-border-subtle); }
+.cms-friend-row.is-disabled { opacity: .66; }
+.cms-friend-summary { min-width: 0; }
+.cms-friend-summary strong { color: var(--color-text-strong); font-size: .9rem; }
+.cms-friend-summary p { overflow-wrap: anywhere; margin: .24rem 0 0; color: var(--color-text-secondary); font-size: .75rem; }
+.cms-friend-actions { display: flex; flex-wrap: wrap; gap: .35rem; justify-content: flex-end; }
+.cms-friend-editor { margin: 1rem 1.4rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface-elevated); }
+.cms-friend-editor h3 { margin: 0 0 1rem; color: var(--color-text-strong); font-size: 1rem; }
+.cms-friend-editor[hidden] { display: none; }
+.cms-friend-editor .cms-editor-fields { padding: 0; }
+.cms-friends-view > .cms-card > .cms-editor-footer { flex-wrap: wrap; }
+@media (max-width: 720px) {
+	.cms-friend-row { grid-template-columns: 1fr; padding: 1rem; }
+	.cms-friend-actions { justify-content: flex-start; }
+	.cms-friend-editor { margin: .75rem; padding: .8rem; }
+}
 .cms-toast.is-visible { opacity: 1; transform: translateY(0); }
 
 .cms-editor-view[hidden] { display: none; }

@@ -43,6 +43,7 @@
 				<nav class="cms-tabs" aria-label="内容管理">
 					<a href="#articles" id="articles-tab" class="is-active" aria-current="page">文章</a>
 					<a href="#settings" id="settings-tab">博客设置</a>
+					<a href="#friends" id="friends-tab">友联</a>
 					<a href="#publish" id="publish-tab">发布</a>
 				</nav>
 
@@ -63,6 +64,24 @@
 						<div class="cms-loading"><span class="cms-spinner"></span>正在读取文章…</div>
 					</div>
 					<div class="cms-error" id="load-error" hidden role="alert"></div>
+				</section>
+
+				<section class="cms-friends-view" id="friends-view" hidden aria-labelledby="friends-title">
+					<div class="cms-card">
+						<div class="cms-card-header"><div><h2 id="friends-title">友联管理</h2><p>添加的网站会显示在 About 页面。保存到本机后，可预览并随发布清单更新。</p></div><button class="cms-button cms-primary-button" id="friend-add" type="button">添加友联</button></div>
+						<div id="friends-list" class="cms-friends-list" aria-live="polite"></div>
+						<div id="friend-editor" class="cms-friend-editor" hidden>
+							<h3 id="friend-editor-title">添加友联</h3>
+							<div class="cms-editor-fields">
+								<label class="cms-field" for="friend-name"><span>网站名称 <b>必填</b></span><input id="friend-name" maxlength="60" /></label>
+								<label class="cms-field" for="friend-url"><span>网址 <b>必填</b></span><input id="friend-url" type="url" maxlength="2048" placeholder="https://example.com/" /></label>
+								<label class="cms-field cms-field-wide" for="friend-description"><span>一句介绍 <b>可选</b></span><textarea id="friend-description" rows="2" maxlength="160"></textarea></label>
+								<label class="cms-toggle-field cms-field-wide"><input id="friend-enabled" type="checkbox" checked /><span><strong>在 About 页面显示</strong></span></label>
+							</div>
+							<div class="cms-editor-footer"><span id="friend-form-message" role="status" aria-live="polite"></span><div class="cms-editor-actions"><button class="cms-button" id="friend-cancel" type="button">取消</button><button class="cms-button cms-primary-button" id="friend-save-edit" type="button">完成编辑</button></div></div>
+						</div>
+						<div class="cms-editor-footer"><span id="friends-save-state" class="cms-post-state">正在读取</span><span id="friends-message" role="status" aria-live="polite">保存只写入本机工作区。</span><div class="cms-editor-actions"><button class="cms-button" id="friend-undo" type="button" hidden>撤销移除</button><button class="cms-button" id="preview-about" type="button">预览 About</button><button class="cms-button cms-primary-button" id="save-friends" type="button">保存到本机</button></div></div>
+					</div>
 				</section>
 
 				<section class="cms-publish-view" id="publish-view" hidden aria-labelledby="publish-title">

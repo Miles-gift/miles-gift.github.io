@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import ContentCard from '../components/ContentCard.astro';
+import FriendLinks from '../components/FriendLinks.astro';
 import HeroHeader from '../components/HeroHeader.astro';
 import PageShell from '../layouts/PageShell.astro';
 import { heroConfig, profileConfig, siteTitle } from '../config';
@@ -47,19 +48,6 @@ const personSchema = {
       .about-container {
         background: transparent;
         transform: translateY(-88px);
-      }
-
-      .section-header {
-        display: flex;
-        align-items: baseline;
-        gap: 0.5em;
-        margin-bottom: 0.5em;
-      }
-
-      .section-number {
-        font-size: 0.9em;
-        color: var(--color-text-muted);
-        font-weight: 500;
       }
 
       .profile-card {
@@ -257,9 +245,6 @@ const personSchema = {
   <div class="stats-wrapper">
     <ContentCard id="stats-card">
       <div class="about-container">
-        <div class="section-header">
-          <span class="section-number">01</span>
-        </div>
         <article class="profile-card">
           <div class="profile-media">
             {profileAvatar ? (
@@ -358,6 +343,7 @@ const personSchema = {
             )}
           </div>
         </article>
+        <FriendLinks />
       </div>
     </ContentCard>
   </div>
