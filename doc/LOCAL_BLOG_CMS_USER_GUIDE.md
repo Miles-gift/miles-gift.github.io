@@ -67,3 +67,6 @@ CMS 仅允许从 `main` 发布。它追踪项目的 Astro GitHub Pages 工作流
 部署是否完成以发布页显示的 GitHub Actions 和线上检查为准。Git push 成功表示提交已到 GitHub，不代表网站已经构建完成。私有草稿保存在本机，但已发布到公开站点或 GitHub 的内容会成为公开历史；发布前请确认内容和图片可以公开。
 
 CMS 与 GitHub Actions 发布流程不自动管理 GitHub Pages 仓库设置。如果 Pages 尚未配置为 GitHub Actions 来源，请在 GitHub 仓库 Settings → Pages 中选择相应来源。
+## 管理友联
+
+在“友联”页填写网站名称和 HTTP/HTTPS 网址，可选填写简介与头像图片网址。头像可填 HTTPS 图片地址；本站图片可用 `/images/friend-links/文件名.webp`，该文件须已存在于仓库并随公开文件一起提交。头像留空时使用网站名称首字作为标记。编辑、调整顺序、显示或隐藏后“保存到本机”，再预览 About；纳入发布清单并推送后才会公开。

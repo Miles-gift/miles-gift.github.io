@@ -384,6 +384,7 @@ function editFriend(id = null) {
 	document.querySelector('#friend-editor-title').textContent = friend ? '编辑友联' : '添加友联';
 	document.querySelector('#friend-name').value = friend?.name || '';
 	document.querySelector('#friend-url').value = friend?.url || '';
+	document.querySelector('#friend-avatar').value = friend?.avatar || '';
 	document.querySelector('#friend-description').value = friend?.description || '';
 	document.querySelector('#friend-enabled').checked = friend?.enabled ?? true;
 	document.querySelector('#friend-form-message').textContent = '';
@@ -396,6 +397,7 @@ function closeFriendEditor() { document.querySelector('#friend-editor').hidden =
 function commitFriendEdit() {
 	const name = document.querySelector('#friend-name').value.trim();
 	const rawUrl = document.querySelector('#friend-url').value.trim();
+	const avatar = document.querySelector('#friend-avatar').value.trim();
 	const description = document.querySelector('#friend-description').value.trim();
 	const message = document.querySelector('#friend-form-message');
 	if (!name || !rawUrl) { message.textContent = '名称和网址为必填项。'; return; }
@@ -404,10 +406,11 @@ function commitFriendEdit() {
 	try { url = new URL(/^[a-z][a-z\d+.-]*:/i.test(rawUrl) ? rawUrl : `https://${rawUrl}`); }
 	catch { message.textContent = '请输入有效的网址。'; return; }
 	if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) { message.textContent = '只支持不含账号信息的 HTTP 或 HTTPS 网址。'; return; }
+	if (avatar && !(/^\/images\/friend-links\/[a-z\d_-]+\.(?:avif|gif|jpe?g|png|webp)$/i.test(avatar) || /^https:\/\//i.test(avatar))) { message.textContent = '头像只接受本站友联图片路径或 HTTPS 图片地址。'; return; }
 	const id = friendEditingId || crypto.randomUUID();
 	const duplicate = friendLinks.find((item) => item.id !== id && new URL(item.url).href === url.href);
 	if (duplicate) { message.textContent = `该网址已用于「${duplicate.name}」。`; return; }
-	const entry = { id, name, url: url.href, description, enabled: document.querySelector('#friend-enabled').checked };
+	const entry = { id, name, url: url.href, description, avatar, enabled: document.querySelector('#friend-enabled').checked };
 	if (friendEditingId) friendLinks = friendLinks.map((item) => item.id === id ? entry : item);
 	else friendLinks = [...friendLinks, entry];
 	closeFriendEditor(); renderFriendLinks(); updateFriendsDirty();

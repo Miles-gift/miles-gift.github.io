@@ -12,10 +12,14 @@ const hostname = (url: string) => {
 	<section class="friend-links" aria-labelledby="friend-links-title">
 		<h2 id="friend-links-title">友联</h2>
 		<ul class="friend-links-list">
-			{links.map((link) => (
-				<li>
+			{links.map((link, index) => (
+				<li style={`--friend-index: ${index}`}>
 					<a class="friend-link" href={link.url} target="_blank" rel="noopener noreferrer" aria-label={`${link.name}，新窗口打开`}>
-						<span class="friend-link-initial" aria-hidden="true">{initial(link.name)}</span>
+						{link.avatar ? (
+							<img class="friend-link-avatar" src={link.avatar} alt="" width="58" height="58" loading="lazy" decoding="async" />
+						) : (
+							<span class="friend-link-avatar friend-link-initial" aria-hidden="true">{initial(link.name)}</span>
+						)}
 						<span class="friend-link-copy">
 							<strong>{link.name}</strong>
 							{link.description && <span class="friend-link-description">{link.description}</span>}
@@ -44,50 +48,68 @@ const hostname = (url: string) => {
 	.friend-links-list {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
 		margin: 0;
 		padding: 0;
 		list-style: none;
+	}
+
+	.friend-links-list li {
+		min-width: 0;
 		border: 1px solid var(--color-border);
 		border-radius: 18px;
 		background: var(--color-surface);
 		box-shadow: var(--shadow-card);
-		overflow: hidden;
+		animation: friend-link-enter 520ms cubic-bezier(.2, .75, .25, 1) both;
+		animation-delay: calc(min(var(--friend-index), 5) * 70ms);
+		transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
 	}
 
-	.friend-links-list li + li {
-		border-left: 1px solid var(--color-border-subtle);
+	.friend-links-list li:hover,
+	.friend-links-list li:focus-within {
+		transform: translateY(-4px);
+		border-color: color-mix(in srgb, var(--accent) 30%, var(--color-border));
+		box-shadow: 0 12px 30px color-mix(in srgb, var(--color-text-strong) 10%, transparent);
 	}
 
 	.friend-link {
 		display: flex;
-		min-height: 108px;
+		min-height: 112px;
 		align-items: center;
 		gap: 1rem;
 		padding: 1.25rem;
+		border-radius: inherit;
 		color: inherit;
 		text-decoration: none;
-		transition: background-color 180ms ease, color 180ms ease;
-	}
-
-	.friend-link:hover {
-		background: var(--color-surface-hover);
 	}
 
 	.friend-link:focus-visible {
-		position: relative;
-		z-index: 1;
 		outline: 3px solid var(--accent);
 		outline-offset: -4px;
 	}
 
+	.friend-link-avatar {
+		display: block;
+		width: 58px;
+		height: 58px;
+		flex: 0 0 58px;
+		border: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+		border-radius: 50%;
+		object-fit: cover;
+		background: var(--color-surface-hover);
+		transition: transform 240ms cubic-bezier(.2, .75, .25, 1), box-shadow 240ms ease;
+	}
+
+	.friend-link:hover .friend-link-avatar,
+	.friend-link:focus-visible .friend-link-avatar {
+		transform: scale(1.08);
+		box-shadow: 0 4px 12px color-mix(in srgb, var(--color-text-strong) 14%, transparent);
+	}
+
 	.friend-link-initial {
 		display: grid;
-		width: 46px;
-		height: 46px;
-		flex: 0 0 46px;
 		place-items: center;
-		border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--color-border));
-		border-radius: 50%;
+		border-color: color-mix(in srgb, var(--accent) 22%, var(--color-border));
 		background: color-mix(in srgb, var(--accent) 8%, var(--color-surface));
 		color: var(--accent);
 		font-size: 1.15rem;
@@ -120,24 +142,34 @@ const hostname = (url: string) => {
 		line-height: 1.45;
 	}
 
+	@keyframes friend-link-enter {
+		from { opacity: 0; transform: translateY(10px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
 	@media (max-width: 720px) {
 		.friend-links-list {
 			grid-template-columns: 1fr;
-			border-radius: 0;
-		}
-
-		.friend-links-list li + li {
-			border-top: 1px solid var(--color-border-subtle);
-			border-left: 0;
+			gap: 0.75rem;
 		}
 
 		.friend-link {
-			min-height: 96px;
+			min-height: 100px;
 			padding: 1rem;
 		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.friend-link { transition: none; }
+		.friend-links-list li,
+		.friend-link-avatar {
+			animation: none;
+			transition: none;
+		}
+		.friend-links-list li:hover,
+		.friend-links-list li:focus-within,
+		.friend-link:hover .friend-link-avatar,
+		.friend-link:focus-visible .friend-link-avatar {
+			transform: none;
+		}
 	}
 </style>

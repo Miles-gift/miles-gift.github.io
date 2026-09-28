@@ -20,15 +20,18 @@ export function validateFriendLinks(input) {
 		links: input.links.map((entry, index) => {
 			const label = `第 ${index + 1} 条友联`;
 			if (!entry || typeof entry !== 'object' || Array.isArray(entry)) fail(`${label}格式不正确。`);
-			if (Object.keys(entry).some((key) => !['id', 'name', 'url', 'description', 'enabled'].includes(key))) fail(`${label}包含未知字段。`);
+			if (Object.keys(entry).some((key) => !['id', 'name', 'url', 'description', 'avatar', 'enabled'].includes(key))) fail(`${label}包含未知字段。`);
 			const id = typeof entry.id === 'string' ? entry.id.trim() : '';
 			const name = typeof entry.name === 'string' ? entry.name.trim() : '';
 			const urlText = typeof entry.url === 'string' ? entry.url.trim() : '';
 			const description = typeof entry.description === 'string' ? entry.description.trim() : '';
+			const avatar = typeof entry.avatar === 'string' ? entry.avatar.trim() : '';
 			if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id) || ids.has(id)) fail(`${label}的内部标识无效或重复。`);
 			if (!name || name.length > 60) fail(`${label}名称必填且不能超过 60 个字符。`);
 			if (!urlText || urlText.length > 2048) fail(`${label}网址必填且不能超过 2048 个字符。`);
 			if (description.length > 160) fail(`${label}简介不能超过 160 个字符。`);
+			if (avatar.length > 2048) fail(`${label}头像地址不能超过 2048 个字符。`);
+			if (avatar && !(/^\/images\/friend-links\/[a-zA-Z0-9_-]+\.(?:avif|gif|jpe?g|png|webp)$/i.test(avatar) || /^https:\/\//i.test(avatar))) fail(`${label}头像只接受本站友联图片路径或 HTTPS 图片地址。`);
 			let url;
 			try { url = new URL(urlText); } catch { fail(`${label}网址格式不正确。`); }
 			if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) fail(`${label}只接受不含账号信息的 HTTP 或 HTTPS 网址。`);
@@ -38,7 +41,7 @@ export function validateFriendLinks(input) {
 			if (typeof entry.enabled !== 'boolean') fail(`${label}的显示状态无效。`);
 			ids.add(id);
 			urls.add(comparable);
-			return { id, name, url: normalizedUrl, description, enabled: entry.enabled };
+			return { id, name, url: normalizedUrl, description, avatar, enabled: entry.enabled };
 		}),
 	};
 }

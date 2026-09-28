@@ -28,6 +28,8 @@ describe('友联数据与本地 CMS 文档', () => {
 		expect(() => validateFriendLinks({ ...initial, links: [{ ...link, url: 'javascript:alert(1)' }] })).toThrow(/HTTP 或 HTTPS/);
 		expect(() => validateFriendLinks({ ...initial, links: [link, { ...link, id: 'duplicate' }] })).toThrow(/重复/);
 		expect(() => validateFriendLinks({ ...initial, links: [{ ...link, name: ' ' }] })).toThrow(/名称必填/);
+		expect(() => validateFriendLinks({ ...initial, links: [{ ...link, avatar: 'javascript:alert(1)' }] })).toThrow(/头像只接受/);
+		expect(validateFriendLinks({ ...initial, links: [{ ...link, avatar: 'https://cdn.example.org/avatar.webp' }] }).links[0].avatar).toBe('https://cdn.example.org/avatar.webp');
 	});
 
 	it('只保存到本机，并拒绝旧 revision 覆盖', async () => {
