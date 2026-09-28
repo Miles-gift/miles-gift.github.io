@@ -41,7 +41,7 @@ export const siteConfig: SiteConfig = {
   siteDescription: blogSettings.siteDescription,
   locale: 'zh-CN',
   headerGithubRepoUrl: 'https://github.com/Miles-gift/miles-gift.github.io',
-  faviconPath: '/favicon.png',
+  faviconPath: '/favicon.png?v=2',
 };
 
 export const { siteUrl, siteTitle, siteTitleSuffix, siteDescription, locale, headerGithubRepoUrl, faviconPath } = siteConfig;
