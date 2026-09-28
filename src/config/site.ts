@@ -29,9 +29,9 @@ export interface SiteConfig {
    */
   headerGithubRepoUrl: string;
   /**
-   * Global favicon ico path served from the public directory.
+   * Global favicon path served from the public directory.
    */
-  faviconIco: string;
+  faviconPath: string;
 }
 
 export const siteConfig: SiteConfig = {
@@ -41,7 +41,7 @@ export const siteConfig: SiteConfig = {
   siteDescription: blogSettings.siteDescription,
   locale: 'zh-CN',
   headerGithubRepoUrl: 'https://github.com/Miles-gift/miles-gift.github.io',
-  faviconIco: '/favicon.ico',
+  faviconPath: '/favicon.png',
 };
 
-export const { siteUrl, siteTitle, siteTitleSuffix, siteDescription, locale, headerGithubRepoUrl, faviconIco } = siteConfig;
+export const { siteUrl, siteTitle, siteTitleSuffix, siteDescription, locale, headerGithubRepoUrl, faviconPath } = siteConfig;
