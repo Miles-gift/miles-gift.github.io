@@ -2,7 +2,7 @@
 
 - 编制日期：2026-09-28
 - 项目：yoyo / Ulbo，工作目录 `/Users/sin/Tools/web`
-- 初始交付：实施方案；目前阶段 0–6 已完成，阶段 7 等待本次授权的 GitHub 推送与线上核验。
+- 当前状态：阶段 0–7 已完成，友联实现已部署并通过线上路由核验。
 - 设计依据：`/Users/sin/.codex/skills/frontend-design/SKILL.md`，以及当前仓库实际实现。
 - 最终目标：About 展示指定的两位友联；以后通过本地 CMS 完成新增、编辑、排序、隐藏、预览和发布，无需手工修改代码。
 
@@ -587,8 +587,8 @@ npm run build
 - [x] 阶段 0 基线核对：main 分支、目标 origin；此前无用户代码改动。
 - [x] 阶段 1–5 数据、About、CMS、隔离预览与发布事务接入。
 - [x] 阶段 6 自动检查与浏览器点验；20 个测试文件、82 项测试通过。
-- [ ] 阶段 7 推送 GitHub、等待 Actions 并核验线上 About 页面。
+- [x] 阶段 7 已推送提交 `31ad59db376f90a7dc7ea829263d8d042d8579f8`；Actions 成功，`/`、`/about/`、`/blog/` 与 `/rss.xml` 均返回 200，线上 About 包含两条友联。
 
 详细验收和限制见 [`ABOUT_FRIEND_LINKS_CMS_ACCEPTANCE.md`](./ABOUT_FRIEND_LINKS_CMS_ACCEPTANCE.md)。
 
-本轮只交付方案。后续实施从阶段 0 开始，以本文件约定的数据与验收标准推进；任何范围变化同步更新本文件与验收记录。
+实施与线上核验均已完成。后续如增加友联能力，以本文件约定的数据、安全与发布标准为基础，并同步更新验收记录。

@@ -2,7 +2,7 @@
 
 - 完成日期：2026-09-28
 - 对应方案：[ABOUT_FRIEND_LINKS_CMS_EXECUTION_PLAN.md](./ABOUT_FRIEND_LINKS_CMS_EXECUTION_PLAN.md)
-- 结果：页面、CMS 私有保存、About 隔离预览和友联发布事务已实现。最终 GitHub 推送及线上部署状态以本记录后续补充为准。
+- 结果：页面、CMS 私有保存、About 隔离预览和友联发布事务已实现并部署。
 
 ## 已交付
 
@@ -38,7 +38,9 @@ Astro 还输出项目既有 Markdown 插件 API 弃用提示与大型 chunk 提�
 - 展示组件：`src/components/FriendLinks.astro`。
 - CMS 私有文档逻辑：`tools/local-cms/friend-links.mjs`。
 - 发布事务新增测试：`src/lib/content/friend-links.test.ts` 与 `src/lib/content/local-cms-publish.test.ts`。
-- GitHub push / Actions / 线上 `/about/` 核验：待本地代码提交后记录具体 SHA 与结果。
+- GitHub push：通过，提交 `31ad59db376f90a7dc7ea829263d8d042d8579f8` 已推送到 `origin/main`。
+- GitHub Actions：通过，[部署运行 #36371782215](https://github.com/Miles-gift/miles-gift.github.io/actions/runs/36371782215) 成功。
+- 线上路由：`/`、`/about/`、`/blog/`、`/rss.xml` 均 HTTP 200；线上 About HTML 包含两条友联目标 URL。
 
 ## 使用
 
