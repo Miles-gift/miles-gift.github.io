@@ -45,11 +45,14 @@ const tocTree = buildTocTree(Astro.props.headings);
 	.sidebar-container {
 		padding-top: 100px;
 		position: relative;
-		inset-inline-start: 24px;
-		width: calc(100% - 24px);
+		inset-inline-start: 0;
+		width: 100%;
 		min-width: 0;
 		max-width: 100%;
 		background-color: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-left: 1px solid var(--color-border);
+		border-radius: 0 14px 14px 0;
 	}
 	.slide-in-right {
 		animation: none;
