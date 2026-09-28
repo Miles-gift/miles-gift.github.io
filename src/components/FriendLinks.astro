@@ -16,7 +16,7 @@ const hostname = (url: string) => {
 				<li style={`--friend-index: ${index}`}>
 					<a class="friend-link" href={link.url} target="_blank" rel="noopener noreferrer" aria-label={`${link.name}，新窗口打开`}>
 						{link.avatar ? (
-							<img class:list={['friend-link-avatar', link.id === 'zgzlcc' && 'friend-link-avatar-wide']} src={link.avatar} alt="" width={link.id === 'zgzlcc' ? '94' : '58'} height="58" loading="lazy" decoding="async" />
+							<img class="friend-link-avatar" src={link.avatar} alt="" width="58" height="58" loading="lazy" decoding="async" />
 						) : (
 							<span class="friend-link-avatar friend-link-initial" aria-hidden="true">{initial(link.name)}</span>
 						)}
@@ -114,12 +114,6 @@ const hostname = (url: string) => {
 		color: var(--accent);
 		font-size: 1.15rem;
 		font-weight: 600;
-	}
-
-	.friend-link-avatar-wide {
-		width: 94px;
-		flex-basis: 94px;
-		border-radius: 15px;
 	}
 
 	.friend-link-copy {
