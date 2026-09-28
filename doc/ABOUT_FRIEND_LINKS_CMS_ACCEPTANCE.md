@@ -20,6 +20,7 @@
 - 两张图已优化并存入 `public/images/friend-links/`，避免公开页面依赖友站实时图片服务。CMS 友联编辑表单现在提供可选头像地址，接受本站 `/images/friend-links/...` 路径或 HTTPS 地址。
 - 展示已改为相互分开的独立卡片，桌面双列、窄屏单列并保留间距；增加轻微错峰入场和悬停反馈，支持 `prefers-reduced-motion`。
 - 本次复核：`npm run check` 通过（0 errors、0 warnings、1 条既有弃用提示），`npm test` 通过（20 个文件、82 项），`npm run build` 与 `npm run frontmatter:check` 通过；`git diff --check` 通过。
+- 用户再次提供 zgzlcc 的简介和双人插画后，简介改为“等风来，不如追风去!”，头像已替换为该插画的优化副本。通过其公开仓库图片清单找到源文件位置 `src/assets/zgzlcc.png`，链接为 [ZGZLCC/zgzlcc.github.io 图片源文件](https://github.com/ZGZLCC/zgzlcc.github.io/blob/main/src/assets/zgzlcc.png)。页面按其横向构图使用宽幅头像框，保留两个人物。
 
 ## 验证记录
 

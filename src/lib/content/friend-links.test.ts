@@ -21,6 +21,8 @@ describe('友联数据与本地 CMS 文档', () => {
 		expect(validateFriendLinks(initial).links.map((link: { url: string }) => link.url)).toEqual([
 			'https://motues.top/', 'https://zgzlcc.github.io/',
 		]);
+		expect(initial.links[1].description).toBe('等风来，不如追风去!');
+		expect(initial.links[1].avatar).toBe('/images/friend-links/zgzlcc.webp');
 	});
 
 	it('拒绝不安全、重复或超长数据', () => {

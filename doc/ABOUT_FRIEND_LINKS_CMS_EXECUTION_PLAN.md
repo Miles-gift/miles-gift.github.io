@@ -63,7 +63,7 @@
 | 原始输入 | 规范地址 | 初始显示名称 | 描述 | 核实情况 |
 | --- | --- | --- | --- | --- |
 | `https://motues.top` | `https://motues.top/` | `Motues` | `Like River!` | 2026-09-28 读取页面可见该名称与短句 |
-| `https://zgzlcc.github.io。` | `https://zgzlcc.github.io/` | `zgzlcc.github.io` | 空字符串 | 输入末尾中文句号按标点纠正；站点可访问，展示名沿用用户指定域名，不自行补写简介 |
+| `https://zgzlcc.github.io。` | `https://zgzlcc.github.io/` | `zgzlcc.github.io` | `等风来，不如追风去!` | 输入末尾中文句号按标点纠正；简介采用用户提供截图中的原文 |
 
 来源：[Motues 首页](https://motues.top/)；[第二个指定站点](https://zgzlcc.github.io/)（本次未取得页面内容）。
 
@@ -71,7 +71,7 @@
 - 站点正常读取；截图展示的小图已与其 favicon 源图核对一致。
 - 第二个站点以域名作为明确的初始展示名称，后续可在 CMS 随时修改。
 - 不编造站长身份、学校关系、推荐理由或内容类别。
-- 头像来源现已核实：Motues 页面使用的 `Motues.Dq8Ggd3a_1zI1Kz.webp`，以及 zgzlcc 站点引用的 `/favicon/favicon.ico`（与用户截图中的双人像图案一致）。图片本地优化后存放于 `public/images/friend-links/`，公开数据只引用本站路径。
+- 头像来源现已核实：Motues 页面使用的 `Motues.Dq8Ggd3a_1zI1Kz.webp`，以及 zgzlcc 公开仓库中的 `src/assets/zgzlcc.png`（对应用户后续提供的双人插画）。图片本地优化后存放于 `public/images/friend-links/`，公开数据只引用本站路径。
 
 ### 3.2 种子数据
 
