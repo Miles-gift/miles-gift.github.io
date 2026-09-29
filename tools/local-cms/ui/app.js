@@ -29,6 +29,8 @@ let friendLoaded = false;
 let lastRemovedFriend = null;
 let previewUpdateTimer = null;
 let previewRequestId = 0;
+let renderedPreviewMarkdown = null;
+let previewHighlightRequest = 0;
 let programmaticScroll = null;
 let programmaticEditorSelection = null;
 let editorLineMap = null;
@@ -563,7 +565,7 @@ function sourceRangeAt(span, textOffset) {
 	const text = sourceTextNode(span);
 	if (!text || !Number.isFinite(start) || !Number.isFinite(end)) return null;
 	const ratio = text.length > 0 ? (end - start) / text.length : 0;
-	return { offset: Math.max(0, Math.min(end - start, Math.round(textOffset * ratio))) };
+	return { offset: Math.max(0, Math.min(end - start, Math.round(Math.max(0, Math.min(text.length, textOffset)) * ratio))) };
 }
 
 function previewTextOffset(span, node, offset) {
@@ -575,6 +577,7 @@ function previewTextOffset(span, node, offset) {
 }
 
 function previewRangeForSource(start, end) {
+	if (!Number.isInteger(start) || !Number.isInteger(end) || end <= start) return null;
 	const spans = sourceSpans();
 	const first = spans.find((span) => Number(span.dataset.sourceEnd) > start && Number(span.dataset.sourceStart) < end);
 	const last = [...spans].reverse().find((span) => Number(span.dataset.sourceEnd) > start && Number(span.dataset.sourceStart) < end);
@@ -596,26 +599,46 @@ function previewRangeForSource(start, end) {
 	return range;
 }
 
+function setPreviewHighlight(range) {
+	const requestId = ++previewHighlightRequest;
+	if (globalThis.CSS?.highlights && typeof globalThis.Highlight === 'function') {
+		CSS.highlights.set('cms-preview-match', new Highlight(range));
+		return;
+	}
+	// Keep a visible fallback for browsers without the CSS Custom Highlight API.
+	requestAnimationFrame(() => {
+		if (requestId !== previewHighlightRequest || !range.startContainer.isConnected || !range.endContainer.isConnected) return;
+		const selection = window.getSelection();
+		selection?.removeAllRanges();
+		selection?.addRange(range);
+	});
+}
+
+function clearPreviewHighlight() {
+	previewHighlightRequest += 1;
+	if (globalThis.CSS?.highlights) CSS.highlights.delete('cms-preview-match');
+}
+
 function updatePreviewSelectionFromEditor() {
 	const textarea = document.querySelector('#field-body');
-	const start = textarea.selectionStart;
-	const end = textarea.selectionEnd;
-	const selection = window.getSelection();
-	const preview = document.querySelector('#markdown-preview-content');
+	if (renderedPreviewMarkdown !== textarea.value) return;
+	const start = Math.max(0, Math.min(textarea.value.length, textarea.selectionStart));
+	const end = Math.max(0, Math.min(textarea.value.length, textarea.selectionEnd));
 	if (start === end) {
-		if (preview.contains(selection.anchorNode)) selection.removeAllRanges();
+		clearPreviewHighlight();
 		return;
 	}
 	const range = previewRangeForSource(start, end);
 	if (!range) return;
-	selection.removeAllRanges();
-	selection.addRange(range);
+	setPreviewHighlight(range);
 }
 
 function updateEditorSelectionFromPreview() {
 	const preview = document.querySelector('#markdown-preview-content');
 	const selection = window.getSelection();
 	if (!selection || selection.isCollapsed || !preview.contains(selection.anchorNode) || !preview.contains(selection.focusNode)) return;
+	const textarea = document.querySelector('#field-body');
+	if (renderedPreviewMarkdown !== textarea.value) return;
 	const anchor = selection.anchorNode;
 	const focus = selection.focusNode;
 	const anchorSpan = anchor.nodeType === Node.TEXT_NODE ? anchor.parentElement?.closest('[data-source-start][data-source-end]') : anchor.closest?.('[data-source-start][data-source-end]');
@@ -626,11 +649,18 @@ function updateEditorSelectionFromPreview() {
 	if (!anchorPoint || !focusPoint) return;
 	const start = Math.min(anchorPoint.offset + Number(anchorSpan.dataset.sourceStart), focusPoint.offset + Number(focusSpan.dataset.sourceStart));
 	const end = Math.max(anchorPoint.offset + Number(anchorSpan.dataset.sourceStart), focusPoint.offset + Number(focusSpan.dataset.sourceStart));
-	if (start === end) return;
-	const textarea = document.querySelector('#field-body');
-	programmaticEditorSelection = { start, end };
+	const safeStart = Math.max(0, Math.min(textarea.value.length, start));
+	const safeEnd = Math.max(safeStart, Math.min(textarea.value.length, end));
+	if (safeStart === safeEnd) return;
+	const sourceRange = previewRangeForSource(safeStart, safeEnd);
+	if (sourceRange) setPreviewHighlight(sourceRange);
+	const expectedSelection = { start: safeStart, end: safeEnd };
+	programmaticEditorSelection = expectedSelection;
 	textarea.focus({ preventScroll: true });
-	textarea.setSelectionRange(start, end);
+	textarea.setSelectionRange(safeStart, safeEnd);
+	setTimeout(() => {
+		if (programmaticEditorSelection === expectedSelection) programmaticEditorSelection = null;
+	}, 250);
 }
 
 function updateMarkdownPreview() {
@@ -646,7 +676,10 @@ function updateMarkdownPreview() {
 			const result = await api('/api/markdown-preview', { method: 'POST', body: JSON.stringify({ markdown }) });
 			if (requestId !== previewRequestId || panel.hidden) return;
 			const preview = document.querySelector('#markdown-preview-content');
+			clearPreviewHighlight();
 			preview.innerHTML = result.html;
+			renderedPreviewMarkdown = markdown;
+			updatePreviewSelectionFromEditor();
 			status.textContent = '已更新';
 			requestAnimationFrame(() => syncMarkdownScroll(document.querySelector('#field-body'), preview));
 		} catch (error) {
