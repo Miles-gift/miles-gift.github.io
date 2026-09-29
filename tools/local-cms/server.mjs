@@ -3,10 +3,19 @@
 import { randomBytes } from 'node:crypto';
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { readFile, readdir } from 'node:fs/promises';
+import { lstat, readFile, readdir } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import rehypeKatex from 'rehype-katex';
+import rehypeStringify from 'rehype-stringify';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
+import { unified } from 'unified';
+import { visit } from 'unist-util-visit';
+import remarkHexoImages from '../../src/plugins/remark-hexo-images.mjs';
 import { hashContent, parsePostSource, serializePostSource, summarizePost } from './content.mjs';
 import { optimizePrivateImage } from './media.mjs';
 import { readSettingsDocument, saveSettingsDocument, validateBlogSettings } from './settings.mjs';
@@ -43,7 +52,7 @@ function send(response, status, body, contentType = 'text/plain; charset=utf-8')
 		'content-type': contentType,
 		'cache-control': 'no-store',
 		'x-content-type-options': 'nosniff',
-		'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+		'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
 		'cross-origin-resource-policy': 'same-origin',
 	});
 	response.end(body);
@@ -215,6 +224,65 @@ async function parseJsonRequest(request) {
 	}
 }
 
+async function renderMarkdownPreview(request, response) {
+	const payload = await parseJsonRequest(request);
+	if (typeof payload.markdown !== 'string') return sendJson(response, 400, { error: '缺少 Markdown 正文。' });
+	if (payload.markdown.length > 1_000_000) return sendJson(response, 413, { error: '正文超过实时预览的 1 MB 限制。' });
+	const file = await unified()
+		.use(remarkParse)
+		.use(remarkHexoImages)
+		.use(remarkGfm)
+		.use(remarkMath)
+		.use(remarkRehype)
+		.use(() => (tree) => {
+			visit(tree, 'element', (node) => {
+				if (node.tagName !== 'img' || typeof node.properties?.src !== 'string') return;
+				const src = node.properties.src;
+				if (/^(?:https?:)?\/\//i.test(src) || /^(?:data:|blob:)/i.test(src)) return;
+				const upload = src.split(/[?#]/, 1)[0].match(/^\/?uploads\/blog\/([a-f0-9]{20}\.(?:avif|gif|jpe?g|png|svg|webp))$/i);
+				node.properties.src = upload
+					? `/api/media/${upload[1]}`
+					: `/api/markdown-preview-image?src=${encodeURIComponent(src)}`;
+			});
+		})
+		.use(rehypeKatex)
+		.use(rehypeStringify)
+		.process(payload.markdown);
+	return sendJson(response, 200, { html: String(file) });
+}
+
+async function serveMarkdownPreviewImage(response, url) {
+	const rawSrc = url.searchParams.get('src');
+	if (!rawSrc || /^(?:https?:)?\/\//i.test(rawSrc) || /^(?:data:|blob:)/i.test(rawSrc)) {
+		return sendJson(response, 400, { error: '预览图片地址无效。' });
+	}
+	let pathname;
+	try {
+		pathname = decodeURIComponent(rawSrc.split(/[?#]/, 1)[0]);
+	} catch {
+		return sendJson(response, 400, { error: '预览图片地址无效。' });
+	}
+	if (pathname.startsWith('image/')) pathname = `/${pathname}`;
+	if (pathname.includes('\\')) return sendJson(response, 400, { error: '预览图片地址无效。' });
+	const publicRoot = path.resolve(projectRoot, 'public');
+	const relative = pathname.replace(/^\/+/, '');
+	const imagePath = path.resolve(publicRoot, relative);
+	const relativeToPublic = path.relative(publicRoot, imagePath);
+	const extension = path.extname(imagePath).toLowerCase();
+	const imageTypes = { '.avif': 'image/avif', '.gif': 'image/gif', '.jpeg': 'image/jpeg', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp' };
+	if (!relativeToPublic || relativeToPublic.startsWith('..') || path.isAbsolute(relativeToPublic) || !imageTypes[extension]) {
+		return sendJson(response, 404, { error: '本地预览图片不存在。' });
+	}
+	try {
+		const info = await lstat(imagePath);
+		if (!info.isFile() || info.isSymbolicLink()) return sendJson(response, 404, { error: '本地预览图片不存在。' });
+		return send(response, 200, await readFile(imagePath), imageTypes[extension]);
+	} catch (error) {
+		if (error.code === 'ENOENT') return sendJson(response, 404, { error: '本地预览图片不存在。' });
+		throw error;
+	}
+}
+
 async function savePostWorkspace(request, response, { create = false } = {}) {
 	const payload = await parseJsonRequest(request);
 	const slug = assertSlug(payload.slug);
@@ -356,6 +424,12 @@ async function routeApi(request, response, url) {
 		if (typeof payload.pathname !== 'string') return sendJson(response, 400, { error: '缺少预览页面地址。' });
 		return sendJson(response, 200, await previewManager.start(payload.pathname));
 	}
+	if (request.method === 'POST' && url.pathname === '/api/markdown-preview') {
+		return renderMarkdownPreview(request, response);
+	}
+	if (request.method === 'GET' && url.pathname === '/api/markdown-preview-image') {
+		return serveMarkdownPreviewImage(response, url);
+	}
 	if (request.method === 'GET' && url.pathname === '/api/publish/summary') {
 		return sendJson(response, 200, await getPublishSummary({ projectRoot, workspaceRoot, postRoot, settingsPath, friendLinksPath }));
 	}
@@ -423,14 +497,22 @@ async function routeApi(request, response, url) {
 		return sendJson(response, 201, await optimizePrivateImage(workspaceRoot, buffer));
 	}
 
-	const mediaMatch = url.pathname.match(/^\/api\/media\/([a-f0-9]{20}\.webp)$/);
+	const mediaMatch = url.pathname.match(/^\/api\/media\/([a-f0-9]{20}\.(?:avif|gif|jpe?g|png|svg|webp))$/i);
 	if (request.method === 'GET' && mediaMatch) {
 		try {
 			const mediaPath = path.join(workspaceRoot, 'media', mediaMatch[1]);
-			const { lstat } = await import('node:fs/promises');
-			const info = await lstat(mediaPath);
+			let info;
+			let resolvedPath = mediaPath;
+			try { info = await lstat(mediaPath); }
+			catch (error) {
+				if (error.code !== 'ENOENT') throw error;
+				resolvedPath = path.join(projectRoot, 'public/uploads/blog', mediaMatch[1]);
+				info = await lstat(resolvedPath);
+			}
 			if (!info.isFile() || info.isSymbolicLink()) return sendJson(response, 404, { error: '本地图片不存在。' });
-			return send(response, 200, await readFile(mediaPath), 'image/webp');
+			const extension = path.extname(mediaMatch[1]).toLowerCase();
+			const imageType = { '.avif': 'image/avif', '.gif': 'image/gif', '.jpeg': 'image/jpeg', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp' }[extension];
+			return send(response, 200, await readFile(resolvedPath), imageType);
 		} catch (error) {
 			if (error.code === 'ENOENT') return sendJson(response, 404, { error: '本地图片不存在。' });
 			throw error;

@@ -143,12 +143,18 @@
 							<label class="cms-toggle-field cms-field-wide"><input id="field-draft" type="checkbox" /><span><strong>保存为草稿</strong><small>草稿只保存在本机工作区，不会自动进入发布内容。</small></span></label>
 							<label class="cms-toggle-field cms-field-wide"><input id="field-ready-publish" type="checkbox" /><span><strong>加入发布清单</strong><small>勾选后才会被“一键发布”选中；发布文章需关闭草稿状态。</small></span></label>
 							<div class="cms-field cms-field-wide cms-body-field">
-								<div class="cms-body-label"><label for="field-body">正文 <b>Markdown / MDX 源码</b></label><div class="cms-body-tools"><span id="word-count">0 字</span><button class="cms-button" id="compare-body" type="button">查看正文对比</button><button class="cms-button" id="insert-image" type="button">上传并插入图片</button><input id="image-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden /></div></div>
+								<div class="cms-body-label"><label for="field-body">正文 <b>Markdown / MDX 源码</b></label><div class="cms-body-tools"><span id="word-count">0 字</span><button class="cms-button" id="fullscreen-editor" type="button" aria-pressed="false">全屏编辑</button><button class="cms-button" id="toggle-markdown-preview" type="button" aria-expanded="false" aria-controls="markdown-preview">显示预览</button><button class="cms-button" id="compare-body" type="button">查看正文对比</button><button class="cms-button" id="insert-image" type="button">上传并插入图片</button><input id="image-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden /></div></div>
 								<div class="cms-markdown-tools" aria-label="Markdown 插入工具">
 									<button class="cms-button" type="button" data-markdown="heading">标题</button><button class="cms-button" type="button" data-markdown="bold">粗体</button><button class="cms-button" type="button" data-markdown="link">链接</button><button class="cms-button" type="button" data-markdown="code">代码</button><button class="cms-button" type="button" data-markdown="list">列表</button>
 								</div>
 								<div class="cms-markdown-hint">支持标题、列表、引用、代码块、数学公式和模板已启用的 Markdown 扩展。原文会保留。</div>
-								<textarea id="field-body" class="cms-markdown-editor" spellcheck="false" placeholder="从正文开始写作…"></textarea>
+								<div class="cms-writing-surface">
+									<textarea id="field-body" class="cms-markdown-editor" spellcheck="false" placeholder="从正文开始写作…" aria-label="Markdown 源码"></textarea>
+									<section class="cms-live-preview" id="markdown-preview" aria-label="Markdown 预览" hidden>
+										<div class="cms-live-preview-header"><span>预览</span><span id="markdown-preview-status" aria-live="polite">输入时自动更新</span></div>
+										<div id="markdown-preview-content" class="cms-live-preview-content"></div>
+									</section>
+								</div>
 							</div>
 						</div>
 						<div class="cms-editor-footer"><span id="editor-message" role="status" aria-live="polite"></span><button class="cms-button cms-primary-button" id="save-post-footer" type="button">保存到本机</button></div>

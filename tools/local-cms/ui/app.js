@@ -27,6 +27,9 @@ let friendsDirty = false;
 let friendEditingId = null;
 let friendLoaded = false;
 let lastRemovedFriend = null;
+let previewUpdateTimer = null;
+let previewRequestId = 0;
+let programmaticScroll = null;
 
 async function api(path, options = {}) {
 	const headers = new Headers(options.headers || {});
@@ -164,7 +167,17 @@ function showEditor() {
 	window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function setEditorFullscreen(enabled) {
+	const button = document.querySelector('#fullscreen-editor');
+	editorView.classList.toggle('is-fullscreen', enabled);
+	document.body.classList.toggle('is-editor-fullscreen', enabled);
+	button.setAttribute('aria-pressed', String(enabled));
+	button.textContent = enabled ? '退出全屏' : '全屏编辑';
+	if (enabled) document.querySelector('#field-body').focus({ preventScroll: true });
+}
+
 function showList() {
+	setEditorFullscreen(false);
 	listView.hidden = false;
 	settingsView.hidden = true;
 	friendsView.hidden = true;
@@ -436,6 +449,53 @@ function updateWordCount() {
 	document.querySelector('#word-count').textContent = `${count.toLocaleString('zh-CN')} 字`;
 }
 
+function syncMarkdownScroll(source, target) {
+	if (document.querySelector('#markdown-preview').hidden) return;
+	if (programmaticScroll?.target === source) {
+		const expected = Math.abs(source.scrollTop - programmaticScroll.top) < 2;
+		programmaticScroll = null;
+		if (expected) return;
+	}
+	const sourceRange = source.scrollHeight - source.clientHeight;
+	const targetRange = target.scrollHeight - target.clientHeight;
+	const progress = sourceRange > 0 ? source.scrollTop / sourceRange : 0;
+	target.scrollTop = Math.max(0, targetRange) * Math.min(1, Math.max(0, progress));
+	programmaticScroll = { target, top: target.scrollTop };
+}
+
+function updateMarkdownPreview() {
+	clearTimeout(previewUpdateTimer);
+	const panel = document.querySelector('#markdown-preview');
+	if (panel.hidden) return;
+	const status = document.querySelector('#markdown-preview-status');
+	const markdown = document.querySelector('#field-body').value;
+	const requestId = ++previewRequestId;
+	status.textContent = '正在更新…';
+	previewUpdateTimer = setTimeout(async () => {
+		try {
+			const result = await api('/api/markdown-preview', { method: 'POST', body: JSON.stringify({ markdown }) });
+			if (requestId !== previewRequestId || panel.hidden) return;
+			const preview = document.querySelector('#markdown-preview-content');
+			preview.innerHTML = result.html;
+			status.textContent = '已更新';
+			requestAnimationFrame(() => syncMarkdownScroll(document.querySelector('#field-body'), preview));
+		} catch (error) {
+			if (requestId !== previewRequestId) return;
+			status.textContent = error.message;
+		}
+	}, 180);
+}
+
+function toggleMarkdownPreview() {
+	const panel = document.querySelector('#markdown-preview');
+	const button = document.querySelector('#toggle-markdown-preview');
+	const show = panel.hidden;
+	panel.hidden = !show;
+	button.setAttribute('aria-expanded', String(show));
+	button.textContent = show ? '隐藏预览' : '显示预览';
+	if (show) updateMarkdownPreview();
+}
+
 function fillEditor(post, body, options = {}) {
 	editor = {
 		slug: post.slug,
@@ -474,6 +534,7 @@ function fillEditor(post, body, options = {}) {
 	setEditorMessage(post.conflict ? '源文件自打开后有变化；当前修改只保存于本地，请在发布前处理版本冲突。' : '保存只写入本机工作区，不会改动线上网站。', post.conflict ? 'is-error' : '');
 	updateDirtyState();
 	showEditor();
+	updateMarkdownPreview();
 }
 
 function newPost(seed = null) {
@@ -623,6 +684,7 @@ async function uploadImage(file, setCover) {
 			const spacer = start > 0 && textarea.value[start - 1] !== '\n' ? '\n' : '';
 			textarea.setRangeText(spacer + imageMarkdown + '\n', start, end, 'end');
 			textarea.focus();
+			updateMarkdownPreview();
 			updateDirtyState();
 		}
 		setEditorMessage(`图片已压缩并保存在本机：${Math.round(result.bytes / 1024)} KB。发布文章时会一同上传。`, 'is-success');
@@ -808,6 +870,7 @@ function insertMarkdown(kind) {
 	if (kind === 'link') textarea.setSelectionRange(start + before.length + selected.length + 2, start + before.length + selected.length + after.length - 2);
 	textarea.focus();
 	updateDirtyState();
+	updateMarkdownPreview();
 }
 
 async function load() {
@@ -909,6 +972,20 @@ document.querySelector('#back-to-list').addEventListener('click', () => {
 document.querySelector('#save-post').addEventListener('click', () => void savePost());
 document.querySelector('#save-post-footer').addEventListener('click', () => void savePost());
 document.querySelector('#preview-post').addEventListener('click', () => editor && void previewPage(`/blog/${editor.slug}/`));
+document.querySelector('#fullscreen-editor').addEventListener('click', () => setEditorFullscreen(!editorView.classList.contains('is-fullscreen')));
+document.querySelector('#toggle-markdown-preview').addEventListener('click', toggleMarkdownPreview);
+document.querySelector('#field-body').addEventListener('scroll', (event) => {
+	syncMarkdownScroll(event.currentTarget, document.querySelector('#markdown-preview-content'));
+}, { passive: true });
+document.querySelector('#markdown-preview-content').addEventListener('scroll', (event) => {
+	syncMarkdownScroll(event.currentTarget, document.querySelector('#field-body'));
+}, { passive: true });
+document.querySelector('#markdown-preview-content').addEventListener('load', (event) => {
+	if (event.target instanceof HTMLImageElement) syncMarkdownScroll(document.querySelector('#field-body'), event.currentTarget);
+}, true);
+window.addEventListener('keydown', (event) => {
+	if (event.key === 'Escape' && editorView.classList.contains('is-fullscreen')) setEditorFullscreen(false);
+});
 document.querySelector('#save-settings').addEventListener('click', () => void saveSettings());
 document.querySelector('#preview-blog').addEventListener('click', () => void previewPage('/blog/'));
 document.querySelector('#publish-now').addEventListener('click', () => void startPublish());
@@ -957,6 +1034,7 @@ document.querySelectorAll('#editor-view input, #editor-view textarea, #editor-vi
 	control.addEventListener('input', updateDirtyState);
 	control.addEventListener('change', updateDirtyState);
 });
+document.querySelector('#field-body').addEventListener('input', updateMarkdownPreview);
 document.querySelector('#theme-toggle').addEventListener('click', () => {
 	applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 });
