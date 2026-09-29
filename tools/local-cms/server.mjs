@@ -224,6 +224,43 @@ async function parseJsonRequest(request) {
 	}
 }
 
+function remarkPreviewSourceRanges() {
+	return (tree, file) => {
+		const source = String(file.value || '');
+		visit(tree, (node) => {
+			if (!['text', 'inlineCode', 'code', 'inlineMath', 'math'].includes(node.type)) return;
+			let start = node.position?.start?.offset;
+			let end = node.position?.end?.offset;
+			if (!Number.isInteger(start) || !Number.isInteger(end)) return;
+			const raw = source.slice(start, end);
+			if (node.type === 'inlineCode') {
+				const delimiter = raw.match(/^`+/)?.[0]?.length || 0;
+				start += delimiter;
+				end -= delimiter;
+			} else if (node.type === 'code') {
+				const opening = raw.match(/^[ \t]{0,3}(?:`{3,}|~{3,})[^\r\n]*(?:\r\n|\n|\r)/)?.[0] || '';
+				const closing = raw.slice(opening.length).match(/(?:\r\n|\n|\r)[ \t]*(?:`{3,}|~{3,})[^\r\n]*[ \t]*$/)?.[0] || '';
+				start += opening.length;
+				end -= closing.length;
+			} else if (node.type === 'inlineMath' || node.type === 'math') {
+				const delimiter = raw.match(/^\${1,2}/)?.[0]?.length || 0;
+				start += delimiter;
+				end -= delimiter;
+			}
+			if (end <= start) return;
+			node.data = {
+				...node.data,
+				...(node.type === 'text' ? { hName: 'span' } : {}),
+				hProperties: {
+					...node.data?.hProperties,
+					'data-source-start': start,
+					'data-source-end': end,
+				},
+			};
+		});
+	};
+}
+
 async function renderMarkdownPreview(request, response) {
 	const payload = await parseJsonRequest(request);
 	if (typeof payload.markdown !== 'string') return sendJson(response, 400, { error: '缺少 Markdown 正文。' });
@@ -233,6 +270,7 @@ async function renderMarkdownPreview(request, response) {
 		.use(remarkHexoImages)
 		.use(remarkGfm)
 		.use(remarkMath)
+		.use(remarkPreviewSourceRanges)
 		.use(remarkRehype)
 		.use(() => (tree) => {
 			visit(tree, 'element', (node) => {

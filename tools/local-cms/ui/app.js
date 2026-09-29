@@ -30,6 +30,8 @@ let lastRemovedFriend = null;
 let previewUpdateTimer = null;
 let previewRequestId = 0;
 let programmaticScroll = null;
+let programmaticEditorSelection = null;
+let editorLineMap = null;
 
 async function api(path, options = {}) {
 	const headers = new Headers(options.headers || {});
@@ -169,6 +171,7 @@ function showEditor() {
 
 function setEditorFullscreen(enabled) {
 	const button = document.querySelector('#fullscreen-editor');
+	editorLineMap = null;
 	editorView.classList.toggle('is-fullscreen', enabled);
 	document.body.classList.toggle('is-editor-fullscreen', enabled);
 	button.setAttribute('aria-pressed', String(enabled));
@@ -456,11 +459,178 @@ function syncMarkdownScroll(source, target) {
 		programmaticScroll = null;
 		if (expected) return;
 	}
-	const sourceRange = source.scrollHeight - source.clientHeight;
-	const targetRange = target.scrollHeight - target.clientHeight;
-	const progress = sourceRange > 0 ? source.scrollTop / sourceRange : 0;
-	target.scrollTop = Math.max(0, targetRange) * Math.min(1, Math.max(0, progress));
+	const textarea = document.querySelector('#field-body');
+	const preview = document.querySelector('#markdown-preview-content');
+	if (source === textarea) {
+		const sourceOffset = sourceOffsetAtEditorTop();
+		const previewTop = previewTopForSourceOffset(sourceOffset);
+		if (previewTop !== null) target.scrollTop = previewTop;
+	} else {
+		const sourceOffset = sourceOffsetAtPreviewTop();
+		target.scrollTop = editorTopForSourceOffset(sourceOffset);
+	}
 	programmaticScroll = { target, top: target.scrollTop };
+}
+
+function getEditorLineMap() {
+	if (editorLineMap) return editorLineMap;
+	const textarea = document.querySelector('#field-body');
+	const style = getComputedStyle(textarea);
+	const lineHeight = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize) * 1.75 || 22;
+	const padding = Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight);
+	const width = Math.max(1, textarea.clientWidth - padding);
+	const canvas = document.createElement('canvas');
+	const context = canvas.getContext('2d');
+	if (context) context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+	const lines = [];
+	let sourceStart = 0;
+	let rowStart = 0;
+	for (const line of textarea.value.split('\n')) {
+		const lineWidth = context ? context.measureText(line).width : line.length * 8;
+		const rows = Math.max(1, Math.ceil(lineWidth / width));
+		lines.push({ sourceStart, sourceEnd: sourceStart + line.length, rowStart, rows, length: line.length });
+		sourceStart += line.length + 1;
+		rowStart += rows;
+	}
+	editorLineMap = { lines, lineHeight, totalRows: rowStart };
+	return editorLineMap;
+}
+
+function sourceOffsetAtEditorTop() {
+	const textarea = document.querySelector('#field-body');
+	const { lines, lineHeight } = getEditorLineMap();
+	const row = textarea.scrollTop / lineHeight;
+	const line = lines.find((item) => item.rowStart + item.rows > row) || lines.at(-1);
+	if (!line) return 0;
+	const within = Math.max(0, Math.min(1, (row - line.rowStart) / line.rows));
+	return line.sourceStart + Math.round(line.length * within);
+}
+
+function editorTopForSourceOffset(offset) {
+	const textarea = document.querySelector('#field-body');
+	const { lines, lineHeight } = getEditorLineMap();
+	const line = lines.find((item) => item.sourceEnd >= offset) || lines.at(-1);
+	if (!line) return 0;
+	const within = line.length > 0 ? Math.max(0, Math.min(1, (offset - line.sourceStart) / line.length)) : 0;
+	return Math.max(0, Math.min(textarea.scrollHeight - textarea.clientHeight, (line.rowStart + line.rows * within) * lineHeight));
+}
+
+function sourceOffsetAtPreviewTop() {
+	const preview = document.querySelector('#markdown-preview-content');
+	const targetY = preview.getBoundingClientRect().top + 18;
+	for (const span of sourceSpans()) {
+		const rect = span.getBoundingClientRect();
+		if (rect.bottom <= targetY || rect.height === 0) continue;
+		const start = Number(span.dataset.sourceStart);
+		const end = Number(span.dataset.sourceEnd);
+		const within = Math.max(0, Math.min(1, (targetY - rect.top) / rect.height));
+		return start + Math.round((end - start) * within);
+	}
+	return 0;
+}
+
+function previewTopForSourceOffset(offset) {
+	const preview = document.querySelector('#markdown-preview-content');
+	for (const span of sourceSpans()) {
+		const start = Number(span.dataset.sourceStart);
+		const end = Number(span.dataset.sourceEnd);
+		if (end <= offset) continue;
+		const textNode = sourceTextNode(span);
+		if (!textNode) continue;
+		const textLength = textNode.length;
+		const textOffset = end > start ? Math.max(0, Math.min(textLength - 1, Math.floor((offset - start) * textLength / (end - start)))) : 0;
+		const range = document.createRange();
+		range.setStart(textNode, textOffset);
+		range.setEnd(textNode, Math.min(textLength, textOffset + 1));
+		const rect = range.getBoundingClientRect();
+		if (rect.height === 0) continue;
+		return Math.max(0, Math.min(preview.scrollHeight - preview.clientHeight, preview.scrollTop + rect.top - preview.getBoundingClientRect().top - 18));
+	}
+	return null;
+}
+
+function sourceSpans() {
+	return [...document.querySelectorAll('#markdown-preview-content [data-source-start][data-source-end]')];
+}
+
+function sourceTextNode(span) {
+	return document.createTreeWalker(span, NodeFilter.SHOW_TEXT).nextNode();
+}
+
+function sourceRangeAt(span, textOffset) {
+	const start = Number(span.dataset.sourceStart);
+	const end = Number(span.dataset.sourceEnd);
+	const text = sourceTextNode(span);
+	if (!text || !Number.isFinite(start) || !Number.isFinite(end)) return null;
+	const ratio = text.length > 0 ? (end - start) / text.length : 0;
+	return { offset: Math.max(0, Math.min(end - start, Math.round(textOffset * ratio))) };
+}
+
+function previewTextOffset(span, node, offset) {
+	if (node === span.firstChild && node.nodeType === Node.TEXT_NODE) return offset;
+	const range = document.createRange();
+	range.selectNodeContents(span);
+	range.setEnd(node, offset);
+	return range.toString().length;
+}
+
+function previewRangeForSource(start, end) {
+	const spans = sourceSpans();
+	const first = spans.find((span) => Number(span.dataset.sourceEnd) > start && Number(span.dataset.sourceStart) < end);
+	const last = [...spans].reverse().find((span) => Number(span.dataset.sourceEnd) > start && Number(span.dataset.sourceStart) < end);
+	if (!first || !last) return null;
+	const firstStart = Number(first.dataset.sourceStart);
+	const lastStart = Number(last.dataset.sourceStart);
+	const firstEnd = Number(first.dataset.sourceEnd);
+	const lastEnd = Number(last.dataset.sourceEnd);
+	const firstText = sourceTextNode(first);
+	const lastText = sourceTextNode(last);
+	if (!firstText || !lastText) return null;
+	const firstLength = firstText.length;
+	const lastLength = lastText.length;
+	const firstOffset = firstEnd > firstStart ? Math.round(Math.max(0, start - firstStart) * firstLength / (firstEnd - firstStart)) : 0;
+	const lastOffset = lastEnd > lastStart ? Math.round(Math.min(lastEnd - lastStart, end - lastStart) * lastLength / (lastEnd - lastStart)) : lastLength;
+	const range = document.createRange();
+	range.setStart(firstText, Math.min(firstLength, firstOffset));
+	range.setEnd(lastText, Math.min(lastLength, lastOffset));
+	return range;
+}
+
+function updatePreviewSelectionFromEditor() {
+	const textarea = document.querySelector('#field-body');
+	const start = textarea.selectionStart;
+	const end = textarea.selectionEnd;
+	const selection = window.getSelection();
+	const preview = document.querySelector('#markdown-preview-content');
+	if (start === end) {
+		if (preview.contains(selection.anchorNode)) selection.removeAllRanges();
+		return;
+	}
+	const range = previewRangeForSource(start, end);
+	if (!range) return;
+	selection.removeAllRanges();
+	selection.addRange(range);
+}
+
+function updateEditorSelectionFromPreview() {
+	const preview = document.querySelector('#markdown-preview-content');
+	const selection = window.getSelection();
+	if (!selection || selection.isCollapsed || !preview.contains(selection.anchorNode) || !preview.contains(selection.focusNode)) return;
+	const anchor = selection.anchorNode;
+	const focus = selection.focusNode;
+	const anchorSpan = anchor.nodeType === Node.TEXT_NODE ? anchor.parentElement?.closest('[data-source-start][data-source-end]') : anchor.closest?.('[data-source-start][data-source-end]');
+	const focusSpan = focus.nodeType === Node.TEXT_NODE ? focus.parentElement?.closest('[data-source-start][data-source-end]') : focus.closest?.('[data-source-start][data-source-end]');
+	if (!anchorSpan || !focusSpan) return;
+	const anchorPoint = sourceRangeAt(anchorSpan, previewTextOffset(anchorSpan, anchor, selection.anchorOffset));
+	const focusPoint = sourceRangeAt(focusSpan, previewTextOffset(focusSpan, focus, selection.focusOffset));
+	if (!anchorPoint || !focusPoint) return;
+	const start = Math.min(anchorPoint.offset + Number(anchorSpan.dataset.sourceStart), focusPoint.offset + Number(focusSpan.dataset.sourceStart));
+	const end = Math.max(anchorPoint.offset + Number(anchorSpan.dataset.sourceStart), focusPoint.offset + Number(focusSpan.dataset.sourceStart));
+	if (start === end) return;
+	const textarea = document.querySelector('#field-body');
+	programmaticEditorSelection = { start, end };
+	textarea.focus({ preventScroll: true });
+	textarea.setSelectionRange(start, end);
 }
 
 function updateMarkdownPreview() {
@@ -490,6 +660,7 @@ function toggleMarkdownPreview() {
 	const panel = document.querySelector('#markdown-preview');
 	const button = document.querySelector('#toggle-markdown-preview');
 	const show = panel.hidden;
+	editorLineMap = null;
 	panel.hidden = !show;
 	button.setAttribute('aria-expanded', String(show));
 	button.textContent = show ? '隐藏预览' : '显示预览';
@@ -977,9 +1148,20 @@ document.querySelector('#toggle-markdown-preview').addEventListener('click', tog
 document.querySelector('#field-body').addEventListener('scroll', (event) => {
 	syncMarkdownScroll(event.currentTarget, document.querySelector('#markdown-preview-content'));
 }, { passive: true });
+document.querySelector('#field-body').addEventListener('select', () => {
+	const textarea = document.querySelector('#field-body');
+	if (programmaticEditorSelection?.start === textarea.selectionStart && programmaticEditorSelection?.end === textarea.selectionEnd) {
+		programmaticEditorSelection = null;
+		return;
+	}
+	programmaticEditorSelection = null;
+	updatePreviewSelectionFromEditor();
+});
 document.querySelector('#markdown-preview-content').addEventListener('scroll', (event) => {
 	syncMarkdownScroll(event.currentTarget, document.querySelector('#field-body'));
 }, { passive: true });
+document.querySelector('#markdown-preview-content').addEventListener('pointerup', updateEditorSelectionFromPreview);
+document.querySelector('#markdown-preview-content').addEventListener('keyup', updateEditorSelectionFromPreview);
 document.querySelector('#markdown-preview-content').addEventListener('load', (event) => {
 	if (event.target instanceof HTMLImageElement) syncMarkdownScroll(document.querySelector('#field-body'), event.currentTarget);
 }, true);
@@ -1034,7 +1216,11 @@ document.querySelectorAll('#editor-view input, #editor-view textarea, #editor-vi
 	control.addEventListener('input', updateDirtyState);
 	control.addEventListener('change', updateDirtyState);
 });
-document.querySelector('#field-body').addEventListener('input', updateMarkdownPreview);
+document.querySelector('#field-body').addEventListener('input', () => {
+	editorLineMap = null;
+	updateMarkdownPreview();
+});
+window.addEventListener('resize', () => { editorLineMap = null; });
 document.querySelector('#theme-toggle').addEventListener('click', () => {
 	applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 });

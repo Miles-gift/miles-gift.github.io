@@ -218,6 +218,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .cms-live-preview-content th { background: #f3f5f8; }
 .cms-live-preview-content hr { border: 0; border-top: 1px solid #d9dde4; }
 .cms-live-preview-content .katex-display { overflow: auto; padding: .4em 0; }
+.cms-live-preview-content ::selection { background: color-mix(in srgb, var(--accent) 34%, transparent); color: inherit; }
 .cms-editor-view.is-fullscreen { position: fixed; z-index: 50; inset: 0; overflow: auto; padding: 1rem clamp(1rem, 3vw, 2.5rem); background: var(--color-bg); }
 .cms-editor-view.is-fullscreen .cms-editor-toolbar { position: sticky; z-index: 2; top: 0; padding: .35rem 0 .75rem; background: var(--color-bg); }
 .cms-editor-view.is-fullscreen .cms-editor-card { max-width: 1600px; margin: 0 auto; }
