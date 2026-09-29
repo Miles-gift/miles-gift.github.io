@@ -614,9 +614,12 @@ function setPreviewHighlight(range) {
 	});
 }
 
-function clearPreviewHighlight() {
+function clearPreviewHighlight(removeNativeSelection = false) {
 	previewHighlightRequest += 1;
 	if (globalThis.CSS?.highlights) CSS.highlights.delete('cms-preview-match');
+	const preview = document.querySelector('#markdown-preview-content');
+	const selection = window.getSelection();
+	if (removeNativeSelection && selection && (preview.contains(selection.anchorNode) || preview.contains(selection.focusNode))) selection.removeAllRanges();
 }
 
 function updatePreviewSelectionFromEditor() {
@@ -1178,24 +1181,35 @@ document.querySelector('#save-post-footer').addEventListener('click', () => void
 document.querySelector('#preview-post').addEventListener('click', () => editor && void previewPage(`/blog/${editor.slug}/`));
 document.querySelector('#fullscreen-editor').addEventListener('click', () => setEditorFullscreen(!editorView.classList.contains('is-fullscreen')));
 document.querySelector('#toggle-markdown-preview').addEventListener('click', toggleMarkdownPreview);
-document.querySelector('#field-body').addEventListener('scroll', (event) => {
+const markdownEditor = document.querySelector('#field-body');
+const markdownPreview = document.querySelector('#markdown-preview-content');
+markdownEditor.addEventListener('pointerdown', () => clearPreviewHighlight(true));
+markdownPreview.addEventListener('pointerdown', () => clearPreviewHighlight(true));
+markdownEditor.addEventListener('keydown', (event) => {
+	if (event.shiftKey || ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) || ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'a')) {
+		clearPreviewHighlight();
+	}
+});
+markdownPreview.addEventListener('keydown', (event) => {
+	if (event.shiftKey || ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) clearPreviewHighlight();
+});
+markdownEditor.addEventListener('scroll', (event) => {
 	syncMarkdownScroll(event.currentTarget, document.querySelector('#markdown-preview-content'));
 }, { passive: true });
-document.querySelector('#field-body').addEventListener('select', () => {
-	const textarea = document.querySelector('#field-body');
-	if (programmaticEditorSelection?.start === textarea.selectionStart && programmaticEditorSelection?.end === textarea.selectionEnd) {
+markdownEditor.addEventListener('select', () => {
+	if (programmaticEditorSelection?.start === markdownEditor.selectionStart && programmaticEditorSelection?.end === markdownEditor.selectionEnd) {
 		programmaticEditorSelection = null;
 		return;
 	}
 	programmaticEditorSelection = null;
 	updatePreviewSelectionFromEditor();
 });
-document.querySelector('#markdown-preview-content').addEventListener('scroll', (event) => {
+markdownPreview.addEventListener('scroll', (event) => {
 	syncMarkdownScroll(event.currentTarget, document.querySelector('#field-body'));
 }, { passive: true });
-document.querySelector('#markdown-preview-content').addEventListener('pointerup', updateEditorSelectionFromPreview);
-document.querySelector('#markdown-preview-content').addEventListener('keyup', updateEditorSelectionFromPreview);
-document.querySelector('#markdown-preview-content').addEventListener('load', (event) => {
+markdownPreview.addEventListener('pointerup', updateEditorSelectionFromPreview);
+markdownPreview.addEventListener('keyup', updateEditorSelectionFromPreview);
+markdownPreview.addEventListener('load', (event) => {
 	if (event.target instanceof HTMLImageElement) syncMarkdownScroll(document.querySelector('#field-body'), event.currentTarget);
 }, true);
 window.addEventListener('keydown', (event) => {
